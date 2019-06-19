@@ -8,14 +8,14 @@ WORKDIR /usr/src/app
 # where available (npm@5+)
 COPY package*.json ./
 COPY tsconfig.json ./
+COPY tsconfig.build.json ./
 
 COPY ./src ./src
-COPY ./config ./config
 
 RUN npm install
 # If you are building your code for production
 # RUN npm install --only=production
-RUN npm run build-ts
+RUN npm run build
 
 
 # Bundle app source

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ExternalService } from './external-service';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Post } from 'dist/models/post';
+import { Post } from 'src/models/post';
 
 @Injectable()
 export class PostService {
