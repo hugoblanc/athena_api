@@ -18,7 +18,7 @@ export class CronService extends NestDistributedSchedule {
     };
   }
 
-  @Cron('* */15 * * * *')
+  @Cron('* 15 * * * *')
   async cronJob() {
 
     this.postService.getPost('https://lvsl.fr')
