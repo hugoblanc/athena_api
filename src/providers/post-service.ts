@@ -23,10 +23,15 @@ import { NotificationService } from './notification-service';
       return this.externalService.get(hostname + PostService.BASE_ROUTE)
         .pipe(
           map((posts) => posts.map((post) => new Post(post))),
-          tap((posts) => this.areTheyNewValues(posts)));
+          tap((posts) => this.findNewValueAndSendNotif(posts)));
     }
 
-    private areTheyNewValues(posts: Post[]) {
+    /**
+     * Cette methode permet de comparer la liste des anciens posts avec ceux qu'on vient de get
+     * elle récupère la liste des nouveau posts en déclanche l'envoi de notif associé
+     * @param posts une liste de posts
+     */
+    private findNewValueAndSendNotif(posts: Post[]): void {
       const newPost = posts.filter((post)=> this.isPostInPosts);
       // Gestion de la création && envoi de notif 
       if(newPost != null && newPost.length > 0){
@@ -38,7 +43,11 @@ import { NotificationService } from './notification-service';
       this.posts = posts;
     }
 
-    createNotif(object: Post){
+    /**
+     * Cette methode permet de creer un notification basé sur un post 
+     * @param object le post a convertir en notification
+     */
+    createNotif(object: Post): any{
 
       const message = {
         notification: {
@@ -52,7 +61,12 @@ import { NotificationService } from './notification-service';
       return message;
     }
 
-
+    /**
+     * Cette methode cherche dans la liste des anciens posts si celui passé en param 
+     * est déjà présent ou pas
+     * Elle renvoi false si elle ne le trouve pas et true si oui
+     * @param post le nouveau post a trouver dans la liste des anciens
+     */
     private isPostInPosts(post: Post): boolean {
       for(const oldPost of this.posts){
         if(post.isIdEqual(oldPost.id)) return true;
