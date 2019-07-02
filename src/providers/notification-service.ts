@@ -8,6 +8,8 @@ export class NotificationService {
 
 
   sendMessage(message) {
+    // console.log(message);
+
     admin.messaging().send(message)
     .then((response) => {
       // Response is a message ID string.

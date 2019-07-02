@@ -18,12 +18,12 @@ export class CronService extends NestDistributedSchedule {
     };
   }
 
-  @Cron('* 15 * * * *')
+  @Cron('10 * * * * *')
   async cronJob() {
 
     this.postService.getPost('https://lvsl.fr')
       .subscribe((posts) => {
-        console.log(posts);
+        // On ne fait rien
       });
   }
 }

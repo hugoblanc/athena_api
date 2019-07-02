@@ -43,6 +43,10 @@ export class Post {
     this.embedded = new Embedded(input._embedded);
   }
 
+  public getTitle() {
+    return this.title.rendered;
+  }
+
   public isIdEqual(id: number) {
     return (this.id === id);
   }
