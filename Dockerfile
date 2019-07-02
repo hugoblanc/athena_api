@@ -7,8 +7,7 @@ WORKDIR /usr/src/app
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available (npm@5+)
 COPY package*.json ./
-COPY tsconfig.json ./
-COPY tsconfig.build.json ./
+COPY tsconfig*.json ./
 
 COPY ./src ./src
 
@@ -22,4 +21,4 @@ RUN npm run build
 COPY . .
 
 EXPOSE 3000
-CMD [ "npm", "start" ]
+CMD [ "npm","run",  "start:prod" ]

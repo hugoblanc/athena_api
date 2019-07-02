@@ -5,6 +5,17 @@ import { map, tap } from 'rxjs/operators';
 import { IcreateNotifService } from 'src/core/icreate-notif-service.interface';
 import { NotificationService } from './notification-service';
 import { Post } from '../models/post';
+
+/**
+ * *~~~~~~~~~~~~~~~~~~~
+ * Author: HugoBlanc |
+ * *~~~~~~~~~~~~~~~~~~~
+ * Ce service est en charge de la gestion des articles
+ * Il a aussi en résponssabilité la recherche des nouveau articles
+ * Et la création de notification en fonction du résultat précédenet
+ * Finalement il délègue l'envoi de la notificaiton au service de notification
+ * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
 @Injectable()
 export class PostService implements IcreateNotifService<Post> {
 
@@ -50,7 +61,7 @@ export class PostService implements IcreateNotifService<Post> {
 
     const message = {
       notification: {
-        title: 'Nouvel article par Le Vent Se Lève',
+        title: 'Nouvel article par MrMondialiation',
         body: object.getTitle(),
       },
       topic: 'all',
