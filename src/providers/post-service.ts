@@ -21,7 +21,7 @@ export class PostService implements IcreateNotifService<Post> {
 
   private static BASE_ROUTE = '/wp-json/wp/v2/posts?_embed';
 
-  private posts: Post[];
+  private oldPosts: any = {};
 
   constructor(private externalService: ExternalService, private notificationService: NotificationService) { }
 
@@ -29,11 +29,11 @@ export class PostService implements IcreateNotifService<Post> {
    * Cette methode récupère une listede post pour un nom d'hote données
    * @param hostname le nom d'hote de la ressource cible
    */
-  getPost(hostname: string): Observable<Post[]> {
+  getPost(hostname: string, key: string): Observable<Post[]> {
     return this.externalService.get(hostname + PostService.BASE_ROUTE)
       .pipe(
         map((posts) => posts.map((post) => new Post(post))),
-        tap((posts) => this.findNewValueAndSendNotif(posts)));
+        tap((posts) => this.findNewValueAndSendNotif(posts, key)));
   }
 
   /**
@@ -41,8 +41,8 @@ export class PostService implements IcreateNotifService<Post> {
    * elle récupère la liste des nouveau posts en déclanche l'envoi de notif associé
    * @param posts une liste de posts
    */
-  private findNewValueAndSendNotif(posts: Post[]): void {
-    const newPost = posts.filter((post) => this.isPostInPosts);
+  private findNewValueAndSendNotif(posts: Post[], key: string): void {
+    const newPost = posts.filter((post) => !this.isPostInPosts(post, key));
     // Gestion de la création && envoi de notif
     if (newPost != null && newPost.length > 0) {
       const message = this.createNotif(newPost[0]);
@@ -50,7 +50,7 @@ export class PostService implements IcreateNotifService<Post> {
     }
 
     // On met a jour les infoirmations local
-    this.posts = posts;
+    this.oldPosts[key] = posts;
   }
 
   /**
@@ -76,10 +76,15 @@ export class PostService implements IcreateNotifService<Post> {
    * Elle renvoi false si elle ne le trouve pas et true si oui
    * @param post le nouveau post a trouver dans la liste des anciens
    */
-  private isPostInPosts(post: Post): boolean {
-    for (const oldPost of this.posts) {
+  private isPostInPosts(post: Post, key: string): boolean {
+    if (!this.oldPosts[key]) {
+      return false;
+    }
+
+    for (const oldPost of this.oldPosts[key]) {
       if (post.isIdEqual(oldPost.id)) { return true; }
     }
+
     return false;
   }
 

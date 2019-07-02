@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, NestDistributedSchedule } from 'nest-schedule';
 import { PostService } from './post-service';
+import { Observable, concat } from 'rxjs';
+import { Post } from '../models/post';
+import { MediaService } from './media/media.service';
+import { delay } from 'rxjs/operators';
 
 @Injectable()
 export class CronService extends NestDistributedSchedule {
@@ -18,12 +22,28 @@ export class CronService extends NestDistributedSchedule {
     };
   }
 
-  @Cron('10 */5 * * * *')
+  @Cron('10 */3 * * * *')
   async cronJob() {
 
-    this.postService.getPost('https://lvsl.fr')
-      .subscribe((posts) => {
-        // On ne fait rien
-      });
+    this.prepareRequestMediaWebsite();
   }
+
+  // Observable<Post[][]>
+  prepareRequestMediaWebsite(): void {
+    // On va créer un d'ordre de requète asynchrone
+    const articlesFromWebsites$ = MediaService.MEDIAS.map(
+      // Ces requete seront sous la forme d'observable
+      (metaMedia) => this.postService.getPost(metaMedia.url, metaMedia.key)
+        // Et on ajoute un delay de 5000 ms après chaqu'une de ces requete
+        .pipe(delay(5000)));
+
+    const total1$ = concat(...articlesFromWebsites$);
+    const total2$ = concat(...articlesFromWebsites$);
+    total1$.subscribe((data) => {
+      for (const d of data) {
+        console.log(d.title.rendered);
+      }
+    });
+  }
+
 }
