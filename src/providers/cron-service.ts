@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Cron, NestDistributedSchedule } from 'nest-schedule';
 import { PostService } from './post-service';
 import { Observable, concat } from 'rxjs';
-import { Post } from '../models/post';
 import { MediaService } from './media/media.service';
 import { delay } from 'rxjs/operators';
 
@@ -22,9 +21,8 @@ export class CronService extends NestDistributedSchedule {
     };
   }
 
-  @Cron('10 */3 * * * *')
+  @Cron('* * * * * *')
   async cronJob() {
-
     this.prepareRequestMediaWebsite();
   }
 
@@ -38,7 +36,6 @@ export class CronService extends NestDistributedSchedule {
         .pipe(delay(5000)));
 
     const total1$ = concat(...articlesFromWebsites$);
-    const total2$ = concat(...articlesFromWebsites$);
     total1$.subscribe((data) => {
       for (const d of data) {
         console.log(d.title.rendered);

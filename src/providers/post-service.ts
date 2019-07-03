@@ -45,7 +45,7 @@ export class PostService implements IcreateNotifService<Post> {
     const newPost = posts.filter((post) => !this.isPostInPosts(post, key));
     // Gestion de la création && envoi de notif
     if (newPost != null && newPost.length > 0) {
-      const message = this.createNotif(newPost[0]);
+      const message = this.createNotif(newPost[0], key);
       this.notificationService.sendMessage(message);
     }
 
@@ -57,12 +57,18 @@ export class PostService implements IcreateNotifService<Post> {
    * Cette methode permet de creer un notification basé sur un post
    * @param object le post a convertir en notification
    */
-  createNotif(object: Post): any {
+  createNotif(object: Post, key: string): any {
 
     const message = {
       notification: {
         title: 'Nouvel article par MrMondialiation',
         body: object.getTitle(),
+      },
+      data: {
+        title:  'Nouvel article par MrMondialiation',
+        body: object.getTitle(),
+        key,
+        id: object.id.toString(),
       },
       topic: 'all',
     };

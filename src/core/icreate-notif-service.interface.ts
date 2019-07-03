@@ -8,5 +8,5 @@
  * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 export interface IcreateNotifService<T> {
-  createNotif(object: T);
+  createNotif(object: T, key: string);
 }
