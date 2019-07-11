@@ -28,7 +28,7 @@ export class MediaService {
       color: 'success',
       donation: 'https://www.helloasso.com/associations/le-4eme-singe/formulaires/1/fr',
       logo: 'assets/4emesinge_logo.jpg',
-    }
+    },
   ];
 
   public static getKeyFromUrl(url) {

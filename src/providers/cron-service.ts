@@ -21,7 +21,7 @@ export class CronService extends NestDistributedSchedule {
     };
   }
 
-  @Cron('* * * * * *')
+  @Cron('1 */10 * * * *')
   async cronJob() {
     this.prepareRequestMediaWebsite();
   }
@@ -33,7 +33,7 @@ export class CronService extends NestDistributedSchedule {
       // Ces requete seront sous la forme d'observable
       (metaMedia) => this.postService.getPost(metaMedia.url, metaMedia.key)
         // Et on ajoute un delay de 5000 ms après chaqu'une de ces requete
-        .pipe(delay(5000)));
+        .pipe(delay(10000)));
 
     const total1$ = concat(...articlesFromWebsites$);
     total1$.subscribe((data) => {
