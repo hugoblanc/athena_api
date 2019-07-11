@@ -10,7 +10,7 @@
 
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
-      databaseURL: 'https://api-bifrost.firebaseio.com',
+      databaseURL: 'https://api-athena.firebaseio.com',
     });
 
     displayMessage();
