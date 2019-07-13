@@ -12,6 +12,7 @@
     "start:debug": "nodemon --config nodemon-debug.json",
     "prestart:prod": "rimraf dist && npm run build",
     "start:prod": "node dist/main.js",
+	"postinstall": "npm run prestart:prod",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -27,7 +28,7 @@
     "nest-schedule": "^0.6.0",
     "reflect-metadata": "^0.1.12",
     "rimraf": "^2.6.2",
-    "rxjs": "^6.3.3"
+    "rxjs": "^6.3.3",
   },
   "devDependencies": {
     "@nestjs/testing": "^6.0.0",
