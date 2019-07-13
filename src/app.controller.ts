@@ -1,17 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param, Render, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { CronService } from './providers/cron-service';
+import { join } from 'path';
 
-@Controller('hello')
+@Controller('privacy')
 export class AppController {
-  constructor(private readonly appService: AppService, private cronService: CronService) {}
+  constructor(private readonly appService: AppService, private cronService: CronService) { }
 
   @Get()
-  getHello(): string {
-      console.log("On est dans le get ");
-    return this.appService.getHello();
+  root(@Res() res) {
+    res.sendFile(join(__dirname, '../public/privacy.html'));
   }
 
 }
-
-

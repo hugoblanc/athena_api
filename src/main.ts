@@ -1,38 +1,40 @@
-  import { NestFactory } from '@nestjs/core';
-  import { AppModule } from './app.module';
+import { NestFactory, NestApplication } from '@nestjs/core';
+import { AppModule } from './app.module';
+import * as express from 'express';
+import * as admin from 'firebase-admin';
+import { join } from 'path';
 
-  import * as admin from 'firebase-admin';
+async function bootstrap() {
+  const app = await NestFactory.create<NestApplication>(AppModule);
+  app.enableCors();
+  app.use(express.static(join(__dirname, '../public')));
+  await app.listen(process.env.PORT || 3000);
 
-  async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
-    app.enableCors();
-    await app.listen(process.env.PORT || 3000);
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    databaseURL: 'https://api-athena.firebaseio.com',
+  });
 
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-      databaseURL: 'https://api-athena.firebaseio.com',
-    });
+  displayMessage();
 
-    displayMessage();
+}
+bootstrap();
 
-  }
-  bootstrap();
-
-  function displayMessage() {
-    console.log(`
+function displayMessage() {
+  console.log(`
   ██████╗ ██╗███████╗██████╗  ██████╗ ███████╗████████╗
   ██╔══██╗██║██╔════╝██╔══██╗██╔═══██╗██╔════╝╚══██╔══╝
-  ██████╔╝██║█████╗  ██████╔╝██║   ██║███████╗   ██║   
-  ██╔══██╗██║██╔══╝  ██╔══██╗██║   ██║╚════██║   ██║   
-  ██████╔╝██║██║     ██║  ██║╚██████╔╝███████║   ██║   
-  ╚═════╝ ╚═╝╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝   
-                                                      
-  █████╗ ██████╗ ██╗                                  
-  ██╔══██╗██╔══██╗██║                                  
-  ███████║██████╔╝██║                                  
-  ██╔══██║██╔═══╝ ██║                                  
-  ██║  ██║██║     ██║                                  
-  ╚═╝  ╚═╝╚═╝     ╚═╝                                  
-                                                      
+  ██████╔╝██║█████╗  ██████╔╝██║   ██║███████╗   ██║
+  ██╔══██╗██║██╔══╝  ██╔══██╗██║   ██║╚════██║   ██║
+  ██████╔╝██║██║     ██║  ██║╚██████╔╝███████║   ██║
+  ╚═════╝ ╚═╝╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝
+
+  █████╗ ██████╗ ██╗
+  ██╔══██╗██╔══██╗██║
+  ███████║██████╔╝██║
+  ██╔══██║██╔═══╝ ██║
+  ██║  ██║██║     ██║
+  ╚═╝  ╚═╝╚═╝     ╚═╝
+
   `);
-  }
+}

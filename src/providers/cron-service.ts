@@ -21,7 +21,7 @@ export class CronService extends NestDistributedSchedule {
     };
   }
 
-  @Cron('1 */10 * * * *')
+  @Cron('1 */30 * * * *')
   async cronJob() {
     this.prepareRequestMediaWebsite();
   }
