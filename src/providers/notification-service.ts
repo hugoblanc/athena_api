@@ -12,7 +12,6 @@ import * as admin from 'firebase-admin';
 export class NotificationService {
 
   sendMessage(message) {
-    // console.log(message);
 
     admin.messaging().send(message)
       .then((response) => {

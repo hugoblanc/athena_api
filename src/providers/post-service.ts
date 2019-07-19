@@ -5,6 +5,7 @@ import { map, tap } from 'rxjs/operators';
 import { IcreateNotifService } from 'src/core/icreate-notif-service.interface';
 import { NotificationService } from './notification-service';
 import { Post } from '../models/post';
+import { MediaService } from './media/media.service';
 
 /**
  * *~~~~~~~~~~~~~~~~~~~
@@ -46,6 +47,7 @@ export class PostService implements IcreateNotifService<Post> {
     // Gestion de la création && envoi de notif
     if (newPost != null && newPost.length > 0) {
       const message = this.createNotif(newPost[0], key);
+      console.log(message);
       this.notificationService.sendMessage(message);
     }
 
@@ -59,18 +61,20 @@ export class PostService implements IcreateNotifService<Post> {
    */
   createNotif(object: Post, key: string): any {
 
+    const metaMedia = MediaService.MEDIAS.find((meta) => (meta.key === key));
+
     const message = {
       notification: {
-        title: 'Nouvel article par MrMondialiation',
+        title: 'Nouvel article par ' + metaMedia.title,
         body: object.getTitle(),
       },
       data: {
-        title:  'Nouvel article par MrMondialiation',
+        title: 'Nouvel article par ' + metaMedia.title,
         body: object.getTitle(),
         key,
         id: object.id.toString(),
       },
-      topic: 'all',
+      topic: 'all1',
     };
 
     return message;

@@ -21,7 +21,7 @@ export class CronService extends NestDistributedSchedule {
     };
   }
 
-  @Cron('1 */30 * * * *')
+  @Cron('1 */20 * * * *')
   async cronJob() {
     this.prepareRequestMediaWebsite();
   }
@@ -38,7 +38,7 @@ export class CronService extends NestDistributedSchedule {
     const total1$ = concat(...articlesFromWebsites$);
     total1$.subscribe((data) => {
       for (const d of data) {
-        console.log(d.title.rendered);
+        console.log('---------Title' + d.title.rendered);
       }
     });
   }
