@@ -74,7 +74,7 @@ export class PostService implements IcreateNotifService<Post> {
         key,
         id: object.id.toString(),
       },
-      topic: 'all1',
+      topic: key,
     };
 
     return message;
