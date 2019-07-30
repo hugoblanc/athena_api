@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Cron, NestDistributedSchedule } from 'nest-schedule';
 import { PostService } from './post-service';
-import { Observable, concat } from 'rxjs';
+import { concat } from 'rxjs';
 import { MediaService } from './media/media.service';
 import { delay } from 'rxjs/operators';
 

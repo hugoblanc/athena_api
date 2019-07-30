@@ -6,6 +6,7 @@ import { IcreateNotifService } from 'src/core/icreate-notif-service.interface';
 import { NotificationService } from './notification-service';
 import { Post } from '../models/post';
 import { MediaService } from './media/media.service';
+import { XmlEntities } from 'html-entities';
 
 /**
  * *~~~~~~~~~~~~~~~~~~~
@@ -47,7 +48,6 @@ export class PostService implements IcreateNotifService<Post> {
     // Gestion de la création && envoi de notif
     if (newPost != null && newPost.length > 0) {
       const message = this.createNotif(newPost[0], key);
-      console.log(message);
       this.notificationService.sendMessage(message);
     }
 
@@ -62,6 +62,10 @@ export class PostService implements IcreateNotifService<Post> {
   createNotif(object: Post, key: string): any {
 
     const metaMedia = MediaService.MEDIAS.find((meta) => (meta.key === key));
+
+    const entities = new XmlEntities();
+    object.title.rendered = entities.decode(object.getTitle());
+    object.title.rendered = object.title.rendered.replace('&rsquo;', '\'');
 
     const message = {
       notification: {
