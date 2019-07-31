@@ -9,6 +9,8 @@ import { NotificationService } from './providers/notification-service';
 import { MediaController } from './controllers/media/media.controller';
 import { MediaService } from './providers/media/media.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MetaMediaModule } from './meta-media/meta-media.module';
+import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
 
 @Module({
     imports: [
@@ -24,6 +26,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
             synchronize: true,
         }),
+        MetaMediaModule,
+        ListMetaMediaModule,
     ],
     controllers: [AppController, MediaController],
     providers: [AppService, CronService, ExternalService, PostService, NotificationService, MediaService],
