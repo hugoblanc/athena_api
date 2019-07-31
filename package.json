@@ -1,9 +1,9 @@
 {
     "name": "athena-api",
     "version": "0.0.1",
-    "description": "",
+    "description": "Api open source de l'application Athena",
     "author": "",
-    "license": "MIT",
+    "license": "LGPL-3.0",
     "scripts": {
         "build": "tsc -p tsconfig.build.json",
         "format": "prettier --write \"src/**/*.ts\"",
