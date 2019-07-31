@@ -3,15 +3,15 @@
 ![Logo athena](http://athena-api.caprover.athena-app.fr/menu.jpg "Logo Title Text 1")
 
 ## Description
-L'api athena à été réalisé avec NestJS
+L'api athena a été réalisé avec NestJS
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 Elle est en charge:
 - de l'envoi des notifications
 - de l'envoi des données structurante à l'application mobile (MetaMedia)
-- de l'affichage de certaines page légale (privacy policy, page de présentation, assistance)
+- de l'affichage de certaines pages légales (privacy policy, page de présentation, assistance)
 
-Elle a pour vocation à fournir des fonctionnalités d'intéraction
+Elle a pour vocation à fournir des fonctionnalités d'interaction
 - Poste d'idées
 - Votes
 - ...
@@ -41,10 +41,10 @@ $ npm install
 # démarrage
 $ npm run start
 
-# actualisation à chaque modification de fichie
+# actualisation à chaque modification de fichiers
 $ npm run start:dev
 
-# actualisation à chaque modification de fichie + debug activé
+# actualisation à chaque modification de fichiers + debug activé
 # Pour debugger dans visual studio code => activer Auto attach: ON  CTRL + SHIFT + P: "auto attach"
 $ npm run start:debug
 
@@ -68,8 +68,8 @@ $ npm run test:cov
 
 ## Support
 
-Athena est un projet open source qui à pour objectif de permettre à chacun de s'impliquer dans le projet.
-Si vous juger qu'il manque des fonctionnalités vous pouvez proposer une pull request que j'ajouterai au projet
+Athena est un projet open source qui a pour objectif de permettre à chacun de s'impliquer dans le projet.
+Si vous jugez qu'il manque des fonctionnalités vous pouvez proposer une pull request que j'ajouterai au projet
 
 ## Stay in touch
 
