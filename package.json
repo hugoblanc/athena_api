@@ -29,6 +29,7 @@
         "html-entities": "^1.2.1",
         "mysql": "^2.17.1",
         "nest-schedule": "^0.6.0",
+        "pubsubhubbub": "^1.0.1",
         "reflect-metadata": "^0.1.12",
         "rimraf": "^2.6.2",
         "rxjs": "^6.3.3",
