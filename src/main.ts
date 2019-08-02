@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import * as express from 'express';
 import * as admin from 'firebase-admin';
 import { join } from 'path';
+import { PubSub } from './pubsubhub/pubsub';
 
 async function bootstrap() {
   // Initialisation de l'applicaiton Nest
@@ -24,6 +25,8 @@ async function bootstrap() {
     } as admin.ServiceAccount),
     databaseURL: 'https://open-athena.firebaseio.com',
   });
+
+  PubSub.init();
 
   // On termine l'init
   displayMessage();
