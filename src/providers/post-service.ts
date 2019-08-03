@@ -67,6 +67,11 @@ export class PostService implements IcreateNotifService<Post> {
     object.title.rendered = entities.decode(object.getTitle());
     object.title.rendered = object.title.rendered.replace('&rsquo;', '\'');
 
+    let condition = `'${metaMedia.key}' in topics `;
+    for (const id of object.categories) {
+      condition += ` && !('${metaMedia.key}-${id} in topics')`;
+    }
+
     const message = {
       notification: {
         title: 'Nouvel article par ' + metaMedia.title,
@@ -78,7 +83,7 @@ export class PostService implements IcreateNotifService<Post> {
         key,
         id: object.id.toString(),
       },
-      topic: key,
+      condition,
     };
 
     return message;
