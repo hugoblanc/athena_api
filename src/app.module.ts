@@ -11,6 +11,8 @@ import { MediaService } from './providers/media/media.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MetaMediaModule } from './meta-media/meta-media.module';
 import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
+import { GithubService } from './github/github.service';
+import { GithubController } from './github/github.controller';
 
 @Module({
     imports: [
@@ -29,7 +31,7 @@ import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
         MetaMediaModule,
         ListMetaMediaModule,
     ],
-    controllers: [AppController, MediaController],
-    providers: [AppService, CronService, ExternalService, PostService, NotificationService, MediaService],
+    controllers: [AppController, MediaController, GithubController],
+    providers: [AppService, CronService, ExternalService, PostService, NotificationService, MediaService, GithubService],
 })
 export class AppModule { }
