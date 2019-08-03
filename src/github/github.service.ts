@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ExternalService } from '../providers/external-service';
+import { Issue } from './issue';
 
 @Injectable()
 export class GithubService {
@@ -10,9 +11,13 @@ export class GithubService {
 
   constructor(private http: ExternalService) { }
 
-  postIssue(issue: any) {
+  postIssue(issue: Issue) {
+    const config = {
+      headers: { Authorization: 'Token ' + process.env.ATHENA_GITHUB_TOKEN},
+    };
+
     // Rajouter le token
-    return this.http.post(GithubService.BASE_URL + GithubService.ATHENA + GithubService.ISSUE , issue);
+    return this.http.post(GithubService.BASE_URL + GithubService.ATHENA + GithubService.ISSUE, issue, config);
   }
 
 }

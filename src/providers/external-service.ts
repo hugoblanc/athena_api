@@ -1,6 +1,7 @@
 import { Injectable, HttpService } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { AxiosRequestConfig } from 'axios';
 
 @Injectable()
 export class ExternalService {
@@ -13,7 +14,7 @@ export class ExternalService {
               .pipe(map((data) => data.data));
   }
 
-  post(url: string, body: any): Observable<any> {
+  post(url: string, body: any, config?: AxiosRequestConfig): Observable<any> {
     return this.httpService.post(url, body)
                 .pipe(map((data) => data.data));
   }
