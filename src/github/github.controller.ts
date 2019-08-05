@@ -9,7 +9,7 @@ export class GithubController {
 
   }
 
-  @Post()
+  @Post('issues')
   postIssue(issue: Issue) {
     this.githubService.postIssue(issue);
   }
