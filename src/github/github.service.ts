@@ -5,7 +5,7 @@ import { Issue } from './issue';
 @Injectable()
 export class GithubService {
 
-  private static BASE_URL = 'https://api.github.com/repos/hugoblanc/Athena/';
+  private static BASE_URL = 'https://api.github.com/repos/';
   private static ATHENA = 'hugoblanc/Athena/';
   private static ISSUE = 'issues';
 

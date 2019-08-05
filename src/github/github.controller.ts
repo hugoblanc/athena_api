@@ -1,6 +1,7 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { GithubService } from './github.service';
 import { Issue } from './issue';
+import { Observable } from 'rxjs';
 
 @Controller('github')
 export class GithubController {
@@ -10,8 +11,7 @@ export class GithubController {
   }
 
   @Post('issues')
-  postIssue(issue: Issue) {
-    this.githubService.postIssue(issue);
+  postIssue(@Body()issue: Issue): Observable<Issue> {
+    return this.githubService.postIssue(issue);
   }
-
 }
