@@ -1,11 +1,9 @@
-import { Controller, Get, Param, Render, Res } from '@nestjs/common';
-import { AppService } from './app.service';
-import { CronService } from './providers/cron-service';
+import { Controller, Get, Res } from '@nestjs/common';
 import { join } from 'path';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService, private cronService: CronService) { }
+  constructor() { }
 
   @Get('/')
   index(@Res() res) {

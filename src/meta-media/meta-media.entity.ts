@@ -9,9 +9,8 @@ export class MetaMedia {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 30 })
+  @Column({ length: 30, unique: true, })
   key: string;
-
   @Column({ length: 45 })
   url: string;
 

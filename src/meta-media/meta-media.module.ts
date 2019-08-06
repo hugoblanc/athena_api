@@ -8,5 +8,6 @@ import { MetaMediaController } from './meta-media.controller';
   imports: [TypeOrmModule.forFeature([MetaMedia])],
   providers: [MetaMediaService],
   controllers: [MetaMediaController],
+  exports: [MetaMediaService],
 })
 export class MetaMediaModule { }

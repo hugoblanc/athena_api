@@ -7,8 +7,14 @@ export class Content {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ length: 30 })
+  contentId: string;
+
   @Column({ length: 200 })
   title: string;
+
+  @Column({ type: 'text' })
+  description: string;
 
   @Column({ length: 200})
   image: string;

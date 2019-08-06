@@ -13,4 +13,8 @@ export class MetaMediaService {
   findAll(): Promise<MetaMedia[]> {
     return this.repository.find();
   }
+
+  findByKey(key: string): Promise<MetaMedia> {
+    return this.repository.findOne({where : {key}});
+  }
 }
