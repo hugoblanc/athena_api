@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
 import { MetaMediaType } from './meta-media-type.enum';
 import { ListMetaMedia } from '../list-meta-media/list-meta-media.entity';
+import { Content } from '../content/content.entity';
 
 @Entity()
 export class MetaMedia {
@@ -28,5 +29,10 @@ export class MetaMedia {
 
   @ManyToOne(type => ListMetaMedia, listMetaMedia => listMetaMedia.metaMedias)
   listMetaMedia: ListMetaMedia;
+
+  @OneToMany(type => Content, content => content.metaMedia, {
+    eager: true,
+  })
+  contents: Content[];
 
 }
