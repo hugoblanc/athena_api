@@ -18,6 +18,9 @@ import { MetaMediaModule } from './meta-media/meta-media.module';
             database: 'athena',
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
             synchronize: true,
+            extra: {
+              charset: 'utf8mb4_general_ci',
+          },
         }),
         ListMetaMediaModule,
         MetaMediaModule,

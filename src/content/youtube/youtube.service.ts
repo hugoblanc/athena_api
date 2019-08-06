@@ -5,6 +5,7 @@ import { Observable, empty } from 'rxjs';
 import { Content } from '../content.entity';
 import { expand, concatMap, map } from 'rxjs/operators';
 import { MetaMedia } from '../../meta-media/meta-media.entity';
+import { Image } from '../image.entity';
 
 @Injectable()
 export class YoutubeService {
@@ -19,10 +20,13 @@ export class YoutubeService {
     if (pageId !== '') {
       pageId = '&pageToken=' + pageId;
     }
-    return this.http.get(YoutubeService.BASE_URL + targetId + pageId + YoutubeService.KEY + process.env.ATHENA_YOUTUBE_KEY);
+    return this.http.get(YoutubeService.BASE_URL + targetId + pageId + YoutubeService.KEY + process.env.ATHENA_YOUTUBE_KEY)
+      .pipe(map((data) => {
+        return data;
+      }));
   }
 
-  getAllContentForTargetId(metaMedia: MetaMedia): void {
+  getAllContentForTargetId(metaMedia: MetaMedia) {
 
     const content$ = this.getItems(metaMedia.url).pipe(
       expand((playlistItems: PlaylistItemDto) => {
@@ -38,18 +42,27 @@ export class YoutubeService {
       }),
     );
 
-    content$.subscribe((content) => {
-      console.log(content);
-    });
+    return content$;
   }
 
   createContentFromItem(metaMedia: MetaMedia, item: Item): Content {
+    if (item == null) {
+      throw new Error('L\'item de la playlist youtube est incorrect ');
+    }
+
+    const image: Image = {
+      id: null,
+      url: item.snippet.thumbnails.medium.url,
+      width: item.snippet.thumbnails.medium.width,
+      height: item.snippet.thumbnails.medium.height,
+    };
+
     const content: Content = {
       id: null,
       contentId: item.snippet.resourceId.videoId,
       title: item.snippet.title,
       description: item.snippet.description,
-      image: item.snippet.thumbnails.medium.url,
+      // image,
       date: new Date(item.snippet.publishedAt),
       metaMedia,
     };

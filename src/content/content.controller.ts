@@ -8,6 +8,8 @@ export class ContentController {
 
   @Get('init/:mediaKey')
   initializeMedia(@Param('mediaKey') mediaKey: string) {
-    this.contentService.initMediaContent(mediaKey);
+    this.contentService.initMediaContent(mediaKey).subscribe((data) => {
+      console.log(data);
+    });
   }
 }
