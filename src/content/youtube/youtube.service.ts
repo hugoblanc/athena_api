@@ -62,8 +62,8 @@ export class YoutubeService {
       contentId: item.snippet.resourceId.videoId,
       title: item.snippet.title,
       description: item.snippet.description,
-      // image,
       date: new Date(item.snippet.publishedAt),
+      image,
       metaMedia,
     };
     return content;

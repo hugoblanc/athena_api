@@ -41,7 +41,7 @@ export class ContentService {
   * @param key la clé du metamedia cible
    */
   findByMediaKey(key: string): Promise<Content[]> {
-    return this.contentRepository.find({ where: { metaMedia: { key } }, order: { date: 'ASC' }, relations: ['image'] });
+    return this.contentRepository.find({ where: { metaMedia: { key } }, order: { date: 'ASC' }});
   }
 
 }

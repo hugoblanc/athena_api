@@ -1,5 +1,6 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { MetaMedia } from '../meta-media/meta-media.entity';
+import { Image } from './image.entity';
 
 @Entity()
 export class Content {
@@ -7,7 +8,7 @@ export class Content {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 30 })
+  @Column({ length: 30, unique: true })
   contentId: string;
 
   @Column({ length: 200 })
@@ -19,7 +20,11 @@ export class Content {
   @Column({type: 'timestamp'})
   date: Date;
 
-  @ManyToOne(type => MetaMedia, metaMedia => metaMedia.contents)
+  @ManyToOne(type => MetaMedia, metaMedia => metaMedia.contents, {eager: true})
   metaMedia: MetaMedia;
+
+  @OneToOne(type => Image, {cascade: true, nullable: true, eager: true})
+  @JoinColumn()
+  image: Image;
 
 }

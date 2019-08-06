@@ -9,8 +9,9 @@ export class MetaMedia {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 30, unique: true, })
+  @Column({ length: 30, unique: true })
   key: string;
+
   @Column({ length: 45 })
   url: string;
 
@@ -29,9 +30,7 @@ export class MetaMedia {
   @ManyToOne(type => ListMetaMedia, listMetaMedia => listMetaMedia.metaMedias)
   listMetaMedia: ListMetaMedia;
 
-  @OneToMany(type => Content, content => content.metaMedia, {
-    eager: true,
-  })
+  @OneToMany(type => Content, content => content.metaMedia)
   contents: Content[];
 
 }

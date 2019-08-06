@@ -21,6 +21,7 @@ import { MetaMediaModule } from './meta-media/meta-media.module';
             extra: {
               charset: 'utf8mb4_general_ci',
           },
+          logging: true,
         }),
         ListMetaMediaModule,
         MetaMediaModule,
