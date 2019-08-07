@@ -3,6 +3,8 @@ import * as express from 'express';
 import * as admin from 'firebase-admin';
 import { join } from 'path';
 import { AppModule } from './app.module';
+import { ConfigurationModule } from './core/configuration/configuration.module';
+import { ConfigurationService } from './core/configuration/configuration.service';
 
 async function bootstrap() {
   // Initialisation de l'applicaiton Nest
@@ -28,10 +30,14 @@ async function bootstrap() {
   // On termine l'init
   displayMessage();
 
+  const configService = app.select(ConfigurationModule).get(ConfigurationService, { strict: true });
+  configService.init();
+
 }
 bootstrap();
 
 function displayMessage() {
+  // tslint:disable-next-line: no-console
   console.log(`
 
        ((((((######.

@@ -6,7 +6,7 @@ import { PubsubhubService } from './pubsubhub/pubsubhub.service';
 export class ConfigurationService implements IConfigurationService {
 
   constructor(private pubsubhubService: PubsubhubService) {
-    this.init();
+
   }
 
   init() {

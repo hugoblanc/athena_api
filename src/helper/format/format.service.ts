@@ -1,13 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { XmlEntities } from 'html-entities';
 import { parseString } from 'xml2js';
-import { bindNodeCallback } from 'rxjs';
+import { bindNodeCallback, Observable } from 'rxjs';
 
 @Injectable()
 export class FormatService {
-
-  constructor() {
-  }
 
   /**
    * Cette methode se charge de tranformé mes carachètre speciaux encodé d'html en texte lisible
@@ -27,16 +24,10 @@ export class FormatService {
     return htmlDecoded;
   }
 
-  static decodeXML(xmlString: string): any {
+  static decodeXML(xmlString: string): Observable<any> {
     const parseXML$ = bindNodeCallback(parseString);
-    console.log('GOOOOOOOOOOOOOOO decode');
 
-    parseXML$(xmlString).subscribe((data: any) => {
-      console.log(data);
-      console.log(JSON.stringify(data));
-    }, (error) => {
-      console.error(error);
-    });
+    return parseXML$(xmlString);
   }
 
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { from, concat } from 'rxjs';
 
@@ -11,6 +11,8 @@ import { from, concat } from 'rxjs';
  */
 @Injectable()
 export class NotificationService {
+
+  private readonly logger = new Logger(NotificationService.name);
   /**
    * Cette methode se charge d'envoyer une liste de message
    * @param messages la liste de message a envoyer
@@ -29,9 +31,9 @@ export class NotificationService {
 
     // On ne peut pas envoyer tout les message car sinon on dupplique les notificaiton ... dommage
     from(admin.messaging().send(messages[0])).subscribe((resultSend) => {
-      console.log('Successfully sent message:', resultSend);
+      this.logger.log('Successfully sent message:', resultSend);
     }, (error) => {
-      console.log('Error sending message:', error);
+      this.logger.error('Error sending message:', error);
     });
   }
 

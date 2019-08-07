@@ -38,6 +38,7 @@ export class PubSub {
     // Création de l'observable qui se déclenchera a chaque notification
     const youtubeFeed$ = this.observeFeed(pubSubSubscriber);
     // Démarrage du serveur sur le port indiqué
+    this.logger.log('start linsting');
     pubSubSubscriber.listen(3001);
     // On renvoi l'observable qui nous avertira des changement effetuer
     return youtubeFeed$;
@@ -50,7 +51,7 @@ export class PubSub {
   }
 
   private setupSubscribeListener(pubSubSubscriber: any) {
-    this.logger.log('Pubsub - listener - subscribe OK');
+    this.logger.log('Pubsub - listener - subscribe');
     pubSubSubscriber.on('subscribe', (data) => {
       this.logger.log(data.topic + ' subscribed');
     });
