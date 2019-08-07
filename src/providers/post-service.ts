@@ -47,8 +47,8 @@ export class PostService implements IcreateNotifService<Post> {
     const newPost = posts.filter((post) => !this.isPostInPosts(post, key));
     // Gestion de la création && envoi de notif
     if (newPost != null && newPost.length > 0) {
-      const message = this.createNotif(newPost[0], key);
-      this.notificationService.sendMessage(message);
+      const messages = this.createNotif(newPost[0], key);
+      this.notificationService.sendMessage(messages);
     }
 
     // On met a jour les infoirmations local
@@ -60,33 +60,25 @@ export class PostService implements IcreateNotifService<Post> {
    * @param object le post a convertir en notification
    */
   createNotif(object: Post, key: string): any {
-
+    // On récupère le bon metaMedia en fonction de la clé présent
     const metaMedia = MediaService.MEDIAS.find((meta) => (meta.key === key));
-
+    // On converties les titre l'article en format text classique plutot que HTML
     const entities = new XmlEntities();
     object.title.rendered = entities.decode(object.getTitle());
+    // Pour une raison qui m'échappe l'apostrophe ne fonctionne toujours pas
     object.title.rendered = object.title.rendered.replace('&rsquo;', '\'');
 
-    let condition = `'${metaMedia.key}' in topics `;
-    for (const id of object.categories) {
-      condition += ` && !('${metaMedia.key}-${id} in topics')`;
-    }
+    const conditions = this.notificationService.createConditionFromKeyAndCategories(metaMedia.key, object.categories);
 
-    const message = {
-      notification: {
-        title: 'Nouvel article par ' + metaMedia.title,
-        body: object.getTitle(),
-      },
-      data: {
-        title: 'Nouvel article par ' + metaMedia.title,
-        body: object.getTitle(),
-        key,
-        id: object.id.toString(),
-      },
-      condition,
-    };
+    const messages = this.notificationService.createMessage(
+      'Nouvel article par ' + metaMedia.title,
+      object.getTitle(),
+      key,
+      object.id.toString(),
+      conditions,
+    );
 
-    return message;
+    return messages;
   }
 
   /**
