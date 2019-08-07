@@ -11,27 +11,40 @@ import { from, concat } from 'rxjs';
  */
 @Injectable()
 export class NotificationService {
-
+  /**
+   * Cette methode se charge d'envoyer une liste de message
+   * @param messages la liste de message a envoyer
+   */
   sendMessage(messages: any[]) {
-    // On vérifie qu'il y a bien des notificaiotn a envoyer
-    if (messages != null && Array.isArray(messages) && messages.length > 0) {
+
+    if (messages == null || !Array.isArray(messages) || messages.length === 0) {
       return;
     }
 
     // On creai tun tableau d'observable
-    const notif$ = [];
-    for (const message of messages) {
-      notif$.push(from(admin.messaging().send(message)));
-    }
+    // const notif$ = [];
+    // for (const message of messages) {
+    //   notif$.push();
+    // }
 
-    // On concat les obseravble et on execute l'ensemble des requete
-    concat(...notif$).subscribe((resultSend) => {
+    // On ne peut pas envoyer tout les message car sinon on dupplique les notificaiton ... dommage
+    from(admin.messaging().send(messages[0])).subscribe((resultSend) => {
       console.log('Successfully sent message:', resultSend);
     }, (error) => {
       console.log('Error sending message:', error);
     });
   }
 
+  /**
+   * Cette methode se charge de créer la liste de message associé au donées et conditions
+   * @param title Le titre de la notification
+   * @param body le body de la notification
+   * @param key la clé du metaMedia ciblé par la notification elle est utilisé pour afficher le bon contenu dans l'app
+   * @param id l'id de la ressources en question, elle est utilisé pour afficher le bon contenu dans l'app
+   * @param conditions un tableau de string qui permet d'indiquer quel categorie sont dans larticle
+   * Malheureusement nous n'avons droit qu'a 5 topic par condition de notif, on choisi donc d'enoyer plusieur notif quand il
+   * y a plus de 5 critères
+   */
   createMessage(title: string, body: string, key: string, id: string, conditions: string[]) {
     const messages = [];
     for (const condition of conditions) {
@@ -70,25 +83,24 @@ export class NotificationService {
     // On va itéré sur chaque id de categorie
     for (let i = 0; i < categories.length; i++) {
       const id = categories[i];
-
       // On concatène l'anti catégorie
       // => Si il y a ce topic ça signifie que l'utilisateur s'est expressement désabonné
       // Si le topic n'est pas présent ça signifie qu'il est toujours abonnée (abonné par defaut)
       condition += ` && !('${key}-${id}' in topics)`;
       // Si on est en modulo 4 on commence une nouvelle condition (5 topic max par condition)
-      if ((i + 1 % 4) === 0) {
+      if (((i + 1) % 4) === 0) {
         // Alors on pousse la condition actuelle dans le tableau
         conditions.push(condition);
         // et on en commence une nouvelle
         condition = this.createInitialTopic(key);
       }
     }
+
     // A la fin on est pas sur de s'être arrété sur un mutliple de 4
     // Donc si on vient pas de reinit on insère dans le tableau
     if (condition !== this.createInitialTopic(key)) {
       conditions.push(condition);
     }
-
     return conditions;
   }
 
