@@ -1,4 +1,4 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { HttpModule, Module, Logger } from '@nestjs/common';
 import { ScheduleModule } from 'nest-schedule';
 import { CronService } from '../providers/cron-service';
 import { ExternalService } from '../providers/external-service';

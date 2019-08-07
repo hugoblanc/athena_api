@@ -5,7 +5,8 @@ import { AxiosRequestConfig } from 'axios';
 
 @Injectable()
 export class ExternalService {
-  constructor(private httpService: HttpService, private logger: Logger) {
+  private readonly logger = new Logger('External Service');
+  constructor(private httpService: HttpService) {
 
   }
 
