@@ -23,7 +23,7 @@ export class ContentService {
   }
 
   findAll(): Promise<Content[]> {
-    return this.contentRepository.find({ relations: ['image'] });
+    return this.contentRepository.find();
   }
 
   initMediaContent(mediaKey: string) {
@@ -35,13 +35,18 @@ export class ContentService {
 
     return metaMedia$;
   }
+
   /**
    * Cette methode renvoi une liste de content pour un meta meia cible
    *
-  * @param key la clé du metamedia cible
+   * @param key la clé du metamedia cible
    */
-  findByMediaKey(key: string): Promise<Content[]> {
-    return this.contentRepository.find({ where: { metaMedia: { key } }, order: { date: 'ASC' }});
+  async findByMediaKey(key: string): Promise<Content[]> {
+    const metaMedia = await this.metaMediaService.findByKey(key);
+    if (metaMedia == null) {
+      throw new Error('La clé ne correspond pas ');
+    }
+    return this.contentRepository.find({ where: { metaMedia }, order: { date: 'ASC' }});
   }
 
 }
