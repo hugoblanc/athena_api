@@ -1,9 +1,8 @@
-import { NestFactory, NestApplication } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { NestApplication, NestFactory } from '@nestjs/core';
 import * as express from 'express';
 import * as admin from 'firebase-admin';
 import { join } from 'path';
-import { PubSub } from './pubsubhub/pubsub';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   // Initialisation de l'applicaiton Nest
@@ -25,8 +24,6 @@ async function bootstrap() {
     } as admin.ServiceAccount),
     databaseURL: 'https://open-athena.firebaseio.com',
   });
-
-  PubSub.init();
 
   // On termine l'init
   displayMessage();

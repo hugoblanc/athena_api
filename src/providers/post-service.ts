@@ -7,6 +7,7 @@ import { NotificationService } from './notification-service';
 import { Post } from '../models/post';
 import { MediaService } from './media/media.service';
 import { XmlEntities } from 'html-entities';
+import { FormatService } from '../helper/format/format.service';
 
 /**
  * *~~~~~~~~~~~~~~~~~~~
@@ -25,7 +26,10 @@ export class PostService implements IcreateNotifService<Post> {
 
   private oldPosts: any = {};
 
-  constructor(private externalService: ExternalService, private notificationService: NotificationService) { }
+  constructor(private externalService: ExternalService,
+              private notificationService: NotificationService,
+              private formatService: FormatService) {
+  }
 
   /**
    * Cette methode récupère une listede post pour un nom d'hote données

@@ -5,10 +5,11 @@ import { ExternalService } from '../providers/external-service';
 import { MediaService } from '../providers/media/media.service';
 import { NotificationService } from '../providers/notification-service';
 import { PostService } from '../providers/post-service';
+import { FormatService } from './format/format.service';
 
 @Module({
   imports: [ScheduleModule.register(), HttpModule],
-  providers: [CronService, ExternalService, PostService, NotificationService, MediaService],
-  exports: [ExternalService],
+  providers: [CronService, ExternalService, PostService, NotificationService, MediaService, FormatService],
+  exports: [ExternalService, FormatService],
 })
 export class HelperModule { }
