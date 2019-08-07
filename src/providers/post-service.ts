@@ -46,7 +46,7 @@ export class PostService implements IcreateNotifService<Post> {
   private findNewValueAndSendNotif(posts: Post[], key: string): void {
     const newPost = posts.filter((post) => !this.isPostInPosts(post, key));
     // Gestion de la création && envoi de notif
-    if (newPost != null && newPost.length > 0 && newPost.length < 10) {
+    if (newPost != null && newPost.length > 0) {
       const message = this.createNotif(newPost[0], key);
       this.notificationService.sendMessage(message);
     }

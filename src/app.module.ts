@@ -1,21 +1,14 @@
-import { Module, HttpModule } from '@nestjs/common';
-import { ScheduleModule } from 'nest-schedule';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { CronService } from './providers/cron-service';
-import { ExternalService } from './providers/external-service';
-import { PostService } from './providers/post-service';
-import { NotificationService } from './providers/notification-service';
-import { MediaController } from './controllers/media/media.controller';
-import { MediaService } from './providers/media/media.service';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MetaMediaModule } from './meta-media/meta-media.module';
+import { AppController } from './app.controller';
+import { ContentModule } from './content/content.module';
+import { MediaController } from './controllers/media/media.controller';
+import { HelperModule } from './helper/helper.module';
 import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
+import { MetaMediaModule } from './meta-media/meta-media.module';
 
 @Module({
     imports: [
-        ScheduleModule.register(),
-        HttpModule,
         TypeOrmModule.forRoot({
             type: 'mysql',
             host: process.env.ATHENA_DB_HOST,
@@ -25,11 +18,16 @@ import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
             database: 'athena',
             entities: [__dirname + '/**/*.entity{.ts,.js}'],
             synchronize: true,
+            extra: {
+              charset: 'utf8mb4_general_ci',
+          },
+          logging: true,
         }),
-        MetaMediaModule,
         ListMetaMediaModule,
+        MetaMediaModule,
+        ContentModule,
+        HelperModule,
     ],
     controllers: [AppController, MediaController],
-    providers: [AppService, CronService, ExternalService, PostService, NotificationService, MediaService],
 })
 export class AppModule { }
