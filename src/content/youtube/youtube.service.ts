@@ -6,6 +6,7 @@ import { Content } from '../content.entity';
 import { expand, concatMap, map } from 'rxjs/operators';
 import { MetaMedia } from '../../meta-media/meta-media.entity';
 import { Image } from '../image.entity';
+import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
 
 @Injectable()
 export class YoutubeService {
@@ -60,9 +61,10 @@ export class YoutubeService {
     const content: Content = {
       id: null,
       contentId: item.snippet.resourceId.videoId,
+      contentType: MetaMediaType.YOUTUBE,
       title: item.snippet.title,
       description: item.snippet.description,
-      date: new Date(item.snippet.publishedAt),
+      publishedAt: new Date(item.snippet.publishedAt),
       image,
       metaMedia,
     };
