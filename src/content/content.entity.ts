@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { Image } from './image.entity';
+import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 
 @Entity()
 export class Content {
@@ -14,11 +15,14 @@ export class Content {
   @Column({ length: 200 })
   title: string;
 
+  @Column('enum', { enum: MetaMediaType })
+  contentType: MetaMediaType;
+
   @Column({ type: 'text' })
   description: string;
 
   @Column({type: 'timestamp'})
-  date: Date;
+  publishedAt: Date;
 
   @ManyToOne(type => MetaMedia, metaMedia => metaMedia.contents, {eager: true})
   metaMedia: MetaMedia;
