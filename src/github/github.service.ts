@@ -4,12 +4,12 @@ import { Issue } from './issue';
 
 @Injectable()
 export class GithubService {
-
+  private readonly logger = new Logger('Content Service');
   private static BASE_URL = 'https://api.github.com/repos/';
   private static ATHENA = 'hugoblanc/Athena/';
   private static ISSUE = 'issues';
 
-  constructor(private http: ExternalService, private logger: Logger) { }
+  constructor(private http: ExternalService) { }
 
   postIssue(issue: Issue) {
 

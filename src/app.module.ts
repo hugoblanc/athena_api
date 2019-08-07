@@ -6,6 +6,7 @@ import { MediaController } from './controllers/media/media.controller';
 import { HelperModule } from './helper/helper.module';
 import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
 import { MetaMediaModule } from './meta-media/meta-media.module';
+import { GithubModule } from './github/github.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { MetaMediaModule } from './meta-media/meta-media.module';
         MetaMediaModule,
         ContentModule,
         HelperModule,
+        GithubModule,
     ],
     controllers: [AppController, MediaController],
 })
