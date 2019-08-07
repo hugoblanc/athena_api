@@ -46,7 +46,7 @@ export class ContentService {
     if (metaMedia == null) {
       throw new Error('La clé ne correspond pas ');
     }
-    return this.contentRepository.find({ where: { metaMedia }, order: { date: 'ASC' }});
+    return this.contentRepository.find({ where: { metaMedia }, order: { publishedAt: 'ASC' }});
   }
 
 }
