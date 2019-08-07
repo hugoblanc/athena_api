@@ -1,20 +1,26 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Logger } from '@nestjs/common';
 import { ContentService } from './content.service';
 
 @Controller('content')
 export class ContentController {
-
+  private readonly logger = new Logger('Content Controller');
   constructor(private contentService: ContentService) { }
 
-  @Get('/:mediaKey')
+  @Get('/:id')
+  getById(@Param('id') id: number) {
+    return this.contentService.findById(id);
+  }
+
+  @Get('/mediakey/:mediaKey')
   getAllByMediaKey(@Param('mediaKey') mediaKey: string) {
     return this.contentService.findByMediaKey(mediaKey);
   }
 
   @Get('init/:mediaKey')
   initializeMedia(@Param('mediaKey') mediaKey: string) {
+    this.logger.log('Initialisation du media : ' + mediaKey);
     this.contentService.initMediaContent(mediaKey).subscribe((data) => {
-      console.log(data);
+
     });
   }
 }

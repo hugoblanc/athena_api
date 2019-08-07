@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { from } from 'rxjs';
 import { flatMap } from 'rxjs/operators';
@@ -10,6 +10,7 @@ import { YoutubeService } from './youtube/youtube.service';
 
 @Injectable()
 export class ContentService {
+  private readonly logger = new Logger('Content Service');
   constructor(
     @InjectRepository(Content)
     private readonly contentRepository: Repository<Content>,
@@ -18,7 +19,7 @@ export class ContentService {
   ) { }
 
   save(content: Content): Promise<Content> {
-    console.log(content);
+    this.logger.log('Save Content ');
     return this.contentRepository.save(content);
   }
 
@@ -26,6 +27,17 @@ export class ContentService {
     return this.contentRepository.find();
   }
 
+  findById(id: number): Promise<Content> {
+    this.logger.log('Find content by id: ' + id);
+    return this.contentRepository.findOne({ where: { id } });
+  }
+
+  /**
+   * Cette methode permet d'initialiser le contenu d'un media youtube
+   * En mettant l'id de la playlist dans le champ 'url' du metamedia et en appelant
+   * cette route (initMediaCOntent) l'api se charge d'intégrer l'ensemble des videos du média en question
+   * @param mediaKey le media cible a initialiser
+   */
   initMediaContent(mediaKey: string) {
     const metaMedia$ = from(this.metaMediaService.findByKey(mediaKey)).pipe(
       // filter((metaMedia: MetaMedia) => (metaMedia != null)),
@@ -46,7 +58,7 @@ export class ContentService {
     if (metaMedia == null) {
       throw new Error('La clé ne correspond pas ');
     }
-    return this.contentRepository.find({ where: { metaMedia }, order: { publishedAt: 'ASC' }});
+    return this.contentRepository.find({ where: { metaMedia }, order: { publishedAt: 'ASC' } });
   }
 
 }
