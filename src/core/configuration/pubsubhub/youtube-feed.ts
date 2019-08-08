@@ -1,5 +1,20 @@
-export interface IYoutubeFeed {
+
+export class YoutubeFeed {
+  id: string;
+  metaMediaId: string;
   feed: Feed;
+
+  constructor(input?: YoutubeFeed) {
+   if (input != null) {
+     Object.assign(this, input);
+     try {
+       this.id = this.feed.entry[0]['yt:videoId'][0];
+       this.metaMediaId = this.feed.entry[0]['yt:channelId'][0];
+     } catch (error) {
+      console.error(error);
+     }
+   }
+  }
 }
 
 export interface Feed {

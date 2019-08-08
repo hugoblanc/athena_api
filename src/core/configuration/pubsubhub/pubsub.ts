@@ -1,7 +1,7 @@
 import pubSubHubbub = require('pubsubhubbub');
 import { Logger } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { IYoutubeFeed } from './Iyoutube-feed';
+import { YoutubeFeed } from './youtube-feed';
 /**
  * Cette classe est un serveru  qui suis le protocol pubsubhubhub indiqué par google pour s'abonner au notif youtube
  * Elle nous permet d'être avertis quand l'une des video de la chaine que l'on suis subit des modification
@@ -20,11 +20,8 @@ export class PubSub {
 
   // Les url cibles de notre abonnement
   private static URLS = [
-    'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCdnaDhU-LDQrIEEmSIfq0-Q',
-    'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCGBpxWJr9FNOcFYA5GkKrMg',
     'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCVeMw72tepFl1Zt5fvf9QKQ',
   ];
-
   /**
    * La methode qui permet d'initialiser notre serveur de feed atom
    */

@@ -10,9 +10,9 @@ export class ExternalService {
 
   }
 
-  get(url): Observable<any> {
+  get(url: string, config?: AxiosRequestConfig): Observable<any> {
     this.logger.log('GET  : ' + url);
-    return this.httpService.get(url)
+    return this.httpService.get(url, config)
       .pipe(map((data) => data.data));
   }
 

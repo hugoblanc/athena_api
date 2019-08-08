@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { from } from 'rxjs';
-import { flatMap } from 'rxjs/operators';
+import { from, empty, Observable } from 'rxjs';
+import { flatMap, filter } from 'rxjs/operators';
 import { Repository } from 'typeorm';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { MetaMediaService } from '../meta-media/meta-media.service';
 import { Content } from './content.entity';
 import { YoutubeService } from './youtube/youtube.service';
+import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 
 @Injectable()
 export class ContentService {
@@ -32,6 +33,11 @@ export class ContentService {
     return this.contentRepository.findOne({ where: { id } });
   }
 
+  findByContentID(id: string): Promise<Content> {
+    this.logger.log('Find content by content id: ' + id);
+    return this.contentRepository.findOne({ where: { contentId: id } });
+  }
+
   /**
    * Cette methode permet d'initialiser le contenu d'un media youtube
    * En mettant l'id de la playlist dans le champ 'url' du metamedia et en appelant
@@ -46,6 +52,29 @@ export class ContentService {
     );
 
     return metaMedia$;
+  }
+
+  async dealWithAtomFeed(feed: YoutubeFeed) {
+
+    const metaMedia = await this.metaMediaService.findByKey(feed.metaMediaId);
+    const content = await this.findByContentID(feed.id);
+
+    let dealWithFeed$: Observable<Content>;
+    if (feed instanceof YoutubeFeed) {
+      this.logger.log('Youtube feed detected');
+      dealWithFeed$ = this.youtubeService.dealWithNewFeed(content, metaMedia, feed);
+    } else {
+      dealWithFeed$ = empty();
+    }
+
+    dealWithFeed$ = dealWithFeed$.pipe(
+      filter((data) => data != null),
+      flatMap((currentContent: Content) => this.save(currentContent)),
+    );
+
+    dealWithFeed$.subscribe((content) => {
+      this.logger.log('Content updated id: ' + content.id);
+    });
   }
 
   /**

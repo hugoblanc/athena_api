@@ -12,6 +12,7 @@ import { Image } from './image.entity';
   imports: [TypeOrmModule.forFeature([Image, Content]), MetaMediaModule, HelperModule],
   controllers: [ContentController],
   providers: [ContentService, YoutubeService],
+  exports: [ContentService],
 })
 export class ContentModule {}
 
