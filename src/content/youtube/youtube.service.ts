@@ -1,14 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ExternalService } from '../../providers/external-service';
-import { PlaylistItemDto, Item } from '../dto/playlist-item.dto';
-import { Observable, empty } from 'rxjs';
-import { Content } from '../content.entity';
-import { expand, concatMap, map } from 'rxjs/operators';
-import { MetaMedia } from '../../meta-media/meta-media.entity';
-import { Image } from '../image.entity';
+import { empty, Observable } from 'rxjs';
+import { concatMap, expand, map } from 'rxjs/operators';
+import { YoutubeFeed } from '../../core/configuration/pubsubhub/youtube-feed';
 import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
-import { Entry, YoutubeFeed } from '../../core/configuration/pubsubhub/youtube-feed';
-import { ContentService } from '../content.service';
+import { MetaMedia } from '../../meta-media/meta-media.entity';
+import { ExternalService } from '../../providers/external-service';
+import { Content } from '../content.entity';
+import { Item, PlaylistItemDto } from '../dto/playlist-item.dto';
+import { Image } from '../image.entity';
 
 @Injectable()
 export class YoutubeService {
