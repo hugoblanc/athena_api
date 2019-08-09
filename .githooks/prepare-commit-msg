@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Définition des variable
+enabled=true
+revert=false
+types=( build ci docs feat fix perf refactor style test chore)
+min_length=1
+max_length=52
+INPUT_FILE=$1
+msg=`head -n1 $INPUT_FILE`
+
+
+regexp="^("
+# Gestion du revert
+if $revert; then
+  regexp="${regexp}revert: )?(\w+)("
+fi
+
+# ajout des different type accepté
+for type in "${types[@]}"
+do
+    regexp="${regexp}$type|"
+done
+
+# Possibilité de rajotué le scop (optionel)
+regexp="${regexp})(\(.+\))?: "
+
+# On set le limite haute et basse en nombre de charactere
+regexp="${regexp}.{$min_length,$max_length}$"
+
+# On passe le message de commit au check du regex
+if [[ ! $msg =~ $regexp ]]; then
+  echo -e "[POLICY] le message de commit doit être de la forme 'type(scope): description' \n[POLICY] liste des types possible: build ci docs feat fix perf refactor style test chore \n[POLICY] le scope est optionel \n[POLICY] la description doit faire entre 1 et 52 char "
+  # exit with an error
+  exit 1
+fi
