@@ -2,6 +2,8 @@
 
 ![Logo athena](http://athena-api.caprover.athena-app.fr/menu.jpg "Logo Title Text 1")
 
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+
 ## Description
 L'api athena a été réalisé avec NestJS
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
@@ -30,7 +32,7 @@ Youtube => https://console.cloud.google.com/getting-started (ignorer les essaie 
 
 Firebase => https://console.firebase.google.com
 
-ENsuite dans les url que j'ai copié ici, la section noir sera l'id du projet à remplacer 
+ENsuite dans les url que j'ai copié ici, la section noir sera l'id du projet à remplacer
 
 | Variables     | Type           | Value  | Création |
 | ------------- |:-------------:| -----:| -----:|
