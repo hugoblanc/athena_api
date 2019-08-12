@@ -1,7 +1,5 @@
-import { Controller, Get, Param, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, Param } from '@nestjs/common';
 import { ContentService } from './content.service';
-import { get } from 'https';
-import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 
 @Controller('content')
 export class ContentController {
@@ -13,7 +11,6 @@ export class ContentController {
   //   const youtubeFeed = new YoutubeFeed();
   //   youtubeFeed.id = 'J3bIM17IZaY';
   //   youtubeFeed.metaMediaId = 'UCVeMw72tepFl1Zt5fvf9QKQ';
-  //   youtubeFeed.feed = null;
 
   //   await this.contentService.dealWithAtomFeed(youtubeFeed);
   // }
@@ -26,6 +23,11 @@ export class ContentController {
   @Get('/mediakey/:mediaKey')
   getAllByMediaKey(@Param('mediaKey') mediaKey: string) {
     return this.contentService.findByMediaKey(mediaKey);
+  }
+
+  @Get('/mediakey/:mediaKey/page/:page')
+  getPageByMediaKey(@Param('mediaKey') mediaKey: string, @Param('page') page: string) {
+    return this.contentService.findPageByMediaKey(mediaKey, parseInt(page, 10));
   }
 
   @Get('init/:mediaKey')

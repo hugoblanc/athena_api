@@ -8,10 +8,14 @@ import { MetaMediaService } from '../meta-media/meta-media.service';
 import { Content } from './content.entity';
 import { YoutubeService } from './youtube/youtube.service';
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
+import { Page } from '../core/page';
 
 @Injectable()
 export class ContentService {
-  private readonly logger = new Logger('Content Service');
+
+  private static PAGER_SIZE = 10;
+
+  private readonly logger = new Logger(ContentService.name);
   constructor(
     @InjectRepository(Content)
     private readonly contentRepository: Repository<Content>,
@@ -88,6 +92,40 @@ export class ContentService {
       throw new Error('La clé ne correspond pas ');
     }
     return this.contentRepository.find({ where: { metaMedia }, order: { publishedAt: 'DESC' } });
+  }
+
+  /**
+   * Cette methode renvoi une liste de content pour un meta meia cible
+   * @param key la clé du metamedia cible
+   */
+  async findPageByMediaKey(key: string, pageNumber: number = 0): Promise<Page<Content>> {
+    // On s'assure au préalable que cette requète a du sens
+    // C-a-d que metamedia n'est pas null
+    const metaMedia = await this.metaMediaService.findByKey(key);
+    if (metaMedia == null) {
+      throw new Error('La clé ne correspond pas ');
+    }
+
+    // Recherche des "PAGER_SIZE" élements a partir de la page "pageNumber"
+    const contentsCounted = await this.contentRepository.findAndCount({
+      where: { metaMedia },
+      order: {
+        publishedAt: 'DESC',
+      },
+      skip: ContentService.PAGER_SIZE * pageNumber,
+      take: ContentService.PAGER_SIZE,
+    });
+
+    // on log l'étape
+    this.logger.log('Get page content clé: ' + key + ' page:' + pageNumber);
+    // Création du page content a renvoyer
+    const page = new Page<Content>();
+    page.count = contentsCounted[0].length;
+    page.objects = contentsCounted[0];
+    page.totalCount = contentsCounted[1];
+    page.next = (page.totalCount > ((pageNumber + 1) * ContentService.PAGER_SIZE)) ? ++pageNumber : undefined;
+    // On renvoi le résultat
+    return page;
   }
 
 }
