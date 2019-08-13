@@ -8,16 +8,40 @@ import { MetaMediaService } from '../meta-media/meta-media.service';
 import { Content } from './content.entity';
 import { YoutubeService } from './youtube/youtube.service';
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
+import { IcreateNotifService } from '../core/icreate-notif-service.interface';
+import { NotificationService } from '../providers/notification-service';
 
 @Injectable()
-export class ContentService {
+export class ContentService implements IcreateNotifService<Content> {
+
   private readonly logger = new Logger('Content Service');
   constructor(
     @InjectRepository(Content)
     private readonly contentRepository: Repository<Content>,
     private metaMediaService: MetaMediaService,
     private youtubeService: YoutubeService,
+    private notificationService: NotificationService,
   ) { }
+
+  /**
+   * Cette emthode permet de créer un contenu et en même temps
+   * s'il s'agit d'une création (et pas d'un upadte) on envoi un notif
+   * @param content Le contenu qui doit être créé
+   */
+  async saveAndNotifIfCreation(content: Content): Promise<Content> {
+    const isCreation = (content.id == null);
+    const video = await this.save(content);
+    // Création de la notification
+    if (isCreation) {
+      const messages = this.createNotif(video, video.metaMedia.key);
+      this.notificationService.sendMessage(messages);
+    }
+    return video;
+  }
+
+  createNotif(object: Content, key: string) {
+    return this.notificationService.createMessage('Nouvelle vidéo de ' + object.metaMedia.title, object.title, key, object.id.toString());
+  }
 
   save(content: Content): Promise<Content> {
     this.logger.log('Save Content ');
@@ -59,6 +83,11 @@ export class ContentService {
     const metaMedia = await this.metaMediaService.findByKey(feed.metaMediaId);
     const content = await this.findByContentID(feed.id);
 
+    // Si on ne trouve pas le meta media c'est surement une mauvaise playlist
+    if (metaMedia == null) {
+      return;
+    }
+
     let dealWithFeed$: Observable<Content>;
     if (feed instanceof YoutubeFeed) {
       this.logger.log('Youtube feed detected');
@@ -69,7 +98,7 @@ export class ContentService {
 
     dealWithFeed$ = dealWithFeed$.pipe(
       filter((data) => data != null),
-      flatMap((currentContent: Content) => this.save(currentContent)),
+      flatMap((currentContent: Content) => this.saveAndNotifIfCreation(currentContent)),
     );
 
     dealWithFeed$.subscribe((content) => {
