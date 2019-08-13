@@ -47,8 +47,14 @@ export class NotificationService {
    * Malheureusement nous n'avons droit qu'a 5 topic par condition de notif, on choisi donc d'enoyer plusieur notif quand il
    * y a plus de 5 critères
    */
-  createMessage(title: string, body: string, key: string, id: string, conditions: string[]) {
+  createMessage(title: string, body: string, key: string, id: string, conditions?: string[]) {
     const messages = [];
+
+    // En cas de condition null on ajoute quand même a condition initial d'abonnement au média
+    if (conditions == null) {
+      conditions = this.createConditionFromKeyAndCategories(key);
+    }
+
     for (const condition of conditions) {
       const message = {
         notification: {

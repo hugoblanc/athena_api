@@ -2,6 +2,8 @@
 
 ![Logo athena](http://athena-api.caprover.athena-app.fr/menu.jpg "Logo Title Text 1")
 
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+
 ## Description
 L'api athena a été réalisé avec NestJS
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
@@ -18,7 +20,55 @@ Elle a pour vocation à fournir des fonctionnalités d'interaction
 
 ## Prérequis
 
+### Environnement
 - [Node JS](https://nodejs.org/fr/download/)
+
+### Variable d'environnement
+
+Ces valeurs sont a titre d'exemple et ne permettront pas une connexion si vous les utilisez pour démarrer l'api
+
+Pour la youtube et firebase api il faudra vous créer un projet gratuitement au préalable:
+Youtube => https://console.cloud.google.com/getting-started (ignorer les essaie gratuit et autre, rien de ce que l'on fait n'est payant)
+
+Firebase => https://console.firebase.google.com
+
+ENsuite dans les url que j'ai copié ici, la section noir sera l'id du projet à remplacer
+
+| Variables     | Type           | Value  | Création |
+| ------------- |:-------------:| -----:| -----:|
+| ATHENA_YOUTUBE_KEY    | YOUTUBE_API | AlsaXXXXXXXXXXXXXXXXXXXXXXXXXlkslOJ  | https://console.cloud.google.com/apis/api/youtube.googleapis.com/overview?project=***open-athena***&hl=fr |
+| ATHENA_GITHUB_TOKEN    | GITHUB_API | 8165XXXXXXX98c4d9848 | https://github.com/settings/tokens/new cocher [x]repo puis générer |
+| ATHENA_DB_USER    | DATABASE | admin | Monter un mysql en local |
+| ATHENA_DB_PORT    | DATABASE | 3306 | Monter un mysql en local |
+| ATHENA_DB_PASSWORD    | DATABASE | password | Monter un mysql en local |
+| ATHENA_DB_HOST    | DATABASE | localhost | Monter un mysql en local |
+| ATHENA_PROJECT_ID    | FIREBASE_NOTIF | open-athena | https://console.firebase.google.com/project/**open-athena**/settings/serviceaccounts/adminsdk?hl=fr puis générer une nouvelle clé privé, ouvrir le fichier et attribuer la bonne valeur aux bon champs|
+| ATHENA_PRIVATE_KEY    | FIREBASE_NOTIF | -BEGIN PRIVATE KEY-\  \n-END PRIVATE KEY-----\n | Voir ci-dessus |
+| ATHENA_CLIENT_EMAIL    | FIREBASE_NOTIF | firebasexxxw@opxxxxxxxxeaccount.com |  Voir ci-dessus |
+
+### Données base de données
+
+NestJS génèrera automatique le schéma SQL, vous n'avez donc pas de soucis de ce côté, cependant les tables seront vide.
+
+Voici les valeurs actuelle 09/08/2019
+```sql
+
+SET NAMES utf8mb4;
+
+INSERT INTO `list_meta_media` (`id`, `title`) VALUES
+(1,	'Presse écrite'),
+(3,	'Vidéo');
+
+
+SET NAMES utf8mb4;
+
+INSERT INTO `meta_media` (`id`, `donation`, `type`, `key`, `url`, `title`, `logo`, `listMetaMediaId`) VALUES
+(1,	'https://lvsl.fr/faire-un-don/',	'WORDPRESS',	'lvsl',	'https://lvsl.fr/',	'Le Vent Se Lève',	'assets/lvsl_logo.jpg',	1),
+(2,	'https://en.tipeee.com/mr-mondialisation',	'WORDPRESS',	'mrmondialisation',	'https://mrmondialisation.org/',	'Mr Mondialisation',	'assets/mrmondialisation_logo.png',	1),
+(3,	'https://www.helloasso.com/associations/le-4eme-singe/formulaires/1/fr',	'WORDPRESS',	'emesinge',	'https://www.4emesinge.com/',	'Le 4eme Singe',	'assets/4emesinge_logo.jpg',	1),
+(4,	NULL,	'WORDPRESS',	'lemondemoderne',	'https://www.lemondemoderne.media/',	'Le Monde Moderne',	'assets/lemondemoderne.jpg',	1),
+(7,	NULL,	'YOUTUBE',	'osonscauser',	'UCVeMw72tepFl1Zt5fvf9QKQ',	'Osons causer',	'https://yt3.ggpht.com/a/AGF-l79-QM7NkYV3TVJZK8Jssrj0odFlAOnxsHsD=s288-c-k-c0xffffffff-no-rj-mo',	3);
+```
 
 ## Installation en local
 
