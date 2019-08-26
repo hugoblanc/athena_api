@@ -33,7 +33,8 @@ export class NotificationService {
     from(admin.messaging().send(messages[0])).subscribe((resultSend) => {
       this.logger.log('Successfully sent message:', resultSend);
     }, (error) => {
-      this.logger.error('Error sending message:', error);
+      this.logger.error('Error sending message');
+      this.logger.error(JSON.stringify(error));
     });
   }
 
@@ -68,6 +69,14 @@ export class NotificationService {
           id,
         },
         condition,
+        android: {
+          priority: 'high',
+        },
+        apns: {
+          headers: {
+            'apns-priority': '10',
+          },
+        },
       };
       messages.push(message);
     }
