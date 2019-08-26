@@ -36,11 +36,11 @@ export class PostService implements IcreateNotifService<Post> {
    * Cette methode récupère une listede post pour un nom d'hote données
    * @param hostname le nom d'hote de la ressource cible
    */
-  getPost(hostname: string, key: string): Observable<Post[]> {
+  getPost(hostname: string, key: string) {
     return this.externalService.get(hostname + PostService.BASE_ROUTE)
       .pipe(
-        map((posts) => posts.map((post) => new Post(post))),
-        tap((posts) => this.findNewValueAndSendNotif(posts, key)));
+        map((posts) => posts.map((post) => new Post(post))));
+        // tap((posts) => this.findNewValueAndSendNotif(posts, key)));
   }
 
   getContent(metaMedia: MetaMedia): Observable<Content[]> {
@@ -98,9 +98,9 @@ export class PostService implements IcreateNotifService<Post> {
     // Pour une raison qui m'échappe l'apostrophe ne fonctionne toujours pas
     object.title.rendered = object.title.rendered.replace('&rsquo;', '\'');
 
-    const conditions = this.notificationService.createConditionFromKeyAndCategories(metaMedia.key, object.categories);
+    const conditions = NotificationService.createConditionFromKeyAndCategories(metaMedia.key, object.categories);
 
-    const messages = this.notificationService.createMessage(
+    const messages = NotificationService.createMessage(
       'Nouvel article par ' + metaMedia.title,
       object.getTitle(),
       key,

@@ -46,26 +46,7 @@ export class ContentService implements IcreateNotifService<Content> {
   }
 
   createNotif(object: Content, key: string) {
-    return this.notificationService.createMessage('Nouvelle vidéo de ' + object.metaMedia.title, object.title, key, object.id.toString());
-  }
-
-  save(content: Content): Promise<Content> {
-    this.logger.log('Save Content ');
-    return this.contentRepository.save(content);
-  }
-
-  findAll(): Promise<Content[]> {
-    return this.contentRepository.find();
-  }
-
-  findById(id: number): Promise<Content> {
-    this.logger.log('Find content by id: ' + id);
-    return this.contentRepository.findOne({ where: { id } });
-  }
-
-  findByContentID(id: string): Promise<Content> {
-    this.logger.log('Find content by content id: ' + id);
-    return this.contentRepository.findOne({ where: { contentId: id } });
+    return NotificationService.createMessage('Nouvelle vidéo de ' + object.metaMedia.title, object.title, key, object.id.toString());
   }
 
   /**
@@ -150,6 +131,31 @@ export class ContentService implements IcreateNotifService<Content> {
     dealWithFeed$.subscribe((content) => {
       this.logger.log('Content updated id: ' + content.id);
     });
+  }
+
+ /**
+  * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  * * ----------------------------------------  REPOSITORY METHODE  -------------------------------------
+  * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
+
+  save(content: Content): Promise<Content> {
+    this.logger.log('Save Content ');
+    return this.contentRepository.save(content);
+  }
+
+  findAll(): Promise<Content[]> {
+    return this.contentRepository.find();
+  }
+
+  findById(id: number): Promise<Content> {
+    this.logger.log('Find content by id: ' + id);
+    return this.contentRepository.findOne({ where: { id } });
+  }
+
+  findByContentID(id: string): Promise<Content> {
+    this.logger.log('Find content by content id: ' + id);
+    return this.contentRepository.findOne({ where: { contentId: id } });
   }
 
   /**
