@@ -10,6 +10,6 @@ import { FormatService } from './format/format.service';
 @Module({
   imports: [ScheduleModule.register(), HttpModule],
   providers: [CronService, ExternalService, PostService, NotificationService, MediaService, FormatService],
-  exports: [ExternalService, FormatService, NotificationService],
+  exports: [ExternalService, PostService, FormatService, NotificationService],
 })
 export class HelperModule { }

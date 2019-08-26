@@ -1,5 +1,6 @@
 import { Content } from './content';
 import { Embedded } from './embedded';
+import { Image } from '../content/image.entity';
 
 export class Post {
   public author: number;
@@ -26,6 +27,7 @@ export class Post {
   public title: Content;
   public type: string;
   public embedded: Embedded;
+  public image: Image;
 
   constructor(input: any) {
     Object.assign(this, input);
@@ -41,6 +43,20 @@ export class Post {
     this.pingStatus = input.ping_status;
     this.title = new Content(input.title);
     this.embedded = new Embedded(input._embedded);
+
+    // Image part
+    if (this.guid &&
+      this.guid.rendered &&
+      this.embedded &&
+      this.embedded.featuredmedia[0] &&
+      this.embedded.featuredmedia[0].mediaDetails &&
+      this.embedded.featuredmedia[0].mediaDetails.file) {
+      const url = this.guid.rendered.split('?');
+      this.image = new Image();
+      this.image.url = url[0] + 'wp-content/uploads/' + this.embedded.featuredmedia[0].mediaDetails.file;
+      this.image.height = this.embedded.featuredmedia[0].mediaDetails.height;
+      this.image.width = this.embedded.featuredmedia[0].mediaDetails.width;
+    }
   }
 
   public getTitle() {
