@@ -1,18 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { from, empty, Observable } from 'rxjs';
-import { flatMap, filter } from 'rxjs/operators';
+import { empty, from, Observable, of } from 'rxjs';
+import { filter, flatMap, merge } from 'rxjs/operators';
 import { Repository } from 'typeorm';
+import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
+import { IcreateNotifService } from '../core/icreate-notif-service.interface';
+import { Page } from '../core/page';
+import { arrayMap, fromOp } from '../core/rxjs/array-map';
+import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { MetaMediaService } from '../meta-media/meta-media.service';
+import { Post } from '../models/post';
+import { NotificationService } from '../providers/notification-service';
+import { PostService } from '../providers/post-service';
 import { Content } from './content.entity';
 import { YoutubeService } from './youtube/youtube.service';
-import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
-import { Page } from '../core/page';
-import { IcreateNotifService } from '../core/icreate-notif-service.interface';
-import { NotificationService } from '../providers/notification-service';
-import { MetaMediaType } from '../meta-media/meta-media-type.enum';
-import { PostService } from '../providers/post-service';
 
 @Injectable()
 export class ContentService implements IcreateNotifService<Content> {
@@ -105,6 +107,40 @@ export class ContentService implements IcreateNotifService<Content> {
     return metaMedia$;
   }
 
+  async pollingContent() {
+    console.log('TUTUT');
+
+    const metaMedias$ = from(this.metaMediaService.findByType(MetaMediaType.WORDPRESS));
+
+    const global$ = metaMedias$.pipe(
+      arrayMap(i => this.createGetAndSaveObs(i)),
+
+    ).subscribe((result) => {
+      console.log(JSON.stringify(result));
+    });
+
+  }
+
+  createGetAndSaveObs(metaMedia: MetaMedia): Observable<any> {
+    console.log('-----------------------');
+
+    const getAndSave$ = this.postService.getPost(metaMedia.url, metaMedia.key)
+      .pipe(
+        arrayMap((post) => this.checkAndSave(metaMedia, post),
+        ));
+
+    return getAndSave$;
+  }
+
+  checkAndSave(metaMedia: MetaMedia, post: Post) {
+    return from(this.findByContentID(post.id.toString()))
+      .pipe(
+        filter((content: any) => content == null),
+        flatMap((content) => from(this.save(this.postService.convertPostToContent(metaMedia, post))),
+        ),
+      );
+  }
+
   async dealWithAtomFeed(feed: YoutubeFeed) {
 
     const metaMedia = await this.metaMediaService.findByKey(feed.metaMediaId);
@@ -133,11 +169,11 @@ export class ContentService implements IcreateNotifService<Content> {
     });
   }
 
- /**
-  * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  * * ----------------------------------------  REPOSITORY METHODE  -------------------------------------
-  * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  */
+  /**
+   * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   * * ----------------------------------------  REPOSITORY METHODE  -------------------------------------
+   * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   */
 
   save(content: Content): Promise<Content> {
     this.logger.log('Save Content ');
