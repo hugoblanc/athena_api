@@ -18,12 +18,9 @@ export class CronService extends NestDistributedSchedule {
     };
   }
 
-  @Cron('1 * * * * *')
+  @Cron('1 */30 * * * *')
   async cronJob() {
-    console.log('TOTOTO');
-
     this.contentService.pollingContent();
-    console.log('TATAA');
   }
 
 }

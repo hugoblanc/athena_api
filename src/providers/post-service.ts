@@ -40,7 +40,6 @@ export class PostService implements IcreateNotifService<Post> {
     return this.externalService.get(hostname + PostService.BASE_ROUTE)
       .pipe(
         map((posts) => posts.map((post) => new Post(post))));
-        // tap((posts) => this.findNewValueAndSendNotif(posts, key)));
   }
 
   getContent(metaMedia: MetaMedia): Observable<Content[]> {

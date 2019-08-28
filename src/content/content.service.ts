@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { empty, from, Observable, of } from 'rxjs';
-import { filter, flatMap, merge } from 'rxjs/operators';
+import { filter, flatMap, merge, tap } from 'rxjs/operators';
 import { Repository } from 'typeorm';
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 import { IcreateNotifService } from '../core/icreate-notif-service.interface';
@@ -107,41 +107,23 @@ export class ContentService implements IcreateNotifService<Content> {
     return metaMedia$;
   }
 
-  async pollingContent() {
-    console.log('TUTUT');
+  public async pollingContent() {
 
     const metaMedias$ = from(this.metaMediaService.findByType(MetaMediaType.WORDPRESS));
 
     const global$ = metaMedias$.pipe(
       arrayMap(i => this.createGetAndSaveObs(i)),
-
     ).subscribe((result) => {
-      console.log(JSON.stringify(result));
+      if (result != null) {
+        this.logger.log('Polling - success  contentId: ' + (result as Content).contentId);
+      } else {
+        this.logger.log('Polling - success');
+      }
     });
 
   }
 
-  createGetAndSaveObs(metaMedia: MetaMedia): Observable<any> {
-    console.log('-----------------------');
-
-    const getAndSave$ = this.postService.getPost(metaMedia.url, metaMedia.key)
-      .pipe(
-        arrayMap((post) => this.checkAndSave(metaMedia, post),
-        ));
-
-    return getAndSave$;
-  }
-
-  checkAndSave(metaMedia: MetaMedia, post: Post) {
-    return from(this.findByContentID(post.id.toString()))
-      .pipe(
-        filter((content: any) => content == null),
-        flatMap((content) => from(this.save(this.postService.convertPostToContent(metaMedia, post))),
-        ),
-      );
-  }
-
-  async dealWithAtomFeed(feed: YoutubeFeed) {
+  public async dealWithAtomFeed(feed: YoutubeFeed) {
 
     const metaMedia = await this.metaMediaService.findByRessource(feed.metaMediaId);
     const content = await this.findByContentID(feed.id);
@@ -176,7 +158,7 @@ export class ContentService implements IcreateNotifService<Content> {
    */
 
   save(content: Content): Promise<Content> {
-    this.logger.log('Save Content ');
+    this.logger.log('Save Content contentId: ' + content.contentId);
     return this.contentRepository.save(content);
   }
 
@@ -241,4 +223,38 @@ export class ContentService implements IcreateNotifService<Content> {
     return page;
   }
 
+  /**
+   * Cette methode permet de récupérer les dernier post pour un metamedia données
+   * @param metaMedia le metaMedia actuellement parcourus
+   */
+  private createGetAndSaveObs(metaMedia: MetaMedia): Observable<Content | unknown> {
+    // Récupération des post
+    const getAndSave$ = this.postService.getPost(metaMedia.url, metaMedia.key)
+      .pipe(
+        // Pour chaque post on execute l'observable suivant
+        arrayMap((post) => this.checkAndSave(metaMedia, post),
+        ));
+
+    return getAndSave$;
+  }
+
+  /**
+   * Cette methode a pour objectif de créer un observable qui va chercher le content en db pour voir si
+   * il est présent, ensuite si le contenu est présent en bdd on s'arrète la, sinon on continue
+   * @param metaMedia le metaMedia acutallement parcourru
+   * @param post le post du meta media en question
+   */
+  private checkAndSave(metaMedia: MetaMedia, post: Post): Observable<Content> {
+    // Conversion de la promise en observable
+    return from(this.findByContentID(post.id.toString()))
+      .pipe(
+        // Vérification présent ou non en bdd
+        filter((content: any) => content == null),
+        tap(() => {
+           this.notificationService.sendMessage(post.toNotification(metaMedia));
+        }),
+        // SI non on le sauvearde arprès conversion du post en content
+        flatMap((content) => from(this.save(this.postService.convertPostToContent(metaMedia, post)))),
+      );
+  }
 }
