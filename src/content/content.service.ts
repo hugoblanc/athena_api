@@ -11,6 +11,8 @@ import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 import { Page } from '../core/page';
 import { IcreateNotifService } from '../core/icreate-notif-service.interface';
 import { NotificationService } from '../providers/notification-service';
+import { MetaMediaType } from '../meta-media/meta-media-type.enum';
+import { PostService } from '../providers/post-service';
 
 @Injectable()
 export class ContentService implements IcreateNotifService<Content> {
@@ -23,6 +25,7 @@ export class ContentService implements IcreateNotifService<Content> {
     private readonly contentRepository: Repository<Content>,
     private metaMediaService: MetaMediaService,
     private youtubeService: YoutubeService,
+    private postService: PostService,
     private notificationService: NotificationService,
   ) { }
 
@@ -72,9 +75,49 @@ export class ContentService implements IcreateNotifService<Content> {
    * @param mediaKey le media cible a initialiser
    */
   initMediaContent(mediaKey: string) {
+    let tmpMetaMedia;
     const metaMedia$ = from(this.metaMediaService.findByKey(mediaKey)).pipe(
-      // filter((metaMedia: MetaMedia) => (metaMedia != null)),
-      flatMap((metaMedia: MetaMedia) => this.youtubeService.getAllContentForTargetId(metaMedia)),
+      // On vérifie que le metaMedia n'est pas null
+      filter((metaMedia: MetaMedia) => {
+        tmpMetaMedia = metaMedia; // On stock dans une variable temporaire pour réutilise dans les autres appel
+        const isNull = (metaMedia != null);
+        // Si c'est null on peut rien faire
+        if (!isNull) {
+          this.logger.error(`Le metamedia de clé: ${mediaKey} n'a pas été trouvé`);
+        }
+        return isNull;
+      }),
+      // Récupération du contenu en bdd du metamedia
+      flatMap((metaMedia) => this.findByMediaKey(metaMedia.key)),
+      // On vérifie qu'il n'y a pas déjà de contenu pour le metaMEdia en question'
+      filter((contents: Content[]) => {
+        // S'il y a deja du contenu on ne doit rien faire car déjà init
+        const contentIsEmpty = contents.length === 0;
+        if (!contentIsEmpty) {
+          this.logger.log(`Le metaMedia ${tmpMetaMedia.key} à déjà été initialisé `);
+        }
+        return contentIsEmpty;
+      }),
+      // Si tout les filtre sont passé on récupère le contenu du media
+      flatMap(() => {
+        let getContent$;
+        // On doit gérer l'initailisation en fonction des cas
+        // Si c'est une init youtube c'est pas comme une init wordpress
+        switch (tmpMetaMedia.type) {
+          case MetaMediaType.YOUTUBE:
+            getContent$ = this.youtubeService.getAllContentForTargetId(tmpMetaMedia);
+            break;
+          case MetaMediaType.WORDPRESS:
+            getContent$ = this.postService.getContent(tmpMetaMedia);
+            break;
+          default:
+            this.logger.error('Ce type de meta media n\'est pas géré par la methode d\'initialisation');
+            break;
+        }
+
+        return getContent$;
+      }),
+      // Finalement on sauvegarde ça en bdd
       flatMap((content: Content) => this.save(content)),
     );
 

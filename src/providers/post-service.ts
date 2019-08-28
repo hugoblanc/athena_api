@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { ExternalService } from './external-service';
+import { XmlEntities } from 'html-entities';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { IcreateNotifService } from 'src/core/icreate-notif-service.interface';
-import { NotificationService } from './notification-service';
 import { Post } from '../models/post';
+import { ExternalService } from './external-service';
 import { MediaService } from './media/media.service';
-import { XmlEntities } from 'html-entities';
-import { FormatService } from '../helper/format/format.service';
+import { NotificationService } from './notification-service';
+import { Content } from '../content/content.entity';
+import { MetaMedia } from '../meta-media/meta-media.entity';
+import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 
 /**
  * *~~~~~~~~~~~~~~~~~~~
@@ -27,8 +29,7 @@ export class PostService implements IcreateNotifService<Post> {
   private oldPosts: any = {};
 
   constructor(private externalService: ExternalService,
-              private notificationService: NotificationService,
-              private formatService: FormatService) {
+              private notificationService: NotificationService) {
   }
 
   /**
@@ -40,6 +41,31 @@ export class PostService implements IcreateNotifService<Post> {
       .pipe(
         map((posts) => posts.map((post) => new Post(post))),
         tap((posts) => this.findNewValueAndSendNotif(posts, key)));
+  }
+
+  getContent(metaMedia: MetaMedia): Observable<Content[]> {
+    return this.getPost(metaMedia.url, metaMedia.key)
+      .pipe(map((posts: Post[]) => {
+        return posts.map((post) => this.convertPostToContent(metaMedia, post));
+      }));
+  }
+
+  convertPostToContent(metaMedia: MetaMedia, post: Post, existingContent?: Content): Content {
+    if (post == null) {
+      throw new Error('Le post est null, on ne peut pas le convertir en content ');
+    }
+
+    const content: Content = {
+      id: (existingContent ? existingContent.id : null),
+      contentId: post.id.toString(),
+      contentType: MetaMediaType.WORDPRESS,
+      title: post.title.rendered,
+      description: post.content.rendered,
+      publishedAt: new Date(post.date),
+      image: post.image,
+      metaMedia,
+    };
+    return content;
   }
 
   /**

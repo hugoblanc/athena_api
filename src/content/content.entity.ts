@@ -18,7 +18,7 @@ export class Content {
   @Column('enum', { enum: MetaMediaType })
   contentType: MetaMediaType;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'longtext' })
   description: string;
 
   @Column({type: 'timestamp'})
