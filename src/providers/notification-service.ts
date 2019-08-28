@@ -48,12 +48,12 @@ export class NotificationService {
    * Malheureusement nous n'avons droit qu'a 5 topic par condition de notif, on choisi donc d'enoyer plusieur notif quand il
    * y a plus de 5 critères
    */
-  createMessage(title: string, body: string, key: string, id: string, conditions?: string[]) {
+  static createMessage(title: string, body: string, key: string, id: string, conditions?: string[]) {
     const messages = [];
 
     // En cas de condition null on ajoute quand même a condition initial d'abonnement au média
     if (conditions == null) {
-      conditions = this.createConditionFromKeyAndCategories(key);
+      conditions = NotificationService.createConditionFromKeyAndCategories(key);
     }
 
     for (const condition of conditions) {
@@ -84,13 +84,13 @@ export class NotificationService {
     return messages;
   }
 
-  createConditionFromKeyAndCategories(key: string, categories?: number[]) {
+  static createConditionFromKeyAndCategories(key: string, categories?: number[]) {
     if (!key) {
       throw new Error('La clé n\'est pas présente pour envoyer la notification ');
     }
 
     // Dans tout les cas la clé devrait être la
-    let condition = this.createInitialTopic(key);
+    let condition = NotificationService.createInitialTopic(key);
     if (!Array.isArray(categories)) {
       return [condition];
     }
@@ -109,19 +109,19 @@ export class NotificationService {
         // Alors on pousse la condition actuelle dans le tableau
         conditions.push(condition);
         // et on en commence une nouvelle
-        condition = this.createInitialTopic(key);
+        condition = NotificationService.createInitialTopic(key);
       }
     }
 
     // A la fin on est pas sur de s'être arrété sur un mutliple de 4
     // Donc si on vient pas de reinit on insère dans le tableau
-    if (condition !== this.createInitialTopic(key)) {
+    if (condition !== NotificationService.createInitialTopic(key)) {
       conditions.push(condition);
     }
     return conditions;
   }
 
-  private createInitialTopic(mediaKey: string) {
+  static createInitialTopic(mediaKey: string) {
     return `'${mediaKey}' in topics `;
   }
 

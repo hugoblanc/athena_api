@@ -1,8 +1,12 @@
 import { Content } from './content';
 import { Embedded } from './embedded';
 import { Image } from '../content/image.entity';
+import { NotificationService } from '../providers/notification-service';
+import { XmlEntities } from 'html-entities';
+import { MetaMedia } from '../meta-media/meta-media.entity';
+import { INotifiedObject } from '../content/inotified-object';
 
-export class Post {
+export class Post implements INotifiedObject {
   public author: number;
   public categories: number[];
   public commentStatus: string;
@@ -44,6 +48,12 @@ export class Post {
     this.title = new Content(input.title);
     this.embedded = new Embedded(input._embedded);
 
+    // On converties les titre l'article en format text classique plutot que HTML
+    const entities = new XmlEntities();
+    this.title.rendered = entities.decode(this.getTitle());
+    // Pour une raison qui m'échappe l'apostrophe ne fonctionne toujours pas
+    this.title.rendered = this.title.rendered.replace('&rsquo;', '\'');
+
     // Image part
     if (this.guid &&
       this.guid.rendered &&
@@ -66,4 +76,19 @@ export class Post {
   public isIdEqual(id: number) {
     return (this.id === id);
   }
+
+  toNotification(metaMedia: MetaMedia) {
+    const conditions = NotificationService.createConditionFromKeyAndCategories(metaMedia.key, this.categories);
+
+    const messages = NotificationService.createMessage(
+      'Nouvel article par ' + metaMedia.title,
+      this.getTitle(),
+      metaMedia.key,
+      this.id.toString(),
+      conditions,
+    );
+
+    return messages;
+  }
+
 }
