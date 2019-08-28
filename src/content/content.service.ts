@@ -83,7 +83,7 @@ export class ContentService implements IcreateNotifService<Content> {
 
   async dealWithAtomFeed(feed: YoutubeFeed) {
 
-    const metaMedia = await this.metaMediaService.findByKey(feed.metaMediaId);
+    const metaMedia = await this.metaMediaService.findByRessource(feed.metaMediaId);
     const content = await this.findByContentID(feed.id);
 
     // Si on ne trouve pas le meta media c'est surement une mauvaise playlist

@@ -14,7 +14,12 @@ export class MetaMediaService {
     return this.repository.find();
   }
 
+
   findByKey(key: string): Promise<MetaMedia> {
     return this.repository.findOne({where : {key}});
+  }
+
+  findByRessource(url: string): Promise<MetaMedia> {
+    return this.repository.findOne({where : {url}});
   }
 }
