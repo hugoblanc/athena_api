@@ -15,13 +15,12 @@ export class MetaMediaService {
     return this.repository.find();
   }
 
-
   findByKey(key: string): Promise<MetaMedia> {
     return this.repository.findOne({ where: { key } });
   }
 
   findByType(type: MetaMediaType): Promise<MetaMedia[]> {
-    return this.repository.find({ where: { type } })
+    return this.repository.find({ where: { type } });
   }
 
   findByRessource(url: string): Promise<MetaMedia> {
