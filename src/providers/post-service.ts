@@ -36,7 +36,7 @@ export class PostService implements IcreateNotifService<Post> {
    * Cette methode récupère une listede post pour un nom d'hote données
    * @param hostname le nom d'hote de la ressource cible
    */
-  getPost(hostname: string, key: string) {
+  getPost(hostname: string, key: string): Observable<Post[]> {
     return this.externalService.get(hostname + PostService.BASE_ROUTE)
       .pipe(
         map((posts) => posts.map((post) => new Post(post))));
