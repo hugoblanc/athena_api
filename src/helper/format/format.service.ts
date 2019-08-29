@@ -24,9 +24,12 @@ export class FormatService {
     return htmlDecoded;
   }
 
+  /**
+   * Cette methode se charge de transformer les données au format XML en JSON
+   * @param xmlString Une chaine de charactère au format xml
+   */
   static decodeXML(xmlString: string): Observable<any> {
     const parseXML$ = bindNodeCallback(parseString);
-
     return parseXML$(xmlString);
   }
 
