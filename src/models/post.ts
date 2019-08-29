@@ -32,6 +32,7 @@ export class Post implements INotifiedObject {
   public type: string;
   public embedded: Embedded;
   public image: Image;
+  public metaMedia: MetaMedia;
 
   constructor(input: any) {
     Object.assign(this, input);
@@ -77,13 +78,16 @@ export class Post implements INotifiedObject {
     return (this.id === id);
   }
 
-  toNotification(metaMedia: MetaMedia) {
-    const conditions = NotificationService.createConditionFromKeyAndCategories(metaMedia.key, this.categories);
+  toNotification() {
+    if(!this.metaMedia){
+      throw new Error('Le meta media du post est null');
+    }
+    const conditions = NotificationService.createConditionFromKeyAndCategories(this.metaMedia.key, this.categories);
 
     const messages = NotificationService.createMessage(
-      'Nouvel article par ' + metaMedia.title,
+      'Nouvel article par ' + this.metaMedia.title,
       this.getTitle(),
-      metaMedia.key,
+      this.metaMedia.key,
       this.id.toString(),
       conditions,
     );

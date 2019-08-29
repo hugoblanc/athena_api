@@ -1,12 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { empty, from, Observable, of } from 'rxjs';
-import { filter, flatMap, merge, tap } from 'rxjs/operators';
+import { empty, from, Observable } from 'rxjs';
+import { filter, flatMap } from 'rxjs/operators';
 import { Repository } from 'typeorm';
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
-import { IcreateNotifService } from '../core/icreate-notif-service.interface';
 import { Page } from '../core/page';
-import { arrayMap, fromOp } from '../core/rxjs/array-map';
+import { arrayMap } from '../core/rxjs/array-map';
 import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { MetaMediaService } from '../meta-media/meta-media.service';
@@ -17,7 +16,7 @@ import { Content } from './content.entity';
 import { YoutubeService } from './youtube/youtube.service';
 
 @Injectable()
-export class ContentService implements IcreateNotifService<Content> {
+export class ContentService  {
 
   private static PAGER_SIZE = 10;
 
@@ -36,15 +35,20 @@ export class ContentService implements IcreateNotifService<Content> {
    * s'il s'agit d'une création (et pas d'un upadte) on envoi un notif
    * @param content Le contenu qui doit être créé
    */
-  async saveAndNotifIfCreation(content: Content): Promise<Content> {
+  async saveAndNotifIfCreation(content: Content, post?: Post): Promise<Content> {
     const isCreation = (content.id == null);
-    const video = await this.save(content);
+    const contentDB = await this.save(content);
     // Création de la notification
     if (isCreation) {
-      const messages = this.createNotif(video, video.metaMedia.key);
+      let messages;
+      if (post) {
+        messages = post.toNotification();
+      } else {
+        messages = this.createNotif(contentDB, contentDB.metaMedia.key);
+      }
       this.notificationService.sendMessage(messages);
     }
-    return video;
+    return contentDB;
   }
 
   createNotif(object: Content, key: string) {
@@ -232,7 +236,10 @@ export class ContentService implements IcreateNotifService<Content> {
     const getAndSave$ = this.postService.getPost(metaMedia.url, metaMedia.key)
       .pipe(
         // Pour chaque post on execute l'observable suivant
-        arrayMap((post) => this.checkAndSave(metaMedia, post),
+        arrayMap((post) => {
+          post.metaMedia = metaMedia;
+          return this.checkAndSave(post);
+        },
         ));
 
     return getAndSave$;
@@ -244,17 +251,14 @@ export class ContentService implements IcreateNotifService<Content> {
    * @param metaMedia le metaMedia acutallement parcourru
    * @param post le post du meta media en question
    */
-  private checkAndSave(metaMedia: MetaMedia, post: Post): Observable<Content> {
+  private checkAndSave(post: Post): Observable<Content> {
     // Conversion de la promise en observable
     return from(this.findByContentID(post.id.toString()))
       .pipe(
         // Vérification présent ou non en bdd
         filter((content: any) => content == null),
-        tap(() => {
-           this.notificationService.sendMessage(post.toNotification(metaMedia));
-        }),
         // SI non on le sauvearde arprès conversion du post en content
-        flatMap((content) => from(this.save(this.postService.convertPostToContent(metaMedia, post)))),
+        flatMap((content) => from(this.saveAndNotifIfCreation(this.postService.convertPostToContent(post), post))),
       );
   }
 }
