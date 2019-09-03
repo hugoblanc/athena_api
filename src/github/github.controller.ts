@@ -5,17 +5,17 @@ import { Observable } from 'rxjs';
 
 @Controller('github')
 export class GithubController {
-  private readonly logger = new Logger('Github Service');
+  private readonly logger = new Logger(GithubController.name);
   constructor(private githubService: GithubService) { }
 
   @Post('issues')
-  postIssue(@Body()issue: Issue): Observable<Issue> {
+  postIssue(@Body() issue: Issue): Observable<Issue> {
     this.logger.log('Post Issue');
     return this.githubService.postIssue(issue);
   }
 
   @Get('issues')
-  getIssue(@Body()issue: Issue): Observable<Issue> {
+  getIssue(@Body() issue: Issue): Observable<Issue> {
     this.logger.log('Post Issue');
     return this.githubService.postIssue(issue);
   }

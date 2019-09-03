@@ -4,7 +4,7 @@ import { Issue } from './issue';
 
 @Injectable()
 export class GithubService {
-  private readonly logger = new Logger('Content Service');
+  private readonly logger = new Logger(GithubService.name);
   private static BASE_URL = 'https://api.github.com/repos/';
   private static ATHENA = 'hugoblanc/Athena/';
   private static ISSUE = 'issues';

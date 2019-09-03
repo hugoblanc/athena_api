@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { ContentModule } from './content/content.module';
-import { MediaController } from './controllers/media/media.controller';
 import { HelperModule } from './helper/helper.module';
 import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
 import { MetaMediaModule } from './meta-media/meta-media.module';
@@ -31,6 +30,6 @@ import { ConfigurationModule } from './core/configuration/configuration.module';
         GithubModule,
         ConfigurationModule,
     ],
-    controllers: [AppController, MediaController],
+    controllers: [AppController],
 })
 export class AppModule { }
