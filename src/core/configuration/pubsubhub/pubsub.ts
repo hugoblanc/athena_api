@@ -1,7 +1,6 @@
 import pubSubHubbub = require('pubsubhubbub');
 import { Logger } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { YoutubeFeed } from './youtube-feed';
 /**
  * Cette classe est un serveru  qui suis le protocol pubsubhubhub indiqué par google pour s'abonner au notif youtube
  * Elle nous permet d'être avertis quand l'une des video de la chaine que l'on suis subit des modification

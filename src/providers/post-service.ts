@@ -6,7 +6,6 @@ import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { Post } from '../models/post';
 import { ExternalService } from './external-service';
-import { NotificationService } from './notification-service';
 
 /**
  * *~~~~~~~~~~~~~~~~~~~
@@ -25,8 +24,7 @@ export class PostService {
 
   private oldPosts: any = {};
 
-  constructor(private externalService: ExternalService,
-              private notificationService: NotificationService) {
+  constructor(private externalService: ExternalService) {
   }
 
   /**
