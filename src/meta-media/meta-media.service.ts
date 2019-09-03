@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MetaMedia } from './meta-media.entity';
+import { MetaMediaType } from './meta-media-type.enum';
 
 @Injectable()
 export class MetaMediaService {
@@ -15,6 +16,14 @@ export class MetaMediaService {
   }
 
   findByKey(key: string): Promise<MetaMedia> {
-    return this.repository.findOne({where : {key}});
+    return this.repository.findOne({ where: { key } });
+  }
+
+  findByType(type: MetaMediaType): Promise<MetaMedia[]> {
+    return this.repository.find({ where: { type } });
+  }
+
+  findByRessource(url: string): Promise<MetaMedia> {
+    return this.repository.findOne({where : {url}});
   }
 }

@@ -1,7 +1,6 @@
 import pubSubHubbub = require('pubsubhubbub');
 import { Logger } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { YoutubeFeed } from './youtube-feed';
 /**
  * Cette classe est un serveru  qui suis le protocol pubsubhubhub indiqué par google pour s'abonner au notif youtube
  * Elle nous permet d'être avertis quand l'une des video de la chaine que l'on suis subit des modification
@@ -14,7 +13,8 @@ export class PubSub {
 
   private readonly logger = new Logger('PubSub');
   // L'url de callback pour le sotification
-  private static CALLBACK_URL = 'http://athena-api.caprover.athena-app.fr:8081';
+   private static CALLBACK_URL = 'http://athena-api.caprover.athena-app.fr:8081';
+  // private static CALLBACK_URL = 'http://bb8878a3.ngrok.io';
   // Le hub par lequel on passe pour s'abonner en pubsubhubhub
   private static HUB = 'http://pubsubhubbub.appspot.com/';
 

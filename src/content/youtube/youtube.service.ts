@@ -53,17 +53,26 @@ export class YoutubeService {
       }));
   }
 
+  /**
+   * Cete methode se charge de récupérer toutes les pages l'une après l'autre
+   * des résultat de la playlist "vidéo" c a d l'ensemble des vidéos d'une chaine youtube
+   * @param metaMedia le metaMedia cible
+   */
   getAllContentForTargetId(metaMedia: MetaMedia) {
 
     const content$ = this.getItems(this.createPlaylistIdFromChannelID(metaMedia.url)).pipe(
+      // Récursive observable
       expand((playlistItems: PlaylistItemDto) => {
+        // Tant qu'il y a une next page
         if (playlistItems.nextPageToken) {
           return this.getItems(this.createPlaylistIdFromChannelID(metaMedia.url), playlistItems.nextPageToken);
         } else {
+          // Sinon terminus
           return empty();
         }
       }),
       concatMap((playlistItems: PlaylistItemDto) => {
+        // On creait un tableau de content correspondant au tableau de vidéo recupéré
         const content = playlistItems.items.map((item: Item) => this.createContentFromItem(metaMedia, item));
         return content;
       }),
@@ -106,6 +115,10 @@ export class YoutubeService {
     return content;
   }
 
+  /**
+   * Pour transformer un id chaine en id playlist il suffit de remplacer le deuxième char par un U
+   * @param channelId La chaine de charactère de l'id de la chaine
+   */
   private createPlaylistIdFromChannelID(channelId: string) {
     const index = 1;
     const playlistID = channelId.substr(0, index) + 'U' + channelId.substr(index + 1);
