@@ -13,12 +13,12 @@ export class GithubService {
 
   postIssue(issue: Issue) {
 
-    if (issue == null || issue.title == null) {
+    if (issue == null || issue.title == null || issue.title.length < 2) {
       this.logger.error('Le titre ne peut pas être vide');
       throw new Error('Le titre ne peut pas être vide');
     }
 
-    if (issue == null || issue.body == null) {
+    if (issue == null || issue.body == null || issue.body.length < 2) {
       this.logger.error('La description ne peut pas être vide');
       throw new Error('La description ne peut pas être vide');
     }
