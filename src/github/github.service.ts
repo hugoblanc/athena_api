@@ -1,3 +1,4 @@
+import { AxiosRequestConfig } from 'axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { ExternalService } from '../providers/external-service';
 import { Issue } from './issue';
@@ -6,8 +7,12 @@ import { Issue } from './issue';
 export class GithubService {
   private readonly logger = new Logger(GithubService.name);
   private static BASE_URL = 'https://api.github.com/repos/';
-  private static ATHENA = 'hugoblanc/Athena/';
+  private static REPO = 'hugoblanc/Athena/';
+
   private static ISSUE = 'issues';
+  private static COMMENTS = 'comments';
+
+  private static FULL_ISSUE = GithubService.BASE_URL + GithubService.REPO + GithubService.ISSUE;
 
   constructor(private http: ExternalService) { }
 
@@ -23,12 +28,29 @@ export class GithubService {
       throw new Error('La description ne peut pas être vide');
     }
 
+    const authConfig = this.createConfig();
+
+    return this.http.post(GithubService.FULL_ISSUE, issue, authConfig);
+  }
+
+  clapIssue(issueId: string) {
+    return this.postComment('+1', issueId);
+  }
+
+  private postComment(comment: string, issueId: string) {
+    const url = GithubService.FULL_ISSUE + `/${issueId}/` + GithubService.COMMENTS;
+    const body = {
+      body: comment,
+    };
+    const authConfig = this.createConfig();
+
+    return this.http.post(url, body, authConfig);
+  }
+
+  private createConfig(): AxiosRequestConfig {
     const config = {
       headers: { Authorization: 'Token ' + process.env.ATHENA_GITHUB_TOKEN },
     };
-
-    // Rajouter le token
-    return this.http.post(GithubService.BASE_URL + GithubService.ATHENA + GithubService.ISSUE, issue, config);
+    return config;
   }
-
 }

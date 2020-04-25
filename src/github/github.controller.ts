@@ -1,22 +1,29 @@
-import { Controller, Post, Body, Logger, Get } from '@nestjs/common';
+import { Controller, Post, Body, Logger, Get, Param } from '@nestjs/common';
 import { GithubService } from './github.service';
 import { Issue } from './issue';
 import { Observable } from 'rxjs';
 
 @Controller('github')
 export class GithubController {
+  private static BASE_URL = 'issues';
   private readonly logger = new Logger(GithubController.name);
   constructor(private githubService: GithubService) { }
 
-  @Post('issues')
+  @Get(GithubController.BASE_URL)
+  getIssue(@Body() issue: Issue): Observable<Issue> {
+    this.logger.log('Post Issue');
+    return this.githubService.postIssue(issue);
+  }
+
+  @Post(GithubController.BASE_URL)
   postIssue(@Body() issue: Issue): Observable<Issue> {
     this.logger.log('Post Issue');
     return this.githubService.postIssue(issue);
   }
 
-  @Get('issues')
-  getIssue(@Body() issue: Issue): Observable<Issue> {
-    this.logger.log('Post Issue');
-    return this.githubService.postIssue(issue);
+  @Post(GithubController.BASE_URL + '/:issueId/clap')
+  clapIssue(@Param('issueId') issueId: string): Observable<Issue> {
+    this.logger.log('Clap issue' + issueId);
+    return this.githubService.clapIssue(issueId);
   }
 }
