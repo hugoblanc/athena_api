@@ -13,7 +13,7 @@ export class PubSub {
 
   private readonly logger = new Logger('PubSub');
   // L'url de callback pour le sotification
-   private static CALLBACK_URL = 'http://athena-api.caprover.athena-app.fr:8081';
+   private static CALLBACK_URL = 'http://www.athena-app.fr:8081';
   // private static CALLBACK_URL = 'http://bb8878a3.ngrok.io';
   // Le hub par lequel on passe pour s'abonner en pubsubhubhub
   private static HUB = 'http://pubsubhubbub.appspot.com/';
