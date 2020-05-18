@@ -1,0 +1,58 @@
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: rgb(255, 255, 255);
+  margin: 3rem;
+}
+
+#logo {
+  width: 100%;
+  margin-bottom: 50px;
+}
+
+#store-container{
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.store-logo{
+  max-width: 200px;
+  max-height: 200px;
+}
+
+h1 {
+  color: #000000;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+}
+
+h2 {
+  color: #333333;
+}
+
+p {
+  color: #000000;
+}
+
+#intro-container {
+  position: relative;
+}
+
+blockquote {
+  position: absolute;
+  top: 67%;
+  left: 32%;
+  width: 50%;
+  font-style: italic;
+}
+
+/* Custom, iPhone Retina */
+@media only screen and (max-width : 450px) {
+
+  blockquote {
+    top: 60%;
+    left: 10%;
+    width: 60%;
+    font-size: 0.7rem;
+  }
+}
