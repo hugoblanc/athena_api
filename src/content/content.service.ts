@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { empty, from, Observable } from 'rxjs';
-import { filter, flatMap } from 'rxjs/operators';
+import { empty, from, Observable, forkJoin } from 'rxjs';
+import { filter, flatMap, map, mergeMap } from 'rxjs/operators';
 import { Repository } from 'typeorm';
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 import { Page } from '../core/page';
@@ -16,7 +16,7 @@ import { Content } from './content.entity';
 import { YoutubeService } from './youtube/youtube.service';
 
 @Injectable()
-export class ContentService  {
+export class ContentService {
 
   private static PAGER_SIZE = 10;
 
@@ -31,24 +31,14 @@ export class ContentService  {
   ) { }
 
   /**
-   * Cette emthode permet de créer un contenu et en même temps
-   * s'il s'agit d'une création (et pas d'un upadte) on envoi un notif
-   * @param content Le contenu qui doit être créé
+   * Cette method permet d'envoyer une notification basé sur un contenu
+   * @param content Le contenu utilisé pour créer la notification
    */
-  async saveAndNotifIfCreation(content: Content, post?: Post): Promise<Content> {
-    const isCreation = (content.id == null);
-    const contentDB = await this.save(content);
-    // Création de la notification
-    if (isCreation) {
-      let messages;
-      if (post) {
-        messages = post.toNotification();
-      } else {
-        messages = this.createNotif(contentDB, contentDB.metaMedia.key);
-      }
+  sendNotification(content?: Content): void {
+    if (content && content.id) {
+      const messages = this.createNotif(content, content.metaMedia.key);
       this.notificationService.sendMessage(messages);
     }
-    return contentDB;
   }
 
   createNotif(object: Content, key: string) {
@@ -115,13 +105,13 @@ export class ContentService  {
 
     const metaMedias$ = from(this.metaMediaService.findByType(MetaMediaType.WORDPRESS));
 
-    const global$ = metaMedias$.pipe(
-      arrayMap(i => this.createGetAndSaveObs(i)),
+    metaMedias$.pipe(
+      arrayMap(metaMedia => this.saveNewContent(metaMedia)),
     ).subscribe((result) => {
       if (result != null) {
         this.logger.log('Polling - success  contentId: ' + (result as Content).contentId);
       } else {
-        this.logger.log('Polling - success');
+        this.logger.log('Polling - success - No content');
       }
     });
 
@@ -147,7 +137,7 @@ export class ContentService  {
 
     dealWithFeed$ = dealWithFeed$.pipe(
       filter((data) => data != null),
-      flatMap((currentContent: Content) => this.saveAndNotifIfCreation(currentContent)),
+      flatMap((currentContent: Content) => this.sendNotification(currentContent)),
     );
 
     dealWithFeed$.subscribe((content) => {
@@ -231,7 +221,7 @@ export class ContentService  {
    * Cette methode permet de récupérer les dernier post pour un metamedia données
    * @param metaMedia le metaMedia actuellement parcourus
    */
-  private createGetAndSaveObs(metaMedia: MetaMedia): Observable<Content | unknown> {
+  private saveNewContent(metaMedia: MetaMedia): Observable<Content | unknown> {
     // Récupération des post
     const getAndSave$ = this.postService.getPost(metaMedia.url, metaMedia.key)
       .pipe(
@@ -241,6 +231,28 @@ export class ContentService  {
           return this.checkAndSave(post);
         },
         ));
+
+    return getAndSave$;
+  }
+
+  /**
+   * Cette methode permet de récupérer les dernier post pour un metamedia données
+   * @param metaMedia le metaMedia actuellement parcourus
+   */
+  private createGetAndSaveObs2(metaMedia: MetaMedia): Observable<Content | unknown> {
+    // Récupération des post
+    const getAndSave$ = this.postService.getPost(metaMedia.url, metaMedia.key)
+      .pipe(
+        mergeMap((posts: Post[]) => {
+          // Transformation de l'ensemble des posts en tableau d'observable avec le metaMedia valorisé
+          const checkSavePosts$ = posts.map(p => {
+            p.metaMedia = metaMedia;
+            return this.checkAndSave(p);
+          });
+          // Résolution parallélisé du tableau
+          return forkJoin(checkSavePosts$);
+        }),
+      );
 
     return getAndSave$;
   }
@@ -258,7 +270,7 @@ export class ContentService  {
         // Vérification présent ou non en bdd
         filter((content: any) => content == null),
         // SI non on le sauvearde arprès conversion du post en content
-        flatMap((content) => from(this.saveAndNotifIfCreation(this.postService.convertPostToContent(post), post))),
+        flatMap((content) => from(this.save(this.postService.convertPostToContent(post)))),
       );
   }
 }
