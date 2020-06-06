@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { empty, from, Observable } from 'rxjs';
-import { filter, flatMap } from 'rxjs/operators';
+import { empty, forkJoin, from, Observable, of } from 'rxjs';
+import { filter, flatMap, map, mergeMap } from 'rxjs/operators';
 import { Repository } from 'typeorm';
+
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 import { Page } from '../core/page';
 import { arrayMap } from '../core/rxjs/array-map';
@@ -16,7 +17,7 @@ import { Content } from './content.entity';
 import { YoutubeService } from './youtube/youtube.service';
 
 @Injectable()
-export class ContentService  {
+export class ContentService {
 
   private static PAGER_SIZE = 10;
 
@@ -31,24 +32,15 @@ export class ContentService  {
   ) { }
 
   /**
-   * Cette emthode permet de créer un contenu et en même temps
-   * s'il s'agit d'une création (et pas d'un upadte) on envoi un notif
-   * @param content Le contenu qui doit être créé
+   * Cette method permet d'envoyer une notification basé sur un contenu
+   * @param content Le contenu utilisé pour créer la notification
    */
-  async saveAndNotifIfCreation(content: Content, post?: Post): Promise<Content> {
-    const isCreation = (content.id == null);
-    const contentDB = await this.save(content);
-    // Création de la notification
-    if (isCreation) {
-      let messages;
-      if (post) {
-        messages = post.toNotification();
-      } else {
-        messages = this.createNotif(contentDB, contentDB.metaMedia.key);
-      }
+  sendNotification(content?: Content): Content | null {
+    if (content && content.id) {
+      const messages = this.createNotif(content, content.metaMedia.key);
       this.notificationService.sendMessage(messages);
     }
-    return contentDB;
+    return content;
   }
 
   createNotif(object: Content, key: string) {
@@ -112,19 +104,28 @@ export class ContentService  {
   }
 
   public async pollingContent() {
+    this.logger.log('Polling - triggered');
 
     const metaMedias$ = from(this.metaMediaService.findByType(MetaMediaType.WORDPRESS));
 
-    const global$ = metaMedias$.pipe(
-      arrayMap(i => this.createGetAndSaveObs(i)),
-    ).subscribe((result) => {
-      if (result != null) {
-        this.logger.log('Polling - success  contentId: ' + (result as Content).contentId);
-      } else {
+    metaMedias$.pipe(
+      arrayMap(metaMedia => this.saveNewContent(metaMedia)),
+      map((contents: Content[]) => {
+        // Si moins de 5 nouveau content c'est possible, sinon il s'agit surement d'une init
+        if (contents.length < 5) {
+          contents.forEach(c => this.sendNotification(c));
+        }
+        return contents;
+      }),
+    ).subscribe((result: Content[]) => {
+      if (result.length > 0) {
         this.logger.log('Polling - success');
+        result.forEach(c => this.logger.log('Content id: ' + c.id));
+
+      } else {
+        this.logger.log('Polling - success - No content');
       }
     });
-
   }
 
   public async dealWithAtomFeed(feed: YoutubeFeed) {
@@ -134,6 +135,7 @@ export class ContentService  {
 
     // Si on ne trouve pas le meta media c'est surement une mauvaise playlist
     if (metaMedia == null) {
+      this.logger.warn('Athen - Youtube playlist feed not recognized: ' + feed.metaMediaId);
       return;
     }
 
@@ -145,12 +147,12 @@ export class ContentService  {
       dealWithFeed$ = empty();
     }
 
-    dealWithFeed$ = dealWithFeed$.pipe(
+    const saveAndNotif$ = dealWithFeed$.pipe(
       filter((data) => data != null),
-      flatMap((currentContent: Content) => this.saveAndNotifIfCreation(currentContent)),
+      map((currentContent: Content) => this.sendNotification(currentContent)),
     );
 
-    dealWithFeed$.subscribe((content) => {
+    saveAndNotif$.subscribe((content) => {
       this.logger.log('Content updated id: ' + content.id);
     });
   }
@@ -231,16 +233,21 @@ export class ContentService  {
    * Cette methode permet de récupérer les dernier post pour un metamedia données
    * @param metaMedia le metaMedia actuellement parcourus
    */
-  private createGetAndSaveObs(metaMedia: MetaMedia): Observable<Content | unknown> {
+  private saveNewContent(metaMedia: MetaMedia): Observable<Content[]> {
     // Récupération des post
     const getAndSave$ = this.postService.getPost(metaMedia.url, metaMedia.key)
       .pipe(
-        // Pour chaque post on execute l'observable suivant
-        arrayMap((post) => {
-          post.metaMedia = metaMedia;
-          return this.checkAndSave(post);
-        },
-        ));
+        mergeMap((posts: Post[]) => {
+          // Transformation de l'ensemble des posts en tableau d'observable avec le metaMedia valorisé
+          const checkSavePosts$ = posts.map(p => {
+            p.metaMedia = metaMedia;
+            return this.checkAndSave(p);
+          });
+          // Résolution parallélisé du tableau
+          return forkJoin(checkSavePosts$);
+        }),
+        map((contents: Content[] | null[]) => contents.filter(c => c != null)),
+      );
 
     return getAndSave$;
   }
@@ -255,10 +262,15 @@ export class ContentService  {
     // Conversion de la promise en observable
     return from(this.findByContentID(post.id.toString()))
       .pipe(
-        // Vérification présent ou non en bdd
-        filter((content: any) => content == null),
         // SI non on le sauvearde arprès conversion du post en content
-        flatMap((content) => from(this.saveAndNotifIfCreation(this.postService.convertPostToContent(post), post))),
+        flatMap((content) => {
+          if (content == null) {
+            return from(this.save(this.postService.convertPostToContent(post)));
+          } else {
+            return of(null);
+          }
+        }),
       );
   }
 }
+
