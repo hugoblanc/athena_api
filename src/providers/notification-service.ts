@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as admin from 'firebase-admin';
-import { from } from 'rxjs';
+import { from, of } from 'rxjs';
 
 /**
  * *~~~~~~~~~~~~~~~~~~~

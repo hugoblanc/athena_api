@@ -81,7 +81,7 @@ export class YoutubeService {
     return content$;
   }
 
-  dealWithNewFeed(content: Content, metaMedia: MetaMedia, youtubeFeed: YoutubeFeed) {
+  dealWithNewFeed(content: Content, metaMedia: MetaMedia, youtubeFeed: YoutubeFeed): Observable<Content> {
     return this.getItem(this.createPlaylistIdFromChannelID(youtubeFeed.metaMediaId), youtubeFeed.id)
       .pipe(map(item => {
         this.logger.log('New item récupéré depuis youtube');
