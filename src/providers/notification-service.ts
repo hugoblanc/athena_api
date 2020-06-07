@@ -30,12 +30,15 @@ export class NotificationService {
     // }
 
     // On ne peut pas envoyer tout les message car sinon on dupplique les notificaiton ... dommage
-    from(admin.messaging().send(messages[0])).subscribe((resultSend) => {
-      this.logger.log('Successfully sent message');
-    }, (error) => {
-      this.logger.error('Error sending message');
-      this.logger.error(JSON.stringify(error));
-    });
+    console.log(messages[0]);
+
+    // from(admin.messaging().send(messages[0])).subscribe((resultSend) => {
+    //   this.logger.log('Successfully sent message');
+    //   console.log(messages[0]);
+    // }, (error) => {
+    //   this.logger.error('Error sending message');
+    //   this.logger.error(JSON.stringify(error));
+    // });
   }
 
   /**
