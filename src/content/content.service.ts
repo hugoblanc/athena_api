@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { empty, forkJoin, from, Observable, of } from 'rxjs';
-import { filter, flatMap, map, mergeMap } from 'rxjs/operators';
+import { filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
 import { Repository } from 'typeorm';
 
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
@@ -35,16 +35,19 @@ export class ContentService {
    * Cette method permet d'envoyer une notification basé sur un contenu
    * @param content Le contenu utilisé pour créer la notification
    */
-  sendNotification(content?: Content): Content | null {
-    if (content && content.id) {
-      const messages = this.createNotif(content, content.metaMedia.key);
-      this.notificationService.sendMessage(messages);
-    }
-    return content;
+  sendVideoNotification(content: Content) {
+    const messages = NotificationService.createMessage(
+      'Nouvelle vidéo de ' + content.metaMedia.title,
+      content.title,
+      content.metaMedia.key,
+      content.id.toString());
+
+    this.notificationService.sendMessage(messages);
   }
 
-  createNotif(object: Content, key: string) {
-    return NotificationService.createMessage('Nouvelle vidéo de ' + object.metaMedia.title, object.title, key, object.id.toString());
+  sendPostNotification(post: Post) {
+    const message = post.toNotification();
+    this.notificationService.sendMessage(message);
   }
 
   /**
@@ -109,18 +112,18 @@ export class ContentService {
     const metaMedias$ = from(this.metaMediaService.findByType(MetaMediaType.WORDPRESS));
 
     metaMedias$.pipe(
-      arrayMap(metaMedia => this.saveNewContent(metaMedia)),
-      map((contents: Content[]) => {
+      arrayMap(metaMedia => this.savePostContent(metaMedia)),
+      map((postContents: Array<{ content: Content, post: Post }>) => {
         // Si moins de 5 nouveau content c'est possible, sinon il s'agit surement d'une init
-        if (contents.length < 5) {
-          contents.forEach(c => this.sendNotification(c));
+        if (postContents.length < 5) {
+          postContents.forEach(pC => this.sendPostNotification(pC.post));
         }
-        return contents;
+        return postContents;
       }),
-    ).subscribe((result: Content[]) => {
-      if (result.length > 0) {
+    ).subscribe((postContents: Array<{ content: Content, post: Post }>) => {
+      if (postContents.length > 0) {
         this.logger.log('Polling - success');
-        result.forEach(c => this.logger.log('Content id: ' + c.id));
+        postContents.forEach(pC => this.logger.log('Content id: ' + pC.content.id));
 
       } else {
         this.logger.log('Polling - success - No content');
@@ -135,7 +138,7 @@ export class ContentService {
 
     // Si on ne trouve pas le meta media c'est surement une mauvaise playlist
     if (metaMedia == null) {
-      this.logger.warn('Athen - Youtube playlist feed not recognized: ' + feed.metaMediaId);
+      this.logger.warn('Athena - Youtube playlist feed not recognized: ' + feed.metaMediaId);
       return;
     }
 
@@ -148,12 +151,14 @@ export class ContentService {
     }
 
     const saveAndNotif$ = dealWithFeed$.pipe(
+      flatMap((contentFeed) => from(this.save(contentFeed))),
+      filter(() => content == null),
       filter((data) => data != null),
-      map((currentContent: Content) => this.sendNotification(currentContent)),
+      tap((currentContent: Content) => this.sendVideoNotification(currentContent)),
     );
 
-    saveAndNotif$.subscribe((content) => {
-      this.logger.log('Content updated id: ' + content.id);
+    saveAndNotif$.subscribe((finalContent: Content) => {
+      this.logger.log('Youtube content edita ' + finalContent.id);
     });
   }
 
@@ -233,7 +238,7 @@ export class ContentService {
    * Cette methode permet de récupérer les dernier post pour un metamedia données
    * @param metaMedia le metaMedia actuellement parcourus
    */
-  private saveNewContent(metaMedia: MetaMedia): Observable<Content[]> {
+  private savePostContent(metaMedia: MetaMedia): Observable<Content[]> {
     // Récupération des post
     const getAndSave$ = this.postService.getPost(metaMedia.url, metaMedia.key)
       .pipe(
@@ -265,7 +270,7 @@ export class ContentService {
         // SI non on le sauvearde arprès conversion du post en content
         flatMap((content) => {
           if (content == null) {
-            return from(this.save(this.postService.convertPostToContent(post)));
+            return from(this.save(this.postService.convertPostToContent(post))).pipe(map((content: Content) => ({ content, post })));
           } else {
             return of(null);
           }
