@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { empty, forkJoin, from, Observable, of } from 'rxjs';
 import { filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
 import { Repository } from 'typeorm';
-
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 import { Page } from '../core/page';
 import { arrayMap } from '../core/rxjs/array-map';
@@ -18,7 +17,6 @@ import { YoutubeService } from './youtube/youtube.service';
 
 @Injectable()
 export class ContentService {
-
   private static PAGER_SIZE = 10;
 
   private readonly logger = new Logger(ContentService.name);
@@ -29,7 +27,7 @@ export class ContentService {
     private youtubeService: YoutubeService,
     private postService: PostService,
     private notificationService: NotificationService,
-  ) { }
+  ) {}
 
   /**
    * Cette method permet d'envoyer une notification basé sur un contenu
@@ -40,7 +38,8 @@ export class ContentService {
       'Nouvelle vidéo de ' + content.metaMedia.title,
       content.title,
       content.metaMedia.key,
-      content.id.toString());
+      content.id.toString(),
+    );
 
     this.notificationService.sendMessage(messages);
   }
@@ -62,21 +61,25 @@ export class ContentService {
       // On vérifie que le metaMedia n'est pas null
       filter((metaMedia: MetaMedia) => {
         tmpMetaMedia = metaMedia; // On stock dans une variable temporaire pour réutilise dans les autres appel
-        const isNull = (metaMedia != null);
+        const isNull = metaMedia != null;
         // Si c'est null on peut rien faire
         if (!isNull) {
-          this.logger.error(`Le metamedia de clé: ${mediaKey} n'a pas été trouvé`);
+          this.logger.error(
+            `Le metamedia de clé: ${mediaKey} n'a pas été trouvé`,
+          );
         }
         return isNull;
       }),
       // Récupération du contenu en bdd du metamedia
-      flatMap((metaMedia) => this.findByMediaKey(metaMedia.key)),
+      flatMap(metaMedia => this.findByMediaKey(metaMedia.key)),
       // On vérifie qu'il n'y a pas déjà de contenu pour le metaMEdia en question'
       filter((contents: Content[]) => {
         // S'il y a deja du contenu on ne doit rien faire car déjà init
         const contentIsEmpty = contents.length === 0;
         if (!contentIsEmpty) {
-          this.logger.log(`Le metaMedia ${tmpMetaMedia.key} à déjà été initialisé `);
+          this.logger.log(
+            `Le metaMedia ${tmpMetaMedia.key} à déjà été initialisé `,
+          );
         }
         return contentIsEmpty;
       }),
@@ -87,13 +90,17 @@ export class ContentService {
         // Si c'est une init youtube c'est pas comme une init wordpress
         switch (tmpMetaMedia.type) {
           case MetaMediaType.YOUTUBE:
-            getContent$ = this.youtubeService.getAllContentForTargetId(tmpMetaMedia);
+            getContent$ = this.youtubeService.getAllContentForTargetId(
+              tmpMetaMedia,
+            );
             break;
           case MetaMediaType.WORDPRESS:
             getContent$ = this.postService.getContent(tmpMetaMedia);
             break;
           default:
-            this.logger.error('Ce type de meta media n\'est pas géré par la methode d\'initialisation');
+            this.logger.error(
+              "Ce type de meta media n'est pas géré par la methode d'initialisation",
+            );
             break;
         }
 
@@ -109,52 +116,66 @@ export class ContentService {
   public async pollingContent() {
     this.logger.log('Polling - triggered');
 
-    const metaMedias$ = from(this.metaMediaService.findByType(MetaMediaType.WORDPRESS));
+    const metaMedias$ = from(
+      this.metaMediaService.findByType(MetaMediaType.WORDPRESS),
+    );
 
-    metaMedias$.pipe(
-      arrayMap(metaMedia => this.savePostContent(metaMedia)),
-      map((postContents: Array<{ content: Content, post: Post }>) => {
-        // Si moins de 5 nouveau content c'est possible, sinon il s'agit surement d'une init
-        if (postContents.length < 5) {
-          postContents.forEach(pC => this.sendPostNotification(pC.post));
+    metaMedias$
+      .pipe(
+        arrayMap(metaMedia => this.savePostContent(metaMedia)),
+        map((postContents: Array<{ content: Content; post: Post }>) => {
+          // Si moins de 5 nouveau content c'est possible, sinon il s'agit surement d'une init
+          if (postContents.length < 5) {
+            postContents.forEach(pC => this.sendPostNotification(pC.post));
+          }
+          return postContents;
+        }),
+      )
+      .subscribe((postContents: Array<{ content: Content; post: Post }>) => {
+        if (postContents.length > 0) {
+          this.logger.log('Polling - success');
+          postContents.forEach(pC =>
+            this.logger.log('Content id: ' + pC.content.id),
+          );
+        } else {
+          this.logger.log('Polling - success - No content');
         }
-        return postContents;
-      }),
-    ).subscribe((postContents: Array<{ content: Content, post: Post }>) => {
-      if (postContents.length > 0) {
-        this.logger.log('Polling - success');
-        postContents.forEach(pC => this.logger.log('Content id: ' + pC.content.id));
-
-      } else {
-        this.logger.log('Polling - success - No content');
-      }
-    });
+      });
   }
 
   public async dealWithAtomFeed(feed: YoutubeFeed) {
-
-    const metaMedia = await this.metaMediaService.findByRessource(feed.metaMediaId);
+    const metaMedia = await this.metaMediaService.findByRessource(
+      feed.metaMediaId,
+    );
     const content = await this.findByContentID(feed.id);
 
     // Si on ne trouve pas le meta media c'est surement une mauvaise playlist
     if (metaMedia == null) {
-      this.logger.warn('Athena - Youtube playlist feed not recognized: ' + feed.metaMediaId);
+      this.logger.warn(
+        'Athena - Youtube playlist feed not recognized: ' + feed.metaMediaId,
+      );
       return;
     }
 
     let dealWithFeed$: Observable<Content>;
     if (feed instanceof YoutubeFeed) {
       this.logger.log('Youtube feed detected');
-      dealWithFeed$ = this.youtubeService.dealWithNewFeed(content, metaMedia, feed);
+      dealWithFeed$ = this.youtubeService.dealWithNewFeed(
+        content,
+        metaMedia,
+        feed,
+      );
     } else {
       dealWithFeed$ = empty();
     }
 
     const saveAndNotif$ = dealWithFeed$.pipe(
-      flatMap((contentFeed) => from(this.save(contentFeed))),
+      flatMap(contentFeed => from(this.save(contentFeed))),
       filter(() => content == null),
-      filter((data) => data != null),
-      tap((currentContent: Content) => this.sendVideoNotification(currentContent)),
+      filter(data => data != null),
+      tap((currentContent: Content) =>
+        this.sendVideoNotification(currentContent),
+      ),
     );
 
     saveAndNotif$.subscribe((finalContent: Content) => {
@@ -197,14 +218,20 @@ export class ContentService {
     if (metaMedia == null) {
       throw new Error('La clé ne correspond pas ');
     }
-    return this.contentRepository.find({ where: { metaMedia }, order: { publishedAt: 'DESC' } });
+    return this.contentRepository.find({
+      where: { metaMedia },
+      order: { publishedAt: 'DESC' },
+    });
   }
 
   /**
    * Cette methode renvoi une liste de content pour un meta meia cible
    * @param key la clé du metamedia cible
    */
-  async findPageByMediaKey(key: string, pageNumber: number = 0): Promise<Page<Content>> {
+  async findPageByMediaKey(
+    key: string,
+    pageNumber: number = 0,
+  ): Promise<Page<Content>> {
     // On s'assure au préalable que cette requète a du sens
     // C-a-d que metamedia n'est pas null
     const metaMedia = await this.metaMediaService.findByKey(key);
@@ -229,7 +256,10 @@ export class ContentService {
     page.count = contentsCounted[0].length;
     page.objects = contentsCounted[0];
     page.totalCount = contentsCounted[1];
-    page.next = (page.totalCount > ((pageNumber + 1) * ContentService.PAGER_SIZE)) ? ++pageNumber : undefined;
+    page.next =
+      page.totalCount > (pageNumber + 1) * ContentService.PAGER_SIZE
+        ? ++pageNumber
+        : undefined;
     // On renvoi le résultat
     return page;
   }
@@ -240,7 +270,8 @@ export class ContentService {
    */
   private savePostContent(metaMedia: MetaMedia): Observable<Content[]> {
     // Récupération des post
-    const getAndSave$ = this.postService.getPost(metaMedia.url, metaMedia.key)
+    const getAndSave$ = this.postService
+      .getPost(metaMedia.url, metaMedia.key)
       .pipe(
         mergeMap((posts: Post[]) => {
           // Transformation de l'ensemble des posts en tableau d'observable avec le metaMedia valorisé
@@ -265,17 +296,17 @@ export class ContentService {
    */
   private checkAndSave(post: Post): Observable<Content> {
     // Conversion de la promise en observable
-    return from(this.findByContentID(post.id.toString()))
-      .pipe(
-        // SI non on le sauvearde arprès conversion du post en content
-        flatMap((content) => {
-          if (content == null) {
-            return from(this.save(this.postService.convertPostToContent(post))).pipe(map((content: Content) => ({ content, post })));
-          } else {
-            return of(null);
-          }
-        }),
-      );
+    return from(this.findByContentID(post.id.toString())).pipe(
+      // SI non on le sauvearde arprès conversion du post en content
+      flatMap(content => {
+        if (content == null) {
+          return from(
+            this.save(this.postService.convertPostToContent(post)),
+          ).pipe(map((content: Content) => ({ content, post })));
+        } else {
+          return of(null);
+        }
+      }),
+    );
   }
 }
-

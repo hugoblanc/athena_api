@@ -24,7 +24,7 @@ export class Content {
   @Column({type: 'timestamp'})
   publishedAt: Date;
 
-  @ManyToOne(type => MetaMedia, metaMedia => metaMedia.contents, {eager: true})
+  @ManyToOne(type => MetaMedia, metaMedia => metaMedia.contents, {eager: true, onDelete:'CASCADE'})
   metaMedia: MetaMedia;
 
   @OneToOne(type => Image, {cascade: true, nullable: true, eager: true})
