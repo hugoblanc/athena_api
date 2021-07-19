@@ -1,10 +1,10 @@
+import { XmlEntities } from 'html-entities';
+import { Image } from '../content/image.entity';
+import { INotifiedObject } from '../content/inotified-object';
+import { MetaMedia } from '../meta-media/meta-media.entity';
+import { NotificationService } from '../providers/notification-service';
 import { Content } from './content';
 import { Embedded } from './embedded';
-import { Image } from '../content/image.entity';
-import { NotificationService } from '../providers/notification-service';
-import { XmlEntities } from 'html-entities';
-import { MetaMedia } from '../meta-media/meta-media.entity';
-import { INotifiedObject } from '../content/inotified-object';
 
 export class Post implements INotifiedObject {
   public author: number;
@@ -53,18 +53,24 @@ export class Post implements INotifiedObject {
     const entities = new XmlEntities();
     this.title.rendered = entities.decode(this.getTitle());
     // Pour une raison qui m'échappe l'apostrophe ne fonctionne toujours pas
-    this.title.rendered = this.title.rendered.replace('&rsquo;', '\'');
+    this.title.rendered = this.title.rendered.replace('&rsquo;', "'");
 
     // Image part
-    if (this.guid &&
+    if (
+      this.guid &&
       this.guid.rendered &&
       this.embedded &&
+      this.embedded.featuredmedia &&
       this.embedded.featuredmedia[0] &&
       this.embedded.featuredmedia[0].mediaDetails &&
-      this.embedded.featuredmedia[0].mediaDetails.file) {
+      this.embedded.featuredmedia[0].mediaDetails.file
+    ) {
       const url = this.guid.rendered.split('?');
       this.image = new Image();
-      this.image.url = url[0] + 'wp-content/uploads/' + this.embedded.featuredmedia[0].mediaDetails.file;
+      this.image.url =
+        url[0] +
+        'wp-content/uploads/' +
+        this.embedded.featuredmedia[0].mediaDetails.file;
       this.image.height = this.embedded.featuredmedia[0].mediaDetails.height;
       this.image.width = this.embedded.featuredmedia[0].mediaDetails.width;
     }
@@ -75,14 +81,17 @@ export class Post implements INotifiedObject {
   }
 
   public isIdEqual(id: number) {
-    return (this.id === id);
+    return this.id === id;
   }
 
   toNotification() {
-    if(!this.metaMedia){
+    if (!this.metaMedia) {
       throw new Error('Le meta media du post est null');
     }
-    const conditions = NotificationService.createConditionFromKeyAndCategories(this.metaMedia.key, this.categories);
+    const conditions = NotificationService.createConditionFromKeyAndCategories(
+      this.metaMedia.key,
+      this.categories,
+    );
 
     const messages = NotificationService.createMessage(
       'Nouvel article par ' + this.metaMedia.title,
@@ -94,5 +103,4 @@ export class Post implements INotifiedObject {
 
     return messages;
   }
-
 }
