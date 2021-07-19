@@ -107,7 +107,7 @@ export class ContentService {
         return getContent$;
       }),
       // Finalement on sauvegarde ça en bdd
-      flatMap((content: Content) => this.save(content)),
+      mergeMap((content: Content) => this.save(content)),
     );
 
     return metaMedia$;
@@ -298,11 +298,9 @@ export class ContentService {
     // Conversion de la promise en observable
     return from(this.findByContentID(post.id.toString())).pipe(
       // SI non on le sauvearde arprès conversion du post en content
-      flatMap(content => {
+      mergeMap(content => {
         if (content == null) {
-          return from(
-            this.save(this.postService.convertPostToContent(post)),
-          ).pipe(map((content: Content) => ({ content, post })));
+          return from(this.save(this.postService.convertPostToContent(post)));
         } else {
           return of(null);
         }

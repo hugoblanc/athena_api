@@ -22,5 +22,4 @@ export class CronService extends NestDistributedSchedule {
   async cronJob() {
     this.contentService.pollingContent();
   }
-
 }

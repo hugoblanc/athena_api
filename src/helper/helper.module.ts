@@ -1,4 +1,5 @@
-import { forwardRef, HttpModule, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { forwardRef, Module } from '@nestjs/common';
 import { ScheduleModule } from 'nest-schedule';
 import { ContentModule } from '../content/content.module';
 import { CronService } from '../providers/cron-service';
@@ -9,8 +10,19 @@ import { PostService } from '../providers/post-service';
 import { FormatService } from './format/format.service';
 
 @Module({
-  imports: [ScheduleModule.register(), HttpModule, forwardRef(() => ContentModule)],
-  providers: [CronService, ExternalService, PostService, NotificationService, MediaService, FormatService],
+  imports: [
+    ScheduleModule.register(),
+    HttpModule,
+    forwardRef(() => ContentModule),
+  ],
+  providers: [
+    CronService,
+    ExternalService,
+    PostService,
+    NotificationService,
+    MediaService,
+    FormatService,
+  ],
   exports: [ExternalService, PostService, FormatService, NotificationService],
 })
-export class HelperModule { }
+export class HelperModule {}

@@ -1,24 +1,18 @@
-FROM node:8
-
-# Create app directory
+FROM node:11.15.0-alpine
+RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
 COPY package*.json ./
-COPY tsconfig*.json ./
 
-COPY ./src ./src
+RUN npm ci
 
-RUN npm install
-# If you are building your code for production
-# RUN npm install --only=production
+
+COPY ./ .
+
+ENV NODE_ENV production
+ENV PORT 80
+EXPOSE 80 3001
+
 RUN npm run build
 
-
-# Bundle app source
-COPY . .
-
-EXPOSE 3000 3001
-CMD [ "npm","run",  "start:prod" ]
+CMD [ "npm","run", "start:prod" ]
