@@ -123,7 +123,7 @@ export class ContentService {
     metaMedias$
       .pipe(
         arrayMap(metaMedia => this.savePostContent(metaMedia)),
-        map((postContents: Array<{ content: Content; post: Post }>) => {
+        map((postContents: { content: Content; post: Post }[]) => {
           // Si moins de 5 nouveau content c'est possible, sinon il s'agit surement d'une init
           if (postContents.length < 5) {
             postContents.forEach(pC => this.sendPostNotification(pC.post));
@@ -268,7 +268,9 @@ export class ContentService {
    * Cette methode permet de récupérer les dernier post pour un metamedia données
    * @param metaMedia le metaMedia actuellement parcourus
    */
-  private savePostContent(metaMedia: MetaMedia): Observable<Content[]> {
+  private savePostContent(
+    metaMedia: MetaMedia,
+  ): Observable<{ content: Content; post: Post }[]> {
     // Récupération des post
     const getAndSave$ = this.postService
       .getPost(metaMedia.url, metaMedia.key)
@@ -282,7 +284,9 @@ export class ContentService {
           // Résolution parallélisé du tableau
           return forkJoin(checkSavePosts$);
         }),
-        map((contents: Content[] | null[]) => contents.filter(c => c != null)),
+        map((contents: { content: Content; post: Post }[] | null[]) =>
+          contents.filter(c => c != null),
+        ),
       );
 
     return getAndSave$;
@@ -294,13 +298,17 @@ export class ContentService {
    * @param metaMedia le metaMedia acutallement parcourru
    * @param post le post du meta media en question
    */
-  private checkAndSave(post: Post): Observable<Content> {
+  private checkAndSave(
+    post: Post,
+  ): Observable<{ content: Content; post: Post }> {
     // Conversion de la promise en observable
     return from(this.findByContentID(post.id.toString())).pipe(
       // SI non on le sauvearde arprès conversion du post en content
       mergeMap(content => {
         if (content == null) {
-          return from(this.save(this.postService.convertPostToContent(post)));
+          return from(
+            this.save(this.postService.convertPostToContent(post)),
+          ).pipe(map((content: Content) => ({ content, post })));
         } else {
           return of(null);
         }
