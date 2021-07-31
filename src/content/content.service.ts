@@ -71,7 +71,7 @@ export class ContentService {
         return isNull;
       }),
       // Récupération du contenu en bdd du metamedia
-      flatMap(metaMedia => this.findByMediaKey(metaMedia.key)),
+      mergeMap(metaMedia => this.findByMediaKey(metaMedia.key)),
       // On vérifie qu'il n'y a pas déjà de contenu pour le metaMEdia en question'
       filter((contents: Content[]) => {
         // S'il y a deja du contenu on ne doit rien faire car déjà init
@@ -84,7 +84,7 @@ export class ContentService {
         return contentIsEmpty;
       }),
       // Si tout les filtre sont passé on récupère le contenu du media
-      flatMap(() => {
+      mergeMap(() => {
         let getContent$;
         // On doit gérer l'initailisation en fonction des cas
         // Si c'est une init youtube c'est pas comme une init wordpress
@@ -99,7 +99,7 @@ export class ContentService {
             break;
           default:
             this.logger.error(
-              "Ce type de meta media n'est pas géré par la methode d'initialisation",
+              "Ce type de meta media n'est pas géré par la méthode d'initialisation",
             );
             break;
         }
