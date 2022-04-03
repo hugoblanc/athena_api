@@ -1,6 +1,6 @@
 import { HttpModule } from '@nestjs/axios';
 import { forwardRef, Module } from '@nestjs/common';
-import { ScheduleModule } from 'nest-schedule';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ContentModule } from '../content/content.module';
 import { CronService } from '../providers/cron-service';
 import { ExternalService } from '../providers/external-service';
@@ -11,7 +11,7 @@ import { FormatService } from './format/format.service';
 
 @Module({
   imports: [
-    ScheduleModule.register(),
+    ScheduleModule.forRoot(),
     HttpModule,
     forwardRef(() => ContentModule),
   ],

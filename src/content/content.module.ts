@@ -9,10 +9,13 @@ import { HelperModule } from '../helper/helper.module';
 import { Image } from './image.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Image, Content]), MetaMediaModule, HelperModule],
+  imports: [
+    TypeOrmModule.forFeature([Image, Content]),
+    MetaMediaModule,
+    HelperModule,
+  ],
   controllers: [ContentController],
   providers: [ContentService, YoutubeService],
   exports: [ContentService],
 })
 export class ContentModule {}
-

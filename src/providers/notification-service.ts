@@ -6,52 +6,53 @@ import { from, of } from 'rxjs';
  * *~~~~~~~~~~~~~~~~~~~
  * Author: HugoBlanc |
  * *~~~~~~~~~~~~~~~~~~~
- * Ce service de notification à la respomssabilité de l'envoi des notifications
+ * Ce service de notification à la responsabilité de l'envoi des notifications
  * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 @Injectable()
 export class NotificationService {
-
   private readonly logger = new Logger(NotificationService.name);
   /**
    * Cette methode se charge d'envoyer une liste de message
    * @param messages la liste de message a envoyer
    */
   sendMessage(messages: any[]) {
-
     if (messages == null || !Array.isArray(messages) || messages.length === 0) {
       return;
     }
 
-    // On creai tun tableau d'observable
-    // const notif$ = [];
-    // for (const message of messages) {
-    //   notif$.push();
-    // }
+    // On ne peut pas envoyer tout les message car sinon on duplique les notification ... dommage
+    this.logger.log(messages[0]);
 
-    // On ne peut pas envoyer tout les message car sinon on dupplique les notificaiton ... dommage
-    console.log(messages[0]);
-
-    from(admin.messaging().send(messages[0])).subscribe((resultSend) => {
-      this.logger.log('Successfully sent message');
-      console.log(messages[0]);
-    }, (error) => {
-      this.logger.error('Error sending message');
-      this.logger.error(JSON.stringify(error));
-    });
+    from(admin.messaging().send(messages[0])).subscribe(
+      resultSend => {
+        this.logger.log('Successfully sent message');
+        this.logger.log(messages[0]);
+      },
+      error => {
+        this.logger.error('Error sending message');
+        this.logger.error(JSON.stringify(error));
+      },
+    );
   }
 
   /**
-   * Cette methode se charge de créer la liste de message associé au donées et conditions
+   * Cette methode se charge de créer la liste de message associé au donnés et conditions
    * @param title Le titre de la notification
    * @param body le body de la notification
    * @param key la clé du metaMedia ciblé par la notification elle est utilisé pour afficher le bon contenu dans l'app
    * @param id l'id de la ressources en question, elle est utilisé pour afficher le bon contenu dans l'app
-   * @param conditions un tableau de string qui permet d'indiquer quel categorie sont dans larticle
+   * @param conditions un tableau de string qui permet d'indiquer quel catégorie sont dans larticle
    * Malheureusement nous n'avons droit qu'a 5 topic par condition de notif, on choisi donc d'enoyer plusieur notif quand il
    * y a plus de 5 critères
    */
-  static createMessage(title: string, body: string, key: string, id: string, conditions?: string[]) {
+  static createMessage(
+    title: string,
+    body: string,
+    key: string,
+    id: string,
+    conditions?: string[],
+  ) {
     const messages = [];
 
     // En cas de condition null on ajoute quand même a condition initial d'abonnement au média
@@ -87,9 +88,14 @@ export class NotificationService {
     return messages;
   }
 
-  static createConditionFromKeyAndCategories(key: string, categories?: number[]) {
+  static createConditionFromKeyAndCategories(
+    key: string,
+    categories?: number[],
+  ) {
     if (!key) {
-      throw new Error('La clé n\'est pas présente pour envoyer la notification ');
+      throw new Error(
+        "La clé n'est pas présente pour envoyer la notification ",
+      );
     }
 
     // Dans tout les cas la clé devrait être la
@@ -108,7 +114,7 @@ export class NotificationService {
       // Si le topic n'est pas présent ça signifie qu'il est toujours abonnée (abonné par defaut)
       condition += ` && !('${key}-${id}' in topics)`;
       // Si on est en modulo 4 on commence une nouvelle condition (5 topic max par condition)
-      if (((i + 1) % 4) === 0) {
+      if ((i + 1) % 4 === 0) {
         // Alors on pousse la condition actuelle dans le tableau
         conditions.push(condition);
         // et on en commence une nouvelle
@@ -127,5 +133,4 @@ export class NotificationService {
   static createInitialTopic(mediaKey: string) {
     return `'${mediaKey}' in topics `;
   }
-
 }

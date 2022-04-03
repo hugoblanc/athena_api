@@ -3,8 +3,6 @@ import { join } from 'path';
 
 @Controller()
 export class AppController {
-  constructor() { }
-
   @Get('/')
   index(@Res() res) {
     res.sendFile(join(__dirname, '../public/index.html'));
@@ -14,5 +12,4 @@ export class AppController {
   privacy(@Res() res) {
     res.sendFile(join(__dirname, '../public/privacy.html'));
   }
-
 }
