@@ -1,4 +1,13 @@
 {
     "docker.defaultRegistryPath": "mrhwhite",
-    "debug.node.autoAttach": "on"
+    "debug.node.autoAttach": "on",
+    "workbench.colorCustomizations": {
+        "[Monokai]": {
+            "sideBar.background": "#000000",
+            "editor.background": "#0f0f0f"
+        },
+        "activityBar.background": "#4B174F",
+        "titleBar.activeBackground": "#69206F",
+        "titleBar.activeForeground": "#FDF8FD"
+    }
 }
