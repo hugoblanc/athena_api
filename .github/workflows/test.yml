@@ -15,7 +15,6 @@ jobs:
       db:
         # Docker Hub image
         image: mysql
-        restart: always
         ports:
           - '3306:3306'
         environment:
