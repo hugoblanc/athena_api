@@ -40,4 +40,10 @@ export class Content {
   @OneToOne(type => Image, { cascade: true, nullable: true, eager: true })
   @JoinColumn()
   image: Image;
+
+  constructor(input?: Partial<Content>) {
+    if (input) {
+      Object.assign(this, input);
+    }
+  }
 }

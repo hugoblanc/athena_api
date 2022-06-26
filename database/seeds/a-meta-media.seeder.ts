@@ -2,8 +2,9 @@ import { ListMetaMedia } from '../../src/list-meta-media/list-meta-media.entity'
 import { MetaMedia } from '../../src/meta-media/meta-media.entity'
 import { Connection } from 'typeorm'
 import { Factory, Seeder } from 'typeorm-seeding'
+import { MetaMediaType } from '../../src/meta-media/meta-media-type.enum';
 
-export default class MetaMediaUsers implements Seeder {
+export default class CreateMetaMediaList implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
 
     await this.insertListPress(connection);
@@ -30,6 +31,7 @@ export default class MetaMediaUsers implements Seeder {
       title: "Le Vent Se Lève",
       logo: "assets/lvsl_logo.jpg",
       listMetaMedia: listPresse,
+      type: MetaMediaType.WORDPRESS,
       donation: "https://lvsl.fr/faire-un-don/",
     })
     const media2 = new MetaMedia({
@@ -39,6 +41,7 @@ export default class MetaMediaUsers implements Seeder {
       title: "Mr Mondialisation",
       logo: "assets/mrmondialisation_logo.png",
       listMetaMedia: listPresse,
+      type: MetaMediaType.WORDPRESS,
       donation: "https://en.tipeee.com/mr-mondialisation",
     })
     const media4 = new MetaMedia({
@@ -48,6 +51,7 @@ export default class MetaMediaUsers implements Seeder {
       title: "Le Monde Moderne",
       logo: "assets/lemondemoderne.jpg",
       listMetaMedia: listPresse,
+      type: MetaMediaType.WORDPRESS,
       donation: null,
     })
     const media8 = new MetaMedia({
@@ -57,6 +61,7 @@ export default class MetaMediaUsers implements Seeder {
       title: "La quadrature du net",
       logo: "https://www.athena-app.fr/quadrature.png",
       listMetaMedia: listPresse,
+      type: MetaMediaType.WORDPRESS,
       donation: "https://soutien.laquadrature.net/",
     })
     const media9 = new MetaMedia({
@@ -66,6 +71,7 @@ export default class MetaMediaUsers implements Seeder {
       title: "La relève et La peste",
       logo: "https://www.athena-app.fr/lareleveetlapeste.jpg",
       listMetaMedia: listPresse,
+      type: MetaMediaType.WORDPRESS,
       donation: null,
     })
     const media10 = new MetaMedia({
@@ -75,6 +81,7 @@ export default class MetaMediaUsers implements Seeder {
       title: "Bon Pote",
       logo: "https://www.athena-app.fr/bon-pote.png",
       listMetaMedia: listPresse,
+      type: MetaMediaType.WORDPRESS,
       donation: "https://fr.tipeee.com/bon-pote/",
     })
     const media12 = new MetaMedia({
@@ -84,6 +91,7 @@ export default class MetaMediaUsers implements Seeder {
       title: "Les Repliques",
       logo: "https://www.athena-app.fr/les-repliques.png",
       listMetaMedia: listPresse,
+      type: MetaMediaType.WORDPRESS,
       donation: "https://fr.tipeee.com/les-repliques",
     })
 
@@ -110,7 +118,7 @@ export default class MetaMediaUsers implements Seeder {
     listVideo.title = "Vidéo"
     listVideo.metaMedias = []
     listVideo.id = 3;
-    listVideo =await listRepository.save(listVideo);
+    listVideo = await listRepository.save(listVideo);
 
 
     const media1 = new MetaMedia({
@@ -120,6 +128,7 @@ export default class MetaMediaUsers implements Seeder {
       title: "Osons causer",
       logo: "https://www.athena-app.fr/osonscauser.jpg",
       donation: null,
+      type: MetaMediaType.YOUTUBE,
       listMetaMedia: listVideo,
     });
 

@@ -32,7 +32,7 @@ describe('ListMetaMediaController (e2e)', () => {
               title: "Le Vent Se Lève",
               logo: "assets/lvsl_logo.jpg",
               donation: "https://lvsl.fr/faire-un-don/",
-              type: "YOUTUBE"
+              type: "WORDPRESS"
             },
             {
               id: 2,
@@ -41,7 +41,7 @@ describe('ListMetaMediaController (e2e)', () => {
               title: "Mr Mondialisation",
               logo: "assets/mrmondialisation_logo.png",
               donation: "https://en.tipeee.com/mr-mondialisation",
-              type: "YOUTUBE"
+              type: "WORDPRESS"
             },
             {
               id: 4,
@@ -50,7 +50,7 @@ describe('ListMetaMediaController (e2e)', () => {
               title: "Le Monde Moderne",
               logo: "assets/lemondemoderne.jpg",
               donation: null,
-              type: "YOUTUBE"
+              type: "WORDPRESS"
             },
             {
               id: 8,
@@ -59,7 +59,7 @@ describe('ListMetaMediaController (e2e)', () => {
               title: "La quadrature du net",
               logo: "https://www.athena-app.fr/quadrature.png",
               donation: "https://soutien.laquadrature.net/",
-              type: "YOUTUBE"
+              type: "WORDPRESS"
             },
             {
               id: 9,
@@ -68,7 +68,7 @@ describe('ListMetaMediaController (e2e)', () => {
               title: "La relève et La peste",
               logo: "https://www.athena-app.fr/lareleveetlapeste.jpg",
               donation: null,
-              type: "YOUTUBE"
+              type: "WORDPRESS"
             },
             {
               id: 10,
@@ -77,7 +77,7 @@ describe('ListMetaMediaController (e2e)', () => {
               title: "Bon Pote",
               logo: "https://www.athena-app.fr/bon-pote.png",
               donation: "https://fr.tipeee.com/bon-pote/",
-              type: "YOUTUBE"
+              type: "WORDPRESS"
             },
             {
               id: 12,
@@ -86,7 +86,7 @@ describe('ListMetaMediaController (e2e)', () => {
               title: "Les Repliques",
               logo: "https://www.athena-app.fr/les-repliques.png",
               donation: "https://fr.tipeee.com/les-repliques",
-              type: "YOUTUBE"
+              type: "WORDPRESS"
             }
           ]
         },

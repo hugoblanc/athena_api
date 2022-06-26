@@ -9,5 +9,6 @@
         "activityBar.background": "#4B174F",
         "titleBar.activeBackground": "#69206F",
         "titleBar.activeForeground": "#FDF8FD"
-    }
+    },
+    "typescript.preferences.importModuleSpecifier": "relative"
 }
