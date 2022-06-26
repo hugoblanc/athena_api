@@ -1,8 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
-import assert = require('assert');
+import { Test, TestingModule } from '@nestjs/testing';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -20,8 +19,8 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect("Content-type",/html/)
-      .end(function(err, res){
+      .expect("Content-type", /html/)
+      .end(function (err, res) {
         expect(res.text).toContain('<title>Athena</title>')
         done()
       })
@@ -31,8 +30,8 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/privacy')
       .expect(200)
-      .expect("Content-type",/html/)
-      .end(function(err, res){
+      .expect("Content-type", /html/)
+      .end(function (err, res) {
         expect(res.text).toContain('<title>Document</title>')
         done()
       })

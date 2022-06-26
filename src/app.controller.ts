@@ -1,7 +1,7 @@
 import { Controller, Get, Res } from '@nestjs/common';
 import { join } from 'path';
 
-@Controller()
+@Controller('/')
 export class AppController {
   @Get('/')
   index(@Res() res) {
