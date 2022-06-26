@@ -42,7 +42,7 @@ jobs:
         env:
           # The hostname used to communicate with the PostgreSQL service container
           # The default PostgreSQL port
-          ATHENA_DB_USER=root
-          ATHENA_DB_HOST=db
-          ATHENA_DB_PORT=3306
-          ATHENA_DB_PASSWORD=password
+          ATHENA_DB_USER: root
+          ATHENA_DB_HOST: db
+          ATHENA_DB_PORT: 3306
+          ATHENA_DB_PASSWORD: password
