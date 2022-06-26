@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { empty, forkJoin, from, Observable, of } from 'rxjs';
 import { filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
-import { arrayMap } from 'src/core/rxjs/array-map';
+import { arrayMap } from '../core/rxjs/array-map';
 import { Repository } from 'typeorm';
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 import { Page } from '../core/page';
