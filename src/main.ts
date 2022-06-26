@@ -3,7 +3,6 @@ import * as express from 'express';
 import * as admin from 'firebase-admin';
 import { join } from 'path';
 import { AppModule } from './app.module';
-import { ConfigurationModule } from './core/configuration/configuration.module';
 
 async function bootstrap() {
   // Initialisation de l'applicaiton Nest
