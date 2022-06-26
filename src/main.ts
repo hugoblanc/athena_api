@@ -11,7 +11,7 @@ async function bootstrap() {
   // On active les authorisation de cross origin ressources sharing
   app.enableCors();
   // on expose des ressources en static grace à epress
-  app.use(express.static(join(__dirname, '../public')));
+  app.use(express.static(join(__dirname, '../../public')));
   // On démarrer le serveur en écoutant sur le port 3000 ou présent dans l'env
   await app.listen(process.env.PORT || 3000);
 
