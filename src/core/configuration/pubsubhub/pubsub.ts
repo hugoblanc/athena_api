@@ -13,7 +13,7 @@ export class PubSub {
 
   private readonly logger = new Logger('PubSub');
   // L'url de callback pour le sotification
-   private static CALLBACK_URL = 'http://www.athena-app.fr:8081';
+  private static CALLBACK_URL = 'http://www.athena-app.fr:8081';
   // private static CALLBACK_URL = 'http://bb8878a3.ngrok.io';
   // Le hub par lequel on passe pour s'abonner en pubsubhubhub
   private static HUB = 'http://pubsubhubbub.appspot.com/';
@@ -22,6 +22,8 @@ export class PubSub {
   private static URLS = [
     'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCVeMw72tepFl1Zt5fvf9QKQ',
   ];
+
+  private subscribers: any[] = [];
   /**
    * La methode qui permet d'initialiser notre serveur de feed atom
    */
@@ -35,10 +37,19 @@ export class PubSub {
     // Création de l'observable qui se déclenchera a chaque notification
     const youtubeFeed$ = this.observeFeed(pubSubSubscriber);
     // Démarrage du serveur sur le port indiqué
-    this.logger.log('start linsting');
-    pubSubSubscriber.listen(3001);
+    const pubSubPort = parseInt(process.env.ATHENA_PUB_SUB_PORT, 10) || undefined;
+    this.logger.log('start listening on port ' + pubSubPort);
+    pubSubSubscriber.listen(pubSubPort);
+    this.subscribers.push(pubSubSubscriber);
     // On renvoi l'observable qui nous avertira des changement effetuer
     return youtubeFeed$;
+  }
+
+  public unsubscribeAll() {
+    this.subscribers.forEach(subscriber => {
+      subscriber.unsubscribe();
+    }
+    );
   }
 
   private createServer() {

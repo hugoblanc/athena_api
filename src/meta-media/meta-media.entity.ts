@@ -33,4 +33,10 @@ export class MetaMedia {
   @OneToMany(type => Content, content => content.metaMedia)
   contents: Content[];
 
+  constructor(input?: Partial<MetaMedia>) {
+    if (input) {
+      Object.assign(this, input);
+    }
+  }
+
 }

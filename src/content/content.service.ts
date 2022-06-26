@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { empty, forkJoin, from, Observable, of } from 'rxjs';
 import { filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
+import { arrayMap } from 'src/core/rxjs/array-map';
 import { Repository } from 'typeorm';
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 import { Page } from '../core/page';
-import { arrayMap } from '../core/rxjs/array-map';
 import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { MetaMediaService } from '../meta-media/meta-media.service';
@@ -27,7 +27,7 @@ export class ContentService {
     private youtubeService: YoutubeService,
     private postService: PostService,
     private notificationService: NotificationService,
-  ) {}
+  ) { }
 
   /**
    * Cette method permet d'envoyer une notification basé sur un contenu
