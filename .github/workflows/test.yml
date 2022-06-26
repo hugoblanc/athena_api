@@ -22,10 +22,7 @@ jobs:
           MYSQL_USER: athenauser
           MYSQL_PASSWORD: password
           MYSQL_DATABASE: athena
-        healthcheck:
-          test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-          timeout: 20s
-          retries: 10
+        options: --health-cmd "mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 10
 
     steps:
       # Downloads a copy of the code in your repository before running CI tests
