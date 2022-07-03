@@ -36,4 +36,9 @@ describe('AppController (e2e)', () => {
         done()
       })
   });
+
+  afterEach(async (done) => {
+    await app.close();
+    done()
+  });
 });

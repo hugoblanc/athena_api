@@ -5,11 +5,11 @@ import { join } from 'path';
 export class AppController {
   @Get('/')
   index(@Res() res) {
-    res.sendFile(join(__dirname, '../../public/index.html'));
+    res.sendFile(join(__dirname, '../public/index.html'));
   }
 
   @Get('/privacy')
   privacy(@Res() res) {
-    res.sendFile(join(__dirname, '../../public/privacy.html'));
+    res.sendFile(join(__dirname, '../public/privacy.html'));
   }
 }

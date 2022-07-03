@@ -46,10 +46,10 @@ export class PubSub {
   }
 
   public unsubscribeAll() {
+
     this.subscribers.forEach(subscriber => {
       subscriber.unsubscribe();
-    }
-    );
+    });
   }
 
   private createServer() {

@@ -16,7 +16,7 @@ describe('ListMetaMediaController (e2e)', () => {
     await app.init();
   });
 
-  it('/list-meta-media (GET)', () => {
+  it('/content/mediakey (GET)', () => {
     return request(app.getHttpServer())
       .get('/content/mediakey/lvsl')
       .expect(200)
@@ -60,4 +60,8 @@ describe('ListMetaMediaController (e2e)', () => {
       ])
   });
 
+  afterEach(async (done) => {
+    await app.close();
+    done()
+  });
 });

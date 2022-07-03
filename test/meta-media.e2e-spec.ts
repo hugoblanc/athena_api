@@ -108,4 +108,9 @@ describe('ListMetaMediaController (e2e)', () => {
       ])
   });
 
+  afterEach(async (done) => {
+    await app.close();
+    done()
+  });
+
 });
