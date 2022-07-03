@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { empty, forkJoin, from, Observable, of } from 'rxjs';
 import { filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
@@ -214,9 +214,12 @@ export class ContentService {
    * @param key la clé du metamedia cible
    */
   async findByMediaKey(key: string): Promise<Content[]> {
+    const all = await this.metaMediaService.findAll();
+    console.error(JSON.stringify(all));
+
     const metaMedia = await this.metaMediaService.findByKey(key);
     if (metaMedia == null) {
-      throw new Error('La clé ne correspond pas ');
+      throw new NotFoundException(`La clé ${key} est introuvable`);
     }
     return this.contentRepository.find({
       where: { metaMedia },
@@ -236,7 +239,7 @@ export class ContentService {
     // C-a-d que metamedia n'est pas null
     const metaMedia = await this.metaMediaService.findByKey(key);
     if (metaMedia == null) {
-      throw new Error('La clé ne correspond pas ');
+      throw new NotFoundException(`La clé ${key} est introuvable`);
     }
 
     // Recherche des "PAGER_SIZE" élements a partir de la page "pageNumber"
