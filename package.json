@@ -17,7 +17,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "rimraf dist && npm run copy-public &&  jest --config ./test/jest-e2e.json --forceExit",
-    "test:ci": "rimraf dist && npm run seed:run && npm run copy-public &&  jest --config ./test/jest-e2e.json",
+    "test:ci": "rimraf dist && npm run seed:run && npm run copy-public &&  jest --config ./test/jest-e2e.json --forceExit",
     "release": "standard-version",
     "prepare": "copyfiles --flat .githooks/* .git/hooks/",
     "copy-public": "copyfiles public/* dist/",
