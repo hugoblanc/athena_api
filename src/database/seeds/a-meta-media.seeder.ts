@@ -1,8 +1,8 @@
-import { ListMetaMedia } from '../../src/list-meta-media/list-meta-media.entity'
-import { MetaMedia } from '../../src/meta-media/meta-media.entity'
+import { ListMetaMedia } from '../../list-meta-media/list-meta-media.entity'
+import { MetaMedia } from '../../meta-media/meta-media.entity'
 import { Connection } from 'typeorm'
 import { Factory, Seeder } from 'typeorm-seeding'
-import { MetaMediaType } from '../../src/meta-media/meta-media-type.enum';
+import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
 
 export default class CreateMetaMediaList implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {

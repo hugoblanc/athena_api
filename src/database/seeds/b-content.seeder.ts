@@ -1,8 +1,8 @@
 import { Connection } from 'typeorm';
 import { Factory, Seeder } from 'typeorm-seeding';
-import { Content } from '../../src/content/content.entity';
-import { MetaMediaType } from '../../src/meta-media/meta-media-type.enum';
-import { MetaMedia } from '../../src/meta-media/meta-media.entity';
+import { Content } from '../../content/content.entity';
+import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
+import { MetaMedia } from '../../meta-media/meta-media.entity';
 
 export default class CreateContents implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
