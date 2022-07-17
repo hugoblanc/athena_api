@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
+import { AppModule } from '../app.module';
 
 
 describe('ListMetaMediaController (e2e)', () => {
@@ -17,6 +17,7 @@ describe('ListMetaMediaController (e2e)', () => {
   });
 
   it('/list-meta-media (GET)', () => {
+
     return request(app.getHttpServer())
       .get('/list-meta-media')
       .expect(200)
@@ -106,6 +107,9 @@ describe('ListMetaMediaController (e2e)', () => {
           ]
         }
       ])
+
+
+
   });
 
   afterEach(async (done) => {

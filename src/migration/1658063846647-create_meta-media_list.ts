@@ -1,27 +1,20 @@
-import { ListMetaMedia } from '../../src/list-meta-media/list-meta-media.entity'
-import { MetaMedia } from '../../src/meta-media/meta-media.entity'
-import { Connection } from 'typeorm'
-import { Factory, Seeder } from 'typeorm-seeding'
-import { MetaMediaType } from '../../src/meta-media/meta-media-type.enum';
+import { MigrationInterface, QueryRunner } from "typeorm";
+import { ListMetaMedia } from '../list-meta-media/list-meta-media.entity';
+import { MetaMediaType } from '../meta-media/meta-media-type.enum';
+import { MetaMedia } from '../meta-media/meta-media.entity';
 
-export default class CreateMetaMediaList implements Seeder {
-  public async run(factory: Factory, connection: Connection): Promise<any> {
+export class createMetaMediaList1658063846647 implements MigrationInterface {
 
-    await this.insertListPress(connection);
-    await this.insertListVideo(connection);
-  }
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    let listRepository = queryRunner.manager.getRepository(ListMetaMedia);
 
-
-
-
-  private async insertListPress(connection: Connection) {
-    let listRepository = connection.getRepository(ListMetaMedia);
     let listPresse = new ListMetaMedia()
     listPresse.title = "Presse écrite";
     listPresse.id = 1;
     listPresse.metaMedias = [];
 
     listPresse = await listRepository.save(listPresse);
+
 
 
     const media1 = new MetaMedia({
@@ -95,7 +88,7 @@ export default class CreateMetaMediaList implements Seeder {
       donation: "https://fr.tipeee.com/les-repliques",
     })
 
-    const metaMediaRepository = connection.getRepository(MetaMedia);
+    const metaMediaRepository = queryRunner.manager.getRepository(MetaMedia);
 
     await metaMediaRepository.save(media1);
     await metaMediaRepository.save(media2);
@@ -106,22 +99,24 @@ export default class CreateMetaMediaList implements Seeder {
     await metaMediaRepository.save(media12);
 
 
-    return listPresse;
-  }
 
 
 
-  async insertListVideo(connection: Connection) {
 
-    let listRepository = connection.getRepository(ListMetaMedia);
+
+
+
+    // VIDEO
+
+
+
     let listVideo = new ListMetaMedia()
     listVideo.title = "Vidéo"
     listVideo.metaMedias = []
     listVideo.id = 3;
     listVideo = await listRepository.save(listVideo);
 
-
-    const media1 = new MetaMedia({
+    const media11 = new MetaMedia({
       id: 7,
       key: "osonscauser",
       url: "UCVeMw72tepFl1Zt5fvf9QKQ",
@@ -133,8 +128,11 @@ export default class CreateMetaMediaList implements Seeder {
     });
 
 
-    const metaMediaRepository = connection.getRepository(MetaMedia);
-    await metaMediaRepository.save(media1);
-
+    await metaMediaRepository.save(media11);
   }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // DO NOTHING
+  }
+
 }

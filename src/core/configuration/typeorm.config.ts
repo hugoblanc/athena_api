@@ -1,8 +1,8 @@
-import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 export const testDatabaseName = 'athena_test';
 export const databaseName = 'athena';
 
-export const typeormCOnfig: TypeOrmModuleOptions = {
+export const typeormConfig: MysqlConnectionOptions = {
   type: 'mysql',
   host: process.env.ATHENA_DB_HOST,
   port: parseInt(process.env.ATHENA_DB_PORT, 10),
@@ -12,7 +12,5 @@ export const typeormCOnfig: TypeOrmModuleOptions = {
   extra: {
     charset: 'utf8mb4_general_ci',
   },
-  autoLoadEntities: true,
-  keepConnectionAlive: true,
   synchronize: true,
 }
