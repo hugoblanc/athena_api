@@ -20,6 +20,6 @@ export class ListMetaMediaService {
   ) { }
 
   findAll(): Promise<ListMetaMedia[]> {
-    return this.listMetaMediaRepository.find();
+    return this.listMetaMediaRepository.find({ order: { metaMedias: { id: 'ASC' } } });
   }
 }
