@@ -11,10 +11,6 @@ export class createContent1658066214892 implements MigrationInterface {
 
       const media1 = await metaMediaRepository.findOne({ where: { key: "lvsl" } });
 
-      console.error("JSON.stringify(media1)");
-      console.error(JSON.stringify(media1));
-
-
       const content1 = new Content({
         "id": 71,
         "contentId": "60639",

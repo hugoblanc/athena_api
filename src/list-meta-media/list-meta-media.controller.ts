@@ -9,10 +9,7 @@ export class ListMetaMediaController {
 
   @Get()
   getAll(): Promise<ListMetaMedia[]> {
-    return this.service.findAll().then(list => {
-      console.error(JSON.stringify(list));
-      return list;
-    });
+    return this.service.findAll();
   }
 
 }

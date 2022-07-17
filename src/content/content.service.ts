@@ -215,8 +215,6 @@ export class ContentService {
    */
   async findByMediaKey(key: string): Promise<Content[]> {
     const all = await this.metaMediaService.findAll();
-    console.error(JSON.stringify(all));
-
     const metaMedia = await this.metaMediaService.findByKey(key);
     if (metaMedia == null) {
       throw new NotFoundException(`La clé ${key} est introuvable`);
