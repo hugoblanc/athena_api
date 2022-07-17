@@ -10,7 +10,7 @@
     "start": "npm run copy-public && nest start",
     "start:dev": "npm run copy-public && nest start --watch",
     "start:debug": "npm run copy-public && nest start --debug --watch",
-    "start:prod": "node dist/src/main",
+    "start:prod": "node dist/main",
     "lint": "tslint -p tsconfig.json -c tslint.json",
     "test": "jest",
     "test:watch": "jest --watch",
