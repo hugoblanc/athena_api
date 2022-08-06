@@ -198,6 +198,23 @@ export class ContentService {
     return this.contentRepository.find();
   }
 
+  async findLastContent() {
+    return this.contentRepository.find(
+      {
+        order: {
+          publishedAt: 'DESC',
+        },
+        select: {
+          id: true,
+          contentId: true,
+          title: true,
+          publishedAt: true,
+        },
+        take: 20
+      }
+    );
+  }
+
   findById(id: number): Promise<Content> {
     this.logger.log('Find content by id: ' + id);
     return this.contentRepository.findOne({ where: { id } });

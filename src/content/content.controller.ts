@@ -6,6 +6,12 @@ export class ContentController {
   private readonly logger = new Logger(ContentController.name);
   constructor(private contentService: ContentService) {}
 
+  @Get('/last')
+  getLastContent() {
+    return this.contentService.findLastContent();
+  }
+
+
   @Get('/:id')
   getById(@Param('id') id: number) {
     return this.contentService.findById(id);
