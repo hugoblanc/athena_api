@@ -7,10 +7,13 @@ export class Embedded {
   public term: any[];
 
   constructor(input: any) {
-    Object.assign(this, input);
     if (input != null) {
-      this.featuredmedia = input['wp:featuredmedia'];
+      Object.assign(this, input);
       this.term = input['wp:term'];
+      this.featuredmedia = input['wp:featuredmedia'];
+      if (input['wp:featuredmedia']) {
+        this.featuredmedia = input['wp:featuredmedia'].map((media) => new Media(media));
+      }
     }
   }
 }

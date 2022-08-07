@@ -2,10 +2,10 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { empty, forkJoin, from, Observable, of } from 'rxjs';
 import { filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
-import { arrayMap } from '../core/rxjs/array-map';
 import { Repository } from 'typeorm';
 import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
 import { Page } from '../core/page';
+import { arrayMap } from '../core/rxjs/array-map';
 import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { MetaMediaService } from '../meta-media/meta-media.service';
@@ -147,7 +147,7 @@ export class ContentService {
     const metaMedia = await this.metaMediaService.findByRessource(
       feed.metaMediaId,
     );
-    const content = await this.findByContentID(feed.id);
+    const content = await this.findByContentId(feed.id);
 
     // Si on ne trouve pas le meta media c'est surement une mauvaise playlist
     if (metaMedia == null) {
@@ -220,7 +220,7 @@ export class ContentService {
     return this.contentRepository.findOne({ where: { id } });
   }
 
-  findByContentID(id: string): Promise<Content> {
+  findByContentId(id: string): Promise<Content> {
     this.logger.log('Find content by content id: ' + id);
     return this.contentRepository.findOne({ where: { contentId: id } });
   }
@@ -291,7 +291,7 @@ export class ContentService {
   ): Observable<{ content: Content; post: Post }[]> {
     // Récupération des post
     const getAndSave$ = this.postService
-      .getPost(metaMedia.url, metaMedia.key)
+      .getPosts(metaMedia.url)
       .pipe(
         mergeMap((posts: Post[]) => {
           // Transformation de l'ensemble des posts en tableau d'observable avec le metaMedia valorisé
@@ -320,8 +320,8 @@ export class ContentService {
     post: Post,
   ): Observable<{ content: Content; post: Post }> {
     // Conversion de la promise en observable
-    return from(this.findByContentID(post.id.toString())).pipe(
-      // SI non on le sauvearde arprès conversion du post en content
+    return from(this.findByContentId(post.id.toString())).pipe(
+      // SI non on le sauvegarde après conversion du post en content
       mergeMap(content => {
         if (content == null) {
           return from(

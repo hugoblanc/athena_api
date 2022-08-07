@@ -29,16 +29,16 @@ export class PostService {
 
   /**
    * Cette methode récupère une listede post pour un nom d'hote données
-   * @param arg1 le nom d'hote de la ressource cible
+   * @param metaMediaUrl le nom d'hote de la ressource cible
    */
-  getPost(arg1: string, key: string): Observable<Post[]> {
-    return this.externalService.get(arg1 + PostService.BASE_ROUTE)
+  getPosts(metaMediaUrl: string): Observable<Post[]> {
+    return this.externalService.get(metaMediaUrl + PostService.BASE_ROUTE)
       .pipe(
         map((posts) => posts.map((post) => new Post(post))));
   }
 
   getContent(metaMedia: MetaMedia): Observable<Content[]> {
-    return this.getPost(metaMedia.url, metaMedia.key)
+    return this.getPosts(metaMedia.url)
       .pipe(map((posts: Post[]) => {
         return posts.map((post) => {
           post.metaMedia = metaMedia;
