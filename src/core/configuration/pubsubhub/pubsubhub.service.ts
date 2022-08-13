@@ -1,6 +1,6 @@
 import { BeforeApplicationShutdown, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Subscription } from 'rxjs';
-import { ContentService } from '../../../content/content.service';
+import { ContentService } from '../../../content/application/content.service';
 import { FormatService } from '../../../helper/format/format.service';
 import { PubSub } from './pubsub';
 import { YoutubeFeed } from './youtube-feed';

@@ -2,7 +2,7 @@ import { Logger, Module, OnModuleDestroy } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getConnectionManager } from 'typeorm';
 import { AppController } from './app.controller';
-import { ContentModule } from './content/content.module';
+import { ContentModule } from './content/infrastructure/content.module';
 import { ConfigurationModule } from './core/configuration/configuration.module';
 import { typeormConfig } from './core/configuration/typeorm.config';
 import { GithubModule } from './github/github.module';

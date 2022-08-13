@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Content } from '../content/content.entity';
+import { Content } from '../content/domain/content.entity';
 import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { Post } from '../models/post';

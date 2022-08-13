@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { empty, Observable } from 'rxjs';
 import { concatMap, expand, map } from 'rxjs/operators';
-import { YoutubeFeed } from '../../core/configuration/pubsubhub/youtube-feed';
-import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
-import { MetaMedia } from '../../meta-media/meta-media.entity';
-import { ExternalService } from '../../providers/external-service';
-import { Content } from '../content.entity';
+import { YoutubeFeed } from '../../../core/configuration/pubsubhub/youtube-feed';
+import { MetaMediaType } from '../../../meta-media/meta-media-type.enum';
+import { MetaMedia } from '../../../meta-media/meta-media.entity';
+import { ExternalService } from '../../../providers/external-service';
+import { Content } from '../../domain/content.entity';
+import { Image } from '../../domain/image.entity';
 import { Item, PlaylistItemDto } from '../dto/playlist-item.dto';
-import { Image } from '../image.entity';
 
 @Injectable()
 export class YoutubeService {
@@ -15,7 +15,7 @@ export class YoutubeService {
     'https://www.googleapis.com/youtube/v3/playlistItems';
   private readonly logger = new Logger(YoutubeService.name);
 
-  constructor(private http: ExternalService) {}
+  constructor(private http: ExternalService) { }
 
   getItems(targetId: string, pageId: string = ''): Observable<PlaylistItemDto> {
     const config: any = {

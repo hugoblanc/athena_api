@@ -3,16 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { empty, forkJoin, from, Observable, of } from 'rxjs';
 import { filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
 import { Repository } from 'typeorm';
-import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
-import { Page } from '../core/page';
-import { arrayMap } from '../core/rxjs/array-map';
-import { MetaMediaType } from '../meta-media/meta-media-type.enum';
-import { MetaMedia } from '../meta-media/meta-media.entity';
-import { MetaMediaService } from '../meta-media/meta-media.service';
-import { Post } from '../models/post';
-import { NotificationService } from '../providers/notification-service';
-import { PostService } from '../providers/post-service';
-import { Content } from './content.entity';
+import { YoutubeFeed } from '../../core/configuration/pubsubhub/youtube-feed';
+import { Page } from '../../core/page';
+import { arrayMap } from '../../core/rxjs/array-map';
+import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
+import { MetaMedia } from '../../meta-media/meta-media.entity';
+import { MetaMediaService } from '../../meta-media/meta-media.service';
+import { Post } from '../../models/post';
+import { NotificationService } from '../../providers/notification-service';
+import { PostService } from '../../providers/post-service';
+import { Content } from '../domain/content.entity';
 import { YoutubeService } from './youtube/youtube.service';
 
 @Injectable()

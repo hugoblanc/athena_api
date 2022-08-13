@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PubsubhubService } from './pubsubhub/pubsubhub.service';
 import { HelperModule } from '../../helper/helper.module';
-import { ContentModule } from '../../content/content.module';
+import { ContentModule } from '../../content/infrastructure/content.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
