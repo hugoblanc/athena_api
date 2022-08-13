@@ -34,9 +34,7 @@ export class GetLastContentPaginatedHandler implements IQueryHandler<GetLastCont
       }
     );
 
-    const page = new Page(requestedPage, contents, count);
-    console.error(JSON.stringify(page));
-    return page;
+    return new Page(requestedPage, contents, count);
 
   }
 }

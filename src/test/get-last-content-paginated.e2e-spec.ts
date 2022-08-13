@@ -1,10 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import assert = require('assert');
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
 
 
-describe('ListMetaMediaController (e2e)', () => {
+describe('GET /content/last?page=1&size=4 ', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -16,47 +17,24 @@ describe('ListMetaMediaController (e2e)', () => {
     await app.init();
   });
 
-  it('/content/last?page=1&size=4 (GET)', () => {
+  it('should return the correct', () => {
     return request(app.getHttpServer())
-      .get('/content/last?page=1&size=4')
-      .expect(200).expect({
+      .get('/content/last?page=1&size=4').expect((response) => {
+
+        assert(response.body.count === 4);
+        assert(response.body.totalCount === 5);
+        expect(response.body).toEqual({ "objects": [{ "id": 74, "contentId": "60362", "title": "Boom un nouvel article", "publishedAt": "2022-07-21T09:43:24.000Z", "metaMedia": { "id": 2, "key": "mrmondialisation", "url": "https://mrmondialisation.org/", "title": "Mr Mondialisation", "logo": "assets/mrmondialisation_logo.png", "donation": "https://en.tipeee.com/mr-mondialisation", "type": "WORDPRESS" }, "image": null }, { "id": 75, "contentId": "60363", "title": "Boom un dernier article", "publishedAt": "2022-07-21T09:43:24.000Z", "metaMedia": { "id": 2, "key": "mrmondialisation", "url": "https://mrmondialisation.org/", "title": "Mr Mondialisation", "logo": "assets/mrmondialisation_logo.png", "donation": "https://en.tipeee.com/mr-mondialisation", "type": "WORDPRESS" }, "image": null }, { "id": 73, "contentId": "60361", "title": "Geoinformatique", "publishedAt": "2022-07-19T09:43:24.000Z", "metaMedia": { "id": 2, "key": "mrmondialisation", "url": "https://mrmondialisation.org/", "title": "Mr Mondialisation", "logo": "assets/mrmondialisation_logo.png", "donation": "https://en.tipeee.com/mr-mondialisation", "type": "WORDPRESS" }, "image": null }, { "id": 71, "contentId": "60639", "title": "Internet une si longue depossession", "publishedAt": "2022-06-24T16:20:07.000Z", "metaMedia": { "id": 1, "key": "lvsl", "url": "https://lvsl.fr/", "title": "Le Vent Se Lève", "logo": "assets/lvsl_logo.jpg", "donation": "https://lvsl.fr/faire-un-don/", "type": "WORDPRESS" }, "image": null }], "totalCount": 5, "count": 4, "page": 1 })
+      })
+  });
+
+  it('should return a correct page 2', () => {
+    return request(app.getHttpServer())
+      .get('/content/last?page=2&size=2').expect({
         "objects": [
-          {
-            "id": 74,
-            "contentId": "60362",
-            "title": "Boom un nouvel article",
-            "publishedAt": "2022-07-21T09:43:24.000Z",
-            "metaMedia": {
-              "id": 2,
-              "key": "mrmondialisation",
-              "url": "https://mrmondialisation.org/",
-              "title": "Mr Mondialisation",
-              "logo": "assets/mrmondialisation_logo.png",
-              "donation": "https://en.tipeee.com/mr-mondialisation",
-              "type": "WORDPRESS"
-            },
-            "image": null
-          },
-          {
-            "id": 75,
-            "contentId": "60363",
-            "title": "Boom un dernier article",
-            "publishedAt": "2022-07-21T09:43:24.000Z",
-            "metaMedia": {
-              "id": 2,
-              "key": "mrmondialisation",
-              "url": "https://mrmondialisation.org/",
-              "title": "Mr Mondialisation",
-              "logo": "assets/mrmondialisation_logo.png",
-              "donation": "https://en.tipeee.com/mr-mondialisation",
-              "type": "WORDPRESS"
-            },
-            "image": null
-          },
           {
             "id": 73,
             "contentId": "60361",
-            "title": "Géoingénierie de la captation : la prochaine grande controverse climat",
+            "title": "Geoinformatique",
             "publishedAt": "2022-07-19T09:43:24.000Z",
             "metaMedia": {
               "id": 2,
@@ -72,7 +50,7 @@ describe('ListMetaMediaController (e2e)', () => {
           {
             "id": 71,
             "contentId": "60639",
-            "title": "Internet&nbsp;: une si longue dépossession (1/2)",
+            "title": "Internet une si longue depossession",
             "publishedAt": "2022-06-24T16:20:07.000Z",
             "metaMedia": {
               "id": 1,
@@ -87,10 +65,11 @@ describe('ListMetaMediaController (e2e)', () => {
           }
         ],
         "totalCount": 5,
-        "count": 4,
-        "page": 1
+        "count": 2,
+        "page": 2
       })
   });
+
 
   afterEach(async (done) => {
     await app.close();
