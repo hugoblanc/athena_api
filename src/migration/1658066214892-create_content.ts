@@ -10,6 +10,7 @@ export class createContent1658066214892 implements MigrationInterface {
       let metaMediaRepository = queryRunner.manager.getRepository(MetaMedia);
 
       const media1 = await metaMediaRepository.findOne({ where: { key: "lvsl" } });
+      const media2 = await metaMediaRepository.findOne({ where: { key: "mrmondialisation" } });
 
       const content1 = new Content({
         "id": 71,
@@ -33,8 +34,46 @@ export class createContent1658066214892 implements MigrationInterface {
         "image": null
       });
 
+      const content3 = new Content({
+        "id": 73,
+        "contentId": "60361",
+        "title": "Géoingénierie de la captation : la prochaine grande controverse climat",
+        "contentType": MetaMediaType.WORDPRESS,
+        "description": `Aujourd’hui, la géoingénierie de la captation est un acte de développement de l’énergie.
+        C’est un acte de développement de l’énergie.
+        `,
+        "publishedAt": new Date("2022-07-19T09:43:24.000Z"),
+        "metaMedia": media2,
+        "image": null
+      });
+
+      const content4 = new Content({
+        "id": 74,
+        "contentId": "60362",
+        "title": "Boom un nouvel article",
+        "contentType": MetaMediaType.WORDPRESS,
+        "description": `Fake short description`,
+        "publishedAt": new Date("2022-07-21T09:43:24.000Z"),
+        "metaMedia": media2,
+        "image": null
+      });
+
+      const content5 = new Content({
+        "id": 75,
+        "contentId": "60363",
+        "title": "Boom un dernier article",
+        "contentType": MetaMediaType.WORDPRESS,
+        "description": `Very short`,
+        "publishedAt": new Date("2022-07-21T09:43:24.000Z"),
+        "metaMedia": media2,
+        "image": null
+      });
+
       await contentRepository.save(content1);
       await contentRepository.save(content2);
+      await contentRepository.save(content3);
+      await contentRepository.save(content4);
+      await contentRepository.save(content5);
 
     }
 
