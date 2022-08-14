@@ -1,10 +1,10 @@
 import { XmlEntities } from 'html-entities';
-import { Image } from '../content/image.entity';
-import { INotifiedObject } from '../content/inotified-object';
+import { INotifiedObject } from './inotified-object';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { NotificationService } from '../providers/notification-service';
 import { Content } from './content';
 import { Embedded } from './embedded';
+import { Image } from '../content/domain/image.entity';
 
 export class Post implements INotifiedObject {
   public author: number;

@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany } from 'typeorm';
 import { MetaMediaType } from './meta-media-type.enum';
 import { ListMetaMedia } from '../list-meta-media/list-meta-media.entity';
-import { Content } from '../content/content.entity';
+import { Content } from '../content/domain/content.entity';
 
 @Entity()
 export class MetaMedia {

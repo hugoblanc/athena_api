@@ -1,7 +1,7 @@
 import { HttpModule } from '@nestjs/axios';
 import { forwardRef, Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ContentModule } from '../content/content.module';
+import { ContentModule } from '../content/infrastructure/content.module';
 import { CronService } from '../providers/cron-service';
 import { ExternalService } from '../providers/external-service';
 import { MediaService } from '../providers/media/media.service';

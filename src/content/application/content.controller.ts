@@ -1,14 +1,18 @@
-import { Controller, Get, Logger, Param } from '@nestjs/common';
+import { Controller, Get, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
+import { RequestedPageValueType } from '../../core/page-number.value-type';
 import { ContentService } from './content.service';
+import { GetLastContentPaginatedQuery } from './queries/get-last-content-paginated/get-last-content-paginated.query';
 
 @Controller('content')
 export class ContentController {
   private readonly logger = new Logger(ContentController.name);
-  constructor(private contentService: ContentService) {}
+  constructor(private contentService: ContentService,
+    private readonly queryBus: QueryBus) { }
 
   @Get('/last')
-  getLastContent() {
-    return this.contentService.findLastContent();
+  getLastContent(@Query('page', ParseIntPipe) page: number, @Query('size', ParseIntPipe) size: number) {
+    return this.queryBus.execute(new GetLastContentPaginatedQuery(new RequestedPageValueType(page, size)));
   }
 
 
@@ -25,9 +29,9 @@ export class ContentController {
   @Get('/mediakey/:mediaKey/page/:page')
   getPageByMediaKey(
     @Param('mediaKey') mediaKey: string,
-    @Param('page') page: string,
+    @Param('page', ParseIntPipe) page: number,
   ) {
-    return this.contentService.findPageByMediaKey(mediaKey, parseInt(page, 10));
+    return this.contentService.findPageByMediaKey(mediaKey, page);
   }
 
   @Get('init/:mediaKey')

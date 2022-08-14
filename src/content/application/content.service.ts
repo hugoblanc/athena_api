@@ -3,16 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { empty, forkJoin, from, Observable, of } from 'rxjs';
 import { filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
 import { Repository } from 'typeorm';
-import { YoutubeFeed } from '../core/configuration/pubsubhub/youtube-feed';
-import { Page } from '../core/page';
-import { arrayMap } from '../core/rxjs/array-map';
-import { MetaMediaType } from '../meta-media/meta-media-type.enum';
-import { MetaMedia } from '../meta-media/meta-media.entity';
-import { MetaMediaService } from '../meta-media/meta-media.service';
-import { Post } from '../models/post';
-import { NotificationService } from '../providers/notification-service';
-import { PostService } from '../providers/post-service';
-import { Content } from './content.entity';
+import { YoutubeFeed } from '../../core/configuration/pubsubhub/youtube-feed';
+import { Page } from '../../core/page';
+import { RequestedPageValueType } from '../../core/page-number.value-type';
+import { arrayMap } from '../../core/rxjs/array-map';
+import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
+import { MetaMedia } from '../../meta-media/meta-media.entity';
+import { MetaMediaService } from '../../meta-media/meta-media.service';
+import { Post } from '../../models/post';
+import { NotificationService } from '../../providers/notification-service';
+import { PostService } from '../../providers/post-service';
+import { Content } from '../domain/content.entity';
 import { YoutubeService } from './youtube/youtube.service';
 
 @Injectable()
@@ -246,10 +247,8 @@ export class ContentService {
    * Cette methode renvoi une liste de content pour un meta meia cible
    * @param key la clé du metamedia cible
    */
-  async findPageByMediaKey(
-    key: string,
-    pageNumber: number = 0,
-  ): Promise<Page<Content>> {
+  async findPageByMediaKey(key: string, pageNumber: number): Promise<Page<Content>> {
+    const requestPage = new RequestedPageValueType(pageNumber, ContentService.PAGER_SIZE)
     // On s'assure au préalable que cette requète a du sens
     // C-a-d que metamedia n'est pas null
     const metaMedia = await this.metaMediaService.findByKey(key);
@@ -258,7 +257,7 @@ export class ContentService {
     }
 
     // Recherche des "PAGER_SIZE" élements a partir de la page "pageNumber"
-    const contentsCounted = await this.contentRepository.findAndCount({
+    const [contents, count] = await this.contentRepository.findAndCount({
       where: { metaMedia },
       order: {
         publishedAt: 'DESC',
@@ -267,18 +266,9 @@ export class ContentService {
       take: ContentService.PAGER_SIZE,
     });
 
-    // on log l'étape
     this.logger.log('Get page content clé: ' + key + ' page:' + pageNumber);
-    // Création du page content a renvoyer
-    const page = new Page<Content>();
-    page.count = contentsCounted[0].length;
-    page.objects = contentsCounted[0];
-    page.totalCount = contentsCounted[1];
-    page.next =
-      page.totalCount > (pageNumber + 1) * ContentService.PAGER_SIZE
-        ? ++pageNumber
-        : undefined;
-    // On renvoi le résultat
+    const page = new Page<Content>(requestPage, contents, count);
+
     return page;
   }
 

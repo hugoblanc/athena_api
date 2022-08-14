@@ -6,9 +6,9 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { MetaMedia } from '../meta-media/meta-media.entity';
+import { MetaMedia } from '../../meta-media/meta-media.entity';
 import { Image } from './image.entity';
-import { MetaMediaType } from '../meta-media/meta-media-type.enum';
+import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
 
 @Entity()
 export class Content {
