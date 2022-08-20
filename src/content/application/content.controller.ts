@@ -1,20 +1,38 @@
-import { Controller, Get, Logger, Param, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  Param,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { RequestedPageValueType } from '../../core/page-number.value-type';
 import { ContentService } from './content.service';
 import { GetLastContentPaginatedQuery } from './queries/get-last-content-paginated/get-last-content-paginated.query';
+import { SearchedContentTermValueType } from './queries/get-last-content-paginated/searched-content-term.value-type';
 
 @Controller('content')
 export class ContentController {
   private readonly logger = new Logger(ContentController.name);
-  constructor(private contentService: ContentService,
-    private readonly queryBus: QueryBus) { }
+  constructor(
+    private contentService: ContentService,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Get('/last')
-  getLastContent(@Query('page', ParseIntPipe) page: number, @Query('size', ParseIntPipe) size: number) {
-    return this.queryBus.execute(new GetLastContentPaginatedQuery(new RequestedPageValueType(page, size)));
+  getLastContent(
+    @Query('page', ParseIntPipe) page: number,
+    @Query('size', ParseIntPipe) size: number,
+    @Query('terms') terms?: string,
+  ) {
+    return this.queryBus.execute(
+      new GetLastContentPaginatedQuery(
+        new RequestedPageValueType(page, size),
+        new SearchedContentTermValueType(terms),
+      ),
+    );
   }
-
 
   @Get('/:id')
   getById(@Param('id') id: number) {

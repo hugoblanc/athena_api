@@ -1,10 +1,11 @@
 import {
-  Column,
   Entity,
+  Column,
   JoinColumn,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
+  Index,
 } from 'typeorm';
 import { MetaMedia } from '../../meta-media/meta-media.entity';
 import { Image } from './image.entity';
@@ -19,6 +20,7 @@ export class Content {
   contentId: string;
 
   @Column({ length: 200 })
+  @Index('content-title-idx')
   title: string;
 
   @Column('enum', { enum: MetaMediaType })

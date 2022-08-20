@@ -1,40 +1,44 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, Repository } from 'typeorm';
 import { Page } from '../../../../core/page';
 import { Content } from '../../../domain/content.entity';
 import { GetLastContentPaginatedQuery } from './get-last-content-paginated.query';
 
 @QueryHandler(GetLastContentPaginatedQuery)
-export class GetLastContentPaginatedHandler implements IQueryHandler<GetLastContentPaginatedQuery> {
-
+export class GetLastContentPaginatedHandler
+  implements IQueryHandler<GetLastContentPaginatedQuery> {
   constructor(
     @InjectRepository(Content)
     private readonly contentRepository: Repository<Content>,
-    // private publisher: EventPublisher,
-  ) { }
+  ) {}
 
   async execute(query: GetLastContentPaginatedQuery) {
-    const { requestedPage } = query;
+    const { requestedPage, terms } = query;
 
+    let where: FindOptionsWhere<Content> | undefined;
 
-    const [contents, count] = await this.contentRepository.findAndCount(
-      {
-        order: {
-          publishedAt: 'DESC',
-        },
-        select: {
-          id: true,
-          contentId: true,
-          title: true,
-          publishedAt: true,
-        },
-        skip: requestedPage.elementToSkip,
-        take: requestedPage.size
-      }
-    );
+    if (terms.isDefined) {
+      where = {
+        title: ILike(`%${terms.value}%`),
+      };
+    }
+
+    const [contents, count] = await this.contentRepository.findAndCount({
+      order: {
+        publishedAt: 'DESC',
+      },
+      select: {
+        id: true,
+        contentId: true,
+        title: true,
+        publishedAt: true,
+      },
+      where,
+      skip: requestedPage.elementToSkip,
+      take: requestedPage.size,
+    });
 
     return new Page(requestedPage, contents, count);
-
   }
 }
