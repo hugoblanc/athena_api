@@ -4,9 +4,9 @@ import { ContentService } from '../content/application/content.service';
 
 @Injectable()
 export class CronService {
-  constructor(private contentService: ContentService) {}
+  constructor(private contentService: ContentService) { }
 
-  @Cron('1 */2 * * * *')
+  @Cron('1 */30 * * * *')
   async cronJob() {
     this.contentService.pollingContent();
   }

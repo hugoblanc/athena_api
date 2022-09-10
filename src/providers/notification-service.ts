@@ -24,10 +24,10 @@ export class NotificationService {
     // On ne peut pas envoyer tout les message car sinon on duplique les notification ... dommage
     this.logger.log(messages[0]);
 
-    if (process.env.SEND_NOTIFICATION === 'false') {
-      this.logger.log("Notification disabled");
-      return;
-    }
+    // if (process.env.SEND_NOTIFICATION === 'false') {
+    //   this.logger.log("Notification disabled");
+    //   return;
+    // }
 
     from(admin.messaging().send(messages[0])).subscribe(
       resultSend => {
