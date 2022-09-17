@@ -65,14 +65,16 @@ export class Post implements INotifiedObject {
       this.embedded.featuredmedia[0].mediaDetails &&
       this.embedded.featuredmedia[0].mediaDetails.file
     ) {
-      const url = this.guid.rendered.split('?');
       this.image = new Image();
-      this.image.url =
-        url[0] +
-        'wp-content/uploads/' +
-        this.embedded.featuredmedia[0].mediaDetails.file;
+      this.image.url = this.embedded.featuredmedia[0].sourceUrl;
       this.image.height = this.embedded.featuredmedia[0].mediaDetails.height;
       this.image.width = this.embedded.featuredmedia[0].mediaDetails.width;
+
+      // Fix source url MrMondialisatio il manque le https :/
+      const index = this.image.url.indexOf('http');
+      if (index === -1 || index > 5) {
+        this.image.url = 'https:' + this.image.url;
+      }
     }
   }
 
