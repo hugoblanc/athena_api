@@ -5,7 +5,8 @@ body {
 }
 
 #logo {
-  width: 100%;
+  width: 140%;
+  margin-left: -20%;
   margin-bottom: 50px;
 }
 
@@ -17,14 +18,14 @@ body {
 .store-logo {
   max-width: 200px;
   max-height: 200px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  /* box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23); */
   padding: 1rem;
   border-radius: 21px;
-  transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .store-logo:hover {
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.22);
 }
 
 h1 {
@@ -42,6 +43,10 @@ p {
   color: #000000;
 }
 
+a {
+  color: #b04616;
+}
+
 #intro-container {
   position: relative;
 }
@@ -55,17 +60,18 @@ blockquote {
 }
 
 /* Custom, iPhone Retina */
-@media only screen and (max-width : 450px) {
-
+@media only screen and (max-width: 450px) {
   blockquote {
     top: 60%;
-    left: 10%;
-    width: 60%;
+    left: 0%;
+    width: 100%;
+    margin-left: 0;
     font-size: 0.7rem;
+    text-align: justify;
   }
 
   .store-logo {
-    max-width: 20vw;
-    max-height: 20vw;
+    max-width: 30vw;
+    max-height: 30vw;
   }
 }
