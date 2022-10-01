@@ -26,49 +26,6 @@ async function bootstrap() {
   });
 
 
-  const message = {
-    "notification": {
-      "title": "Nouvel article par Mr Mondialisation",
-      "body": "Fin de l’abondance: sauf à la table des privilèges"
-    },
-    "data": {
-      "title": "Nouvel article par Mr Mondialisation",
-      "body": "Fin de l’abondance: sauf à la table des privilèges",
-      "key": "mrmondialisation",
-      "id": "548623"
-    },
-    token: 'fJ2HwSevRkqqe-d60qaXoV:APA91bGmZhfCxNrscphSJmbkM_jy3WlCSIYHCsaXy-FFmueCcse63W3OXu2QicQQ_EQy2I2HXbXG4ccKM38iWfAvewdQbDQPDZn119BzHJ-0xNLPXDwJeXzEiAe_ED4n9R7B1dsTTU26',
-    // token: 'fkEB1OgczkOigLu808oC_D:APA91bESfP5F3yAIJZtKD1kdmxTfNrob19KDKgbDUUk-HFozMB9JsmRC1I1yr_KWokiq1m2RzI7e0seJwXIk-DHdQw2rf4NdKG9MPcOWlb1JvC1NruWlbaEYEmcbS5_GxPdzeyNf6DrK',
-    // "condition": "'mrmondialisation' in topics"
-  }
-
-
-  // const message = {
-  //   notification: {
-  //     body: "super body",
-  //     title: 'super title',
-  //   },
-  //   data: {
-  //     "id": "19047",
-  //     "body": "Doit-on interdire les jets privés ?",
-  //     "key": "bonpote",
-  //     "title": "Nouvel article par Bon Pote"
-  //   },
-  //   token: 'c0LT6FyjRxaLizKaT2RJwK:APA91bG6vD32NZtBUvasKxE6Zgfmm49kLKS4AXAWbLm2yhAMktav-sTiGz0xzJKs-z99owvqC5NYDaZl0zGW_nTIz-Ikf7tgVZAQq35Sw03StbJhrOlFFrI9bui6hK59c3WF1yCVhZK7',
-  // };
-
-  // Send a message to the device corresponding to the provided
-  // registration token.
-  admin.messaging().send(message)
-    .then((response) => {
-      // Response is a message ID string.
-      console.log('Successfully sent message:', response);
-    })
-    .catch((error) => {
-      console.log('Error sending message:', error);
-    });
-
-
   // On termine l'init
   displayMessage();
 }
