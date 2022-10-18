@@ -9,6 +9,7 @@ import { HelperModule } from '../../helper/helper.module';
 import { Image } from '../domain/image.entity';
 import { GetLastContentPaginatedHandler } from '../application/queries/get-last-content-paginated/get-last-content-paginated.handler';
 import { CqrsModule } from '@nestjs/cqrs';
+import { GetShareableContentHandler } from '../application/queries/get-shareable-content/get-shareable-content.handler';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { CqrsModule } from '@nestjs/cqrs';
     CqrsModule
   ],
   controllers: [ContentController],
-  providers: [ContentService, YoutubeService, GetLastContentPaginatedHandler],
+  providers: [ContentService, YoutubeService, GetLastContentPaginatedHandler, GetShareableContentHandler],
   exports: [ContentService],
 })
 export class ContentModule { }

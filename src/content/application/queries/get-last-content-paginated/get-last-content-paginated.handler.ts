@@ -11,7 +11,7 @@ export class GetLastContentPaginatedHandler
   constructor(
     @InjectRepository(Content)
     private readonly contentRepository: Repository<Content>,
-  ) {}
+  ) { }
 
   async execute(query: GetLastContentPaginatedQuery) {
     const { requestedPage, terms } = query;
@@ -28,6 +28,7 @@ export class GetLastContentPaginatedHandler
       order: {
         publishedAt: 'DESC',
       },
+      relations: ['images', 'metaMedia'],
       select: {
         id: true,
         contentId: true,

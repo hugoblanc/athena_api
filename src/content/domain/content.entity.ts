@@ -35,11 +35,11 @@ export class Content {
   @ManyToOne(
     type => MetaMedia,
     metaMedia => metaMedia.contents,
-    { eager: true, onDelete: 'CASCADE' },
+    { onDelete: 'CASCADE' },
   )
   metaMedia: MetaMedia;
 
-  @OneToOne(type => Image, { cascade: true, nullable: true, eager: true })
+  @OneToOne(type => Image, { cascade: true, nullable: true })
   @JoinColumn()
   image: Image;
 

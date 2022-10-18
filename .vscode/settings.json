@@ -1,14 +1,16 @@
 {
-    "docker.defaultRegistryPath": "mrhwhite",
-    "debug.node.autoAttach": "on",
-    "workbench.colorCustomizations": {
-        "[Monokai]": {
-            "sideBar.background": "#000000",
-            "editor.background": "#0f0f0f"
-        },
-        "activityBar.background": "#4B174F",
-        "titleBar.activeBackground": "#69206F",
-        "titleBar.activeForeground": "#FDF8FD"
+  "docker.defaultRegistryPath": "mrhwhite",
+  "debug.node.autoAttach": "on",
+  "workbench.colorCustomizations": {
+    "[Monokai]": {
+      "sideBar.background": "#000000",
+      "editor.background": "#0f0f0f"
     },
-    "typescript.preferences.importModuleSpecifier": "relative"
+    "activityBar.background": "#4B174F",
+    "titleBar.activeBackground": "#69206F",
+    "titleBar.activeForeground": "#FDF8FD"
+  },
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "jestrunner.codeLensSelector": "**/*.{test,spec,e2e-spec}.{js,jsx,ts,tsx}",
+  "jestrunner.jestCommand": "npm run test:e2e:local --"
 }
