@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Content } from '../../../domain/content.entity';
 import { ContentFactoryBuilder } from '../../../infrastructure/content-factory.builder';
 import { GetShareableContentQuery } from './get-shareable-content.query';
+import { ShareableContentResponse } from '../../dto/shareable-content.dto';
 
 @QueryHandler(GetShareableContentQuery)
 export class GetShareableContentHandler implements IQueryHandler<GetShareableContentQuery>{
@@ -13,7 +14,7 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
 
   }
 
-  async execute(query: GetShareableContentQuery): Promise<any> {
+  async execute(query: GetShareableContentQuery): Promise<ShareableContentResponse> {
     const { id } = query;
     console.log(id);
 
