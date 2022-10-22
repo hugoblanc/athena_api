@@ -217,13 +217,12 @@ export class ContentService {
   }
 
   findById(id: number): Promise<Content> {
-    this.logger.log('Find content by id: ' + id);
-    return this.contentRepository.findOne({ where: { id } });
+    return this.contentRepository.findOne({ relations: ['image', 'metaMedia'], where: { id } });
   }
 
   findByContentId(id: string): Promise<Content> {
     this.logger.log('Find content by content id: ' + id);
-    return this.contentRepository.findOne({ where: { contentId: id } });
+    return this.contentRepository.findOne({ relations: ['image', 'metaMedia'], where: { contentId: id } });
   }
 
   /**
@@ -238,6 +237,7 @@ export class ContentService {
       throw new NotFoundException(`La clé ${key} est introuvable`);
     }
     return this.contentRepository.find({
+      relations: ['image', 'metaMedia'],
       where: { metaMedia },
       order: { publishedAt: 'DESC' },
     });
@@ -259,6 +259,7 @@ export class ContentService {
     // Recherche des "PAGER_SIZE" élements a partir de la page "pageNumber"
     const [contents, count] = await this.contentRepository.findAndCount({
       where: { metaMedia },
+      relations: ['image', 'metaMedia'],
       order: {
         publishedAt: 'DESC',
       },

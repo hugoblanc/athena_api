@@ -123,7 +123,7 @@ export class YoutubeService {
       height: item.snippet.thumbnails.medium.height,
     };
 
-    const content: Content = {
+    const content: Content = new Content({
       id: existingContent ? existingContent.id : null,
       contentId: item.snippet.resourceId.videoId,
       contentType: MetaMediaType.YOUTUBE,
@@ -132,7 +132,7 @@ export class YoutubeService {
       publishedAt: new Date(item.snippet.publishedAt),
       image,
       metaMedia,
-    };
+    });
     return content;
   }
 
