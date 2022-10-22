@@ -37,9 +37,9 @@ export class ContentController {
   }
 
 
-  @Get('get-shareable-content/:id')
-  getShareableContent(@Param('id', ParseIntPipe) id: number): Promise<ShareableContentResponse> {
-    return this.queryBus.execute(new GetShareableContentQuery(id));
+  @Get('get-shareable-content/:key/:contentId')
+  getShareableContent(@Param('key') key: string, @Param('contentId') contentId: string): Promise<ShareableContentResponse> {
+    return this.queryBus.execute(new GetShareableContentQuery(key, contentId));
   }
 
 

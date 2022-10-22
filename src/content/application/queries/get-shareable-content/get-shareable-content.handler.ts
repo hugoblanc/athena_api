@@ -15,8 +15,8 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
   }
 
   async execute(query: GetShareableContentQuery): Promise<ShareableContentResponse> {
-    const { id } = query;
-    console.log(id);
+    const { contentId, key } = query;
+    console.log(contentId);
 
     const content = await this.repository.findOne({
       relations: { image: true, metaMedia: true },
@@ -31,7 +31,10 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
         contentId: true
       },
       where: {
-        id
+        contentId,
+        metaMedia: {
+          key
+        }
       }
     });
 

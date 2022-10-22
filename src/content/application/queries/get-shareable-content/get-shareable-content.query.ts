@@ -1,3 +1,3 @@
 export class GetShareableContentQuery {
-  constructor(public readonly id: number) { }
+  constructor(public readonly key: string, public readonly contentId: string) { }
 }
