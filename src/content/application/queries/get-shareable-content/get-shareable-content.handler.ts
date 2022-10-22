@@ -1,3 +1,4 @@
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -32,6 +33,10 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
         id
       }
     });
+
+    if (!content) {
+      throw new NotFoundException('Content not found');
+    }
 
     const originalUrlFactory = this.contentFactoryBuilder.createOriginalUrlFactory(content);
 

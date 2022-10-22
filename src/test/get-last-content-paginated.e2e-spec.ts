@@ -3,14 +3,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import assert = require('assert');
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
+import { createModule } from './fixture/module.fixture';
+import { PubsubhubService } from '../core/configuration/pubsubhub/pubsubhub.service';
 
 describe('GET /content/last?page=1&size=4 ', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const moduleFixture: TestingModule = await createModule();
 
     app = moduleFixture.createNestApplication();
     await app.init();

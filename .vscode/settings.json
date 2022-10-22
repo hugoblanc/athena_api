@@ -12,5 +12,5 @@
   },
   "typescript.preferences.importModuleSpecifier": "relative",
   "jestrunner.codeLensSelector": "**/*.{test,spec,e2e-spec}.{js,jsx,ts,tsx}",
-  "jestrunner.jestCommand": "npm run test:e2e:local --"
+  "jestrunner.jestCommand": "npm run test:e2e --"
 }

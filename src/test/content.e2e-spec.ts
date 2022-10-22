@@ -2,15 +2,15 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
+import { PubsubhubService } from '../core/configuration/pubsubhub/pubsubhub.service';
+import { createModule } from './fixture/module.fixture';
 
 
 describe('ListMetaMediaController (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const moduleFixture: TestingModule = await createModule();
 
     app = moduleFixture.createNestApplication();
     await app.init();
