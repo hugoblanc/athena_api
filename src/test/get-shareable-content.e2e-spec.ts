@@ -16,7 +16,7 @@ describe('GET /content/get-shareable-content', () => {
 
   it('should return the correct response', () => {
     return request(app.getHttpServer())
-      .get('/content/get-shareable-content/71')
+      .get('/content/get-shareable-content/lvsl/60639')
       .expect(response => {
         expect(response.body).toEqual({
           title: 'Internet une si longue depossession',
@@ -28,7 +28,7 @@ describe('GET /content/get-shareable-content', () => {
 
   it('should return a 404 if content not found', () => {
     return request(app.getHttpServer())
-      .get('/content/get-shareable-content/40404')
+      .get('/content/get-shareable-content/lvsl/8484848484')
       .expect(response => expect(response.statusCode).toBe(404));
   });
 
