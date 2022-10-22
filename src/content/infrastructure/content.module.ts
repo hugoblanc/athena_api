@@ -10,6 +10,7 @@ import { Image } from '../domain/image.entity';
 import { GetLastContentPaginatedHandler } from '../application/queries/get-last-content-paginated/get-last-content-paginated.handler';
 import { CqrsModule } from '@nestjs/cqrs';
 import { GetShareableContentHandler } from '../application/queries/get-shareable-content/get-shareable-content.handler';
+import { ContentFactoryBuilder } from './content-factory.builder';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { GetShareableContentHandler } from '../application/queries/get-shareable
     CqrsModule
   ],
   controllers: [ContentController],
-  providers: [ContentService, YoutubeService, GetLastContentPaginatedHandler, GetShareableContentHandler],
+  providers: [ContentService, YoutubeService, ContentFactoryBuilder, GetLastContentPaginatedHandler, GetShareableContentHandler],
   exports: [ContentService],
 })
 export class ContentModule { }

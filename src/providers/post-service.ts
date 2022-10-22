@@ -20,7 +20,8 @@ import { ExternalService } from './external-service';
 @Injectable()
 export class PostService {
 
-  private static BASE_ROUTE = '/wp-json/wp/v2/posts?_embed';
+  private static BASE_POST = '/wp-json/wp/v2/posts';
+  private static EMBED = '?_embed';
 
   private oldPosts: any = {};
 
@@ -32,9 +33,17 @@ export class PostService {
    * @param metaMediaUrl le nom d'hote de la ressource cible
    */
   getPosts(metaMediaUrl: string): Observable<Post[]> {
-    return this.externalService.get(metaMediaUrl + PostService.BASE_ROUTE)
+    return this.externalService.get(metaMediaUrl + PostService.BASE_POST + PostService.EMBED)
       .pipe(
         map((posts) => posts.map((post) => new Post(post))));
+  }
+
+
+  getPostByContent(content: Content): Observable<Post> {
+    return this.externalService.get(content.metaMedia.url + PostService.BASE_POST + '/' + content.contentId + PostService.EMBED)
+      .pipe(map((data: Post) => {
+        return new Post(data);
+      }));
   }
 
   getContent(metaMedia: MetaMedia): Observable<Content[]> {
@@ -52,7 +61,7 @@ export class PostService {
       throw new Error('Le post est null, on ne peut pas le convertir en content ');
     }
 
-    const content: Content = {
+    const content: Content = new Content({
       id: (existingContent ? existingContent.id : null),
       contentId: post.id.toString(),
       contentType: MetaMediaType.WORDPRESS,
@@ -61,7 +70,7 @@ export class PostService {
       publishedAt: new Date(post.date),
       image: post.image,
       metaMedia: post.metaMedia,
-    };
+    });
     return content;
   }
 

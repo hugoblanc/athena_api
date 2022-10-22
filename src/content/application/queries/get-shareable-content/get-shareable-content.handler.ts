@@ -1,13 +1,14 @@
-import { IQueryHandler, QueryHandler, QueryHandlerType } from '@nestjs/cqrs';
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityRepository, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Content } from '../../../domain/content.entity';
+import { ContentFactoryBuilder } from '../../../infrastructure/content-factory.builder';
 import { GetShareableContentQuery } from './get-shareable-content.query';
 
 @QueryHandler(GetShareableContentQuery)
 export class GetShareableContentHandler implements IQueryHandler<GetShareableContentQuery>{
 
-  constructor(@InjectRepository(Content) private readonly repository: Repository<Content>) {
+  constructor(@InjectRepository(Content) private readonly repository: Repository<Content>, private readonly contentFactoryBuilder: ContentFactoryBuilder) {
 
   }
 
@@ -15,23 +16,33 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
     const { id } = query;
     console.log(id);
 
-    const shareableContent = await this.repository.findOne({
-      relations: ['image'],
+    const content = await this.repository.findOne({
+      relations: { image: true, metaMedia: true },
       select: {
         image: {
           id: true,
           url: true,
         },
         title: true,
-        id: true
+        id: true,
+        contentType: true,
+        contentId: true
       },
       where: {
         id
       }
     });
 
-    console.log(JSON.stringify(shareableContent));
-    return shareableContent;
+    const originalUrlFactory = this.contentFactoryBuilder.createOriginalUrlFactory(content);
+
+    const originalUrl = await originalUrlFactory.getOriginalUrl();
+
+    console.log(JSON.stringify(content));
+    return {
+      image: content.image,
+      title: content.title,
+      originalUrl: originalUrl
+    };
   }
 
 }

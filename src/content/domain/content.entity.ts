@@ -43,6 +43,10 @@ export class Content {
   @JoinColumn()
   image: Image;
 
+  get isVideo() {
+    return this.contentType && this.contentType === MetaMediaType.YOUTUBE;
+  }
+
   constructor(input?: Partial<Content>) {
     if (input) {
       Object.assign(this, input);

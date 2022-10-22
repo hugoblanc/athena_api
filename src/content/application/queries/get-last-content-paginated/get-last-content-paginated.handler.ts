@@ -28,7 +28,7 @@ export class GetLastContentPaginatedHandler
       order: {
         publishedAt: 'DESC',
       },
-      relations: ['images', 'metaMedia'],
+      relations: { image: true, metaMedia: true },
       select: {
         id: true,
         contentId: true,
