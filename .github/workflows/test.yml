@@ -29,7 +29,6 @@ jobs:
   testing:
     needs: build
     runs-on: ubuntu-latest
-    container: node:16
 
     # Service containers to run with `testing`
     services:
@@ -64,6 +63,6 @@ jobs:
           # The hostname used to communicate with the PostgreSQL service container
           # The default PostgreSQL port
           ATHENA_DB_USER: athenauser
-          ATHENA_DB_HOST: db
+          ATHENA_DB_HOST: localhost
           ATHENA_DB_PORT: 3306
           ATHENA_DB_PASSWORD: password
