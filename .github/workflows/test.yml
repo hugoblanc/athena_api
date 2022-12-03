@@ -66,3 +66,4 @@ jobs:
           ATHENA_DB_HOST: localhost
           ATHENA_DB_PORT: 3306
           ATHENA_DB_PASSWORD: password
+          AZURE_SPEECH_REGION: westeurope
