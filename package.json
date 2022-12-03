@@ -38,6 +38,7 @@
     "firebase-admin": "^11.3.0",
     "html-entities": "^1.2.1",
     "ioredis": "^5.2.1",
+    "microsoft-cognitiveservices-speech-sdk": "^1.22.0",
     "mysql2": "^2.3.3",
     "pubsubhubbub": "^1.0.1",
     "reflect-metadata": "^0.1.12",

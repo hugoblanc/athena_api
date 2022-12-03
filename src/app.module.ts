@@ -1,3 +1,4 @@
+import { SpeechModule } from './speech/speech.module';
 import { Logger, Module, OnModuleDestroy } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { getConnectionManager } from 'typeorm';
@@ -10,11 +11,14 @@ import { HelperModule } from './helper/helper.module';
 import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
 import { MetaMediaModule } from './meta-media/meta-media.module';
 
-
-
 @Module({
   imports: [
-    TypeOrmModule.forRoot({ ...typeormConfig, autoLoadEntities: true, keepConnectionAlive: true }),
+    SpeechModule,
+    TypeOrmModule.forRoot({
+      ...typeormConfig,
+      autoLoadEntities: true,
+      keepConnectionAlive: true,
+    }),
     ListMetaMediaModule,
     MetaMediaModule,
     ContentModule,
@@ -33,7 +37,6 @@ export class AppModule implements OnModuleDestroy {
 
   private closeDBConnection() {
     // const conn = getConnectionManager().get();
-
     // if (conn.isConnected) {
     //   conn
     //     .close()
