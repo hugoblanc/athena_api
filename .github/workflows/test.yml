@@ -68,3 +68,7 @@ jobs:
           ATHENA_DB_PASSWORD: password
           AZURE_SPEECH_REGION: westeurope
           AZURE_SPEECH_KEY: ${{ secrets.AZURE_SPEECH_KEY }}
+          ATHENA_CLIENT_EMAIL: ${{ secrets.ATHENA_CLIENT_EMAIL }}
+          GCP_BUCKET_NAME: ${{ secrets.GCP_BUCKET_NAME }}
+          ATHENA_PROJECT_ID: ${{ secrets.ATHENA_PROJECT_ID }}
+          ATHENA_PRIVATE_KEY: ${{ secrets.ATHENA_PRIVATE_KEY }}
