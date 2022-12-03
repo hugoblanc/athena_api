@@ -58,7 +58,7 @@
     "concurrently": "^4.1.0",
     "copyfiles": "^2.1.1",
     "jest": "^24.9.0",
-    "nodemon": "^1.18.9",
+    "nodemon": "^2.0.20",
     "prettier": "^1.15.3",
     "rimraf": "^3.0.2",
     "standard-version": "^9.5.0",
