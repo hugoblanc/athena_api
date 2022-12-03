@@ -19,6 +19,8 @@ import { StorageModule } from '../../storage/infrastructure/storage.module';
 import { Audio } from '../domain/audio.entity';
 import { SpeechWavGeneratorService } from './speech-wav-generator.service';
 import { SpeechGeneratorService } from '../application/providers/speech-generator.service';
+import { GetAudioContentUrlByIdHandler } from '../application/queries/get-audio-content-url-by-id/get-audio-content-url-by-id.handler';
+import { GetIdFromContentIdAndKeyHandler } from '../application/queries/get-id-from-content-id-and-media-key/get-id-from-content-id-and-media-key.handler';
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { SpeechGeneratorService } from '../application/providers/speech-generato
     ContentFactoryBuilder,
     GetLastContentPaginatedHandler,
     GetShareableContentHandler,
+    GetAudioContentUrlByIdHandler,
+    GetIdFromContentIdAndKeyHandler,
     ExtractSpeechForContentHandler,
     { provide: TextFormatter, useClass: TextCheeriosFormatter },
     { provide: SpeechGeneratorService, useClass: SpeechWavGeneratorService }

@@ -217,7 +217,7 @@ export class ContentService {
   }
 
   findById(id: number): Promise<Content> {
-    return this.contentRepository.findOne({ relations: ['image', 'metaMedia'], where: { id } });
+    return this.contentRepository.findOne({ relations: { image: true, metaMedia: true, audio: true }, where: { id } });
   }
 
   findByContentId(id: string): Promise<Content> {

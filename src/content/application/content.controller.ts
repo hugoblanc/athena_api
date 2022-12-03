@@ -5,17 +5,19 @@ import {
   Param,
   ParseIntPipe,
   Post,
-  Query,
+  Query
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { RequestedPageValueType } from '../../core/page-number.value-type';
+import { ExtractSpeechForContentCommand } from './commands/extract-speech-for-content.command';
 import { ContentService } from './content.service';
+import { ShareableContentResponse } from './dto/shareable-content.dto';
+import { GetAudioContentUrlByIdQuery } from './queries/get-audio-content-url-by-id/get-audio-content-url-by-id.query';
 import { GetLastContentPaginatedQuery } from './queries/get-last-content-paginated/get-last-content-paginated.query';
 import { SearchedContentTermValueType } from './queries/get-last-content-paginated/searched-content-term.value-type';
 import { GetShareableContentQuery } from './queries/get-shareable-content/get-shareable-content.query';
-import { ShareableContentResponse } from './dto/shareable-content.dto';
-import { runInThisContext } from 'vm';
-import { ExtractSpeechForContentCommand } from './commands/extract-speech-for-content.command';
+import { GetIdFromContentIdAndKeyQuery } from './queries/get-id-from-content-id-and-media-key/get-id-from-content-id-and-media-key.query';
+import { Content } from '../domain/content.entity';
 
 @Controller('content')
 export class ContentController {
@@ -44,6 +46,16 @@ export class ContentController {
   @Get('get-shareable-content/:key/:contentId')
   getShareableContent(@Param('key') key: string, @Param('contentId') contentId: string): Promise<ShareableContentResponse> {
     return this.queryBus.execute(new GetShareableContentQuery(key, contentId));
+  }
+
+  @Get('get-audio-content-url-by-id/:id')
+  getAudioContentUrlByContentId(@Param('id', ParseIntPipe) id: number): Promise<ShareableContentResponse> {
+    return this.queryBus.execute(new GetAudioContentUrlByIdQuery(id));
+  }
+
+  @Get('get-id-from-content-id-and-media-key/:key/:contentId')
+  getIdFromContentIdAndMediaKey(@Param('contentId') contentId: string, @Param('key') key: string): Promise<Content> {
+    return this.queryBus.execute(new GetIdFromContentIdAndKeyQuery(key, contentId));
   }
 
 
