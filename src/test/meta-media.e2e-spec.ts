@@ -45,7 +45,7 @@ describe('ListMetaMediaController (e2e)', () => {
             },
             {
               id: 4,
-              key: "lemondemoderne",
+              key: "test",
               url: "https://www.lemondemoderne.media/",
               title: "Le Monde Moderne",
               logo: "assets/lemondemoderne.jpg",

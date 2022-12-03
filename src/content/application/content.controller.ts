@@ -4,15 +4,18 @@ import {
   Logger,
   Param,
   ParseIntPipe,
+  Post,
   Query,
 } from '@nestjs/common';
-import { QueryBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { RequestedPageValueType } from '../../core/page-number.value-type';
 import { ContentService } from './content.service';
 import { GetLastContentPaginatedQuery } from './queries/get-last-content-paginated/get-last-content-paginated.query';
 import { SearchedContentTermValueType } from './queries/get-last-content-paginated/searched-content-term.value-type';
 import { GetShareableContentQuery } from './queries/get-shareable-content/get-shareable-content.query';
 import { ShareableContentResponse } from './dto/shareable-content.dto';
+import { runInThisContext } from 'vm';
+import { ExtractSpeechForContentCommand } from './commands/extract-speech-for-content.command';
 
 @Controller('content')
 export class ContentController {
@@ -20,6 +23,7 @@ export class ContentController {
   constructor(
     private contentService: ContentService,
     private readonly queryBus: QueryBus,
+    private readonly commandBus: CommandBus
   ) { }
 
   @Get('/last')
@@ -66,4 +70,11 @@ export class ContentController {
     this.logger.log('Initialisation du media : ' + mediaKey);
     this.contentService.initMediaContent(mediaKey).subscribe();
   }
+
+  @Post('extract-speech/:id')
+  extractSpeech(@Param('id', ParseIntPipe) id: number) {
+    return this.commandBus.execute(new ExtractSpeechForContentCommand(id))
+  }
+
+
 }

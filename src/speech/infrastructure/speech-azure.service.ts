@@ -37,8 +37,8 @@ export class SpeechAzureService {
           } else {
             this.logger.error(
               'Speech synthesis canceled, ' +
-                result.errorDetails +
-                '\nDid you set the speech resource key and region values?',
+              result.errorDetails +
+              '\nDid you set the speech resource key and region values?',
             );
             reject(result.errorDetails);
           }

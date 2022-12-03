@@ -1,7 +1,5 @@
-import { SpeechModule } from './speech/speech.module';
 import { Logger, Module, OnModuleDestroy } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { getConnectionManager } from 'typeorm';
 import { AppController } from './app.controller';
 import { ContentModule } from './content/infrastructure/content.module';
 import { ConfigurationModule } from './core/configuration/configuration.module';
@@ -13,7 +11,6 @@ import { MetaMediaModule } from './meta-media/meta-media.module';
 
 @Module({
   imports: [
-    SpeechModule,
     TypeOrmModule.forRoot({
       ...typeormConfig,
       autoLoadEntities: true,
@@ -28,26 +25,4 @@ import { MetaMediaModule } from './meta-media/meta-media.module';
   ],
   controllers: [AppController],
 })
-export class AppModule implements OnModuleDestroy {
-  logger = new Logger(AppModule.name);
-
-  onModuleDestroy() {
-    this.closeDBConnection();
-  }
-
-  private closeDBConnection() {
-    // const conn = getConnectionManager().get();
-    // if (conn.isConnected) {
-    //   conn
-    //     .close()
-    //     .then(() => {
-    //       this.logger.log('DB conn closed');
-    //     })
-    //     .catch((err: any) => {
-    //       this.logger.error('Error clossing conn to DB, ', err);
-    //     });
-    // } else {
-    //   this.logger.log('DB conn already closed.');
-    // }
-  }
-}
+export class AppModule { }

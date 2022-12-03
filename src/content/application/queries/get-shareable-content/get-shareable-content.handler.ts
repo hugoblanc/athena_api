@@ -16,7 +16,6 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
 
   async execute(query: GetShareableContentQuery): Promise<ShareableContentResponse> {
     const { contentId, key } = query;
-    console.log(contentId);
 
     const content = await this.repository.findOne({
       relations: { image: true, metaMedia: true },
@@ -43,10 +42,8 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
     }
 
     const originalUrlFactory = this.contentFactoryBuilder.createOriginalUrlFactory(content);
-
     const originalUrl = await originalUrlFactory.getOriginalUrl();
 
-    console.log(JSON.stringify(content));
     return {
       image: content.image,
       title: content.title,

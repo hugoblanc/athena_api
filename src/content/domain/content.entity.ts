@@ -10,6 +10,7 @@ import {
 import { MetaMedia } from '../../meta-media/meta-media.entity';
 import { Image } from './image.entity';
 import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
+import { Audio } from './audio.entity';
 
 @Entity()
 export class Content {
@@ -42,6 +43,10 @@ export class Content {
   @OneToOne(type => Image, { cascade: true, nullable: true })
   @JoinColumn()
   image: Image;
+
+  @OneToOne(type => Audio, { cascade: true, nullable: true })
+  @JoinColumn()
+  audio: Audio;
 
   get isVideo() {
     return this.contentType && this.contentType === MetaMediaType.YOUTUBE;

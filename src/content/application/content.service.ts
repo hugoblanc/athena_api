@@ -222,7 +222,7 @@ export class ContentService {
 
   findByContentId(id: string): Promise<Content> {
     this.logger.log('Find content by content id: ' + id);
-    return this.contentRepository.findOne({ relations: ['image', 'metaMedia'], where: { contentId: id } });
+    return this.contentRepository.findOne({ relations: { image: true, metaMedia: true }, where: { contentId: id } });
   }
 
   /**
