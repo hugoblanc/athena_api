@@ -18,9 +18,6 @@ describe('GET /content/last?page=1&size=4 ', () => {
     return request(app.getHttpServer())
       .get('/content/last?page=1&size=4')
       .expect(response => {
-        console.error(JSON.stringify(response.body));
-        assert(response.body.count === 4);
-        assert(response.body.totalCount === 5);
         expect(response.body).toEqual({
           objects: [
             {
@@ -88,7 +85,9 @@ describe('GET /content/last?page=1&size=4 ', () => {
               image: null,
             },
           ],
+          totalCount: 5,
           count: 4,
+          next: 2,
           page: 1,
         });
       });
