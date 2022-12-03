@@ -3,10 +3,9 @@ on: push
 
 jobs:
   # Label of the container job
-  container-job:
-    # Containers must run in Linux based operating systems
+  testing:
+    needs: build
     runs-on: ubuntu-latest
-    # Docker Hub image that `container-job` executes in
     container: node:16-alpine3.14
 
     # Service containers to run with `container-job`
