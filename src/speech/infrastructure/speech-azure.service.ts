@@ -1,38 +1,33 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  AudioConfig,
-  ResultReason,
-  SpeechConfig,
-  SpeechSynthesizer,
-} from 'microsoft-cognitiveservices-speech-sdk';
+import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
 
 @Injectable()
 export class SpeechAzureService {
   private readonly key = process.env.AZURE_SPEECH_KEY;
   private readonly region = process.env.AZURE_SPEECH_REGION;
-  private speechConfig: SpeechConfig;
+  private speechConfig: sdk.SpeechConfig;
   private readonly logger = new Logger(SpeechAzureService.name);
   constructor() {
-    this.speechConfig = SpeechConfig.fromSubscription(this.key, this.region);
+    this.speechConfig = sdk.SpeechConfig.fromSubscription(this.key, this.region);
     this.speechConfig.speechSynthesisVoiceName = 'fr-FR-DeniseNeural';
   }
 
   async fromTextToSpeech(text: string, filename: string) {
-    const audioConfig = AudioConfig.fromAudioFileOutput(filename);
-    const synthesizer = new SpeechSynthesizer(this.speechConfig, audioConfig);
+    const audioConfig = sdk.AudioConfig.fromAudioFileOutput(filename);
+    const synthesizer = new sdk.SpeechSynthesizer(this.speechConfig, audioConfig);
 
     await this.synthesizeTextToSpeech(text, synthesizer);
   }
 
   private synthesizeTextToSpeech(
     text: string,
-    synthesizer: SpeechSynthesizer,
+    synthesizer: sdk.SpeechSynthesizer,
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       synthesizer.speakTextAsync(
         text,
         result => {
-          if (result.reason === ResultReason.SynthesizingAudioCompleted) {
+          if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
             this.logger.log('synthesis finished.');
           } else {
             this.logger.error(
