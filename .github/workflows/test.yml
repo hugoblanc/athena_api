@@ -2,9 +2,20 @@ name: PostgreSQL service example
 on: push
 
 jobs:
-  build:
+  install:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+          cache: 'npm'
+      - run: npm ci
 
+  build:
+    needs: install
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
@@ -14,6 +25,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
+
   testing:
     needs: build
     runs-on: ubuntu-latest
