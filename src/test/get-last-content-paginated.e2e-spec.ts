@@ -87,7 +87,6 @@ describe('GET /content/last?page=1&size=4 ', () => {
           ],
           totalCount: 5,
           count: 4,
-          next: 2,
           page: 1,
         });
       });
