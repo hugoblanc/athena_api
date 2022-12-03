@@ -16,11 +16,11 @@ describe('POST /content/get-audio-content-url-by-id/:key/:contentId', () => {
 
   it('should return the correct response', async () => {
     const dbFixture = new DbFixture(app);
-    const key = 'lvsl';
-    const lvsl = new MetaMedia({ id: 1 });
+    const key = 'test';
+    const lemondemoderne = new MetaMedia({ id: 4 });
 
     const content = await dbFixture.createContent({
-      metaMedia: lvsl,
+      metaMedia: lemondemoderne,
       description: ''
     });
 
