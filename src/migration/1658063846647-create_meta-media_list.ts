@@ -39,7 +39,7 @@ export class createMetaMediaList1658063846647 implements MigrationInterface {
     })
     const media4 = new MetaMedia({
       id: 4,
-      key: "lemondemoderne",
+      key: "test",
       url: "https://www.lemondemoderne.media/",
       title: "Le Monde Moderne",
       logo: "assets/lemondemoderne.jpg",
