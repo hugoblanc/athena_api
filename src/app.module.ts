@@ -8,6 +8,7 @@ import { GithubModule } from './github/github.module';
 import { HelperModule } from './helper/helper.module';
 import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
 import { MetaMediaModule } from './meta-media/meta-media.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { MetaMediaModule } from './meta-media/meta-media.module';
     HelperModule,
     GithubModule,
     ConfigurationModule,
+    EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],
 })
-export class AppModule { }
+export class AppModule {}

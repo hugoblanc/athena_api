@@ -21,6 +21,7 @@ import { SpeechWavGeneratorService } from './speech-wav-generator.service';
 import { SpeechGeneratorService } from '../application/providers/speech-generator.service';
 import { GetAudioContentUrlByIdHandler } from '../application/queries/get-audio-content-url-by-id/get-audio-content-url-by-id.handler';
 import { GetIdFromContentIdAndKeyHandler } from '../application/queries/get-id-from-content-id-and-media-key/get-id-from-content-id-and-media-key.handler';
+import { AudioService } from '../application/events/audio.service';
 
 @Module({
   imports: [
@@ -29,10 +30,11 @@ import { GetIdFromContentIdAndKeyHandler } from '../application/queries/get-id-f
     HelperModule,
     CqrsModule,
     SpeechModule,
-    StorageModule
+    StorageModule,
   ],
   controllers: [ContentController],
-  providers: [ContentService,
+  providers: [
+    ContentService,
     YoutubeService,
     ContentFactoryBuilder,
     GetLastContentPaginatedHandler,
@@ -40,9 +42,10 @@ import { GetIdFromContentIdAndKeyHandler } from '../application/queries/get-id-f
     GetAudioContentUrlByIdHandler,
     GetIdFromContentIdAndKeyHandler,
     ExtractSpeechForContentHandler,
+    AudioService,
     { provide: TextFormatter, useClass: TextCheeriosFormatter },
-    { provide: SpeechGeneratorService, useClass: SpeechWavGeneratorService }
+    { provide: SpeechGeneratorService, useClass: SpeechWavGeneratorService },
   ],
   exports: [ContentService],
 })
-export class ContentModule { }
+export class ContentModule {}

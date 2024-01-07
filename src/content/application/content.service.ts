@@ -15,6 +15,8 @@ import { NotificationService } from '../../providers/notification-service';
 import { PostService } from '../../providers/post-service';
 import { Content } from '../domain/content.entity';
 import { YoutubeService } from './youtube/youtube.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { PostsCreatedEvent } from './events/posts-created.event';
 
 @Injectable()
 export class ContentService {
@@ -28,7 +30,8 @@ export class ContentService {
     private youtubeService: YoutubeService,
     private postService: PostService,
     private notificationService: NotificationService,
-  ) { }
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   /**
    * Cette method permet d'envoyer une notification basé sur un contenu
@@ -124,13 +127,9 @@ export class ContentService {
     metaMedias$
       .pipe(
         arrayMap(metaMedia => this.savePostContent(metaMedia)),
-        map((postContents: { content: Content; post: Post }[]) => {
-          // Si moins de 5 nouveau content c'est possible, sinon il s'agit surement d'une init
-          if (postContents.length < 5) {
-            postContents.forEach(pC => this.sendPostNotification(pC.post));
-          }
-          return postContents;
-        }),
+        tap((postContents: { content: Content; post: Post }[]) =>
+          this.postCreationSideEffects(postContents),
+        ),
       )
       .subscribe((postContents: Array<{ content: Content; post: Post }>) => {
         if (postContents.length > 0) {
@@ -184,12 +183,6 @@ export class ContentService {
     });
   }
 
-  /**
-   * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   * * ----------------------------------------  REPOSITORY METHODE  -------------------------------------
-   * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   */
-
   save(content: Content): Promise<Content> {
     this.logger.log('Save Content contentId: ' + content.contentId);
     return this.contentRepository.save(content);
@@ -200,29 +193,33 @@ export class ContentService {
   }
 
   async findLastContent() {
-    return this.contentRepository.find(
-      {
-        order: {
-          publishedAt: 'DESC',
-        },
-        select: {
-          id: true,
-          contentId: true,
-          title: true,
-          publishedAt: true,
-        },
-        take: 20
-      }
-    );
+    return this.contentRepository.find({
+      order: {
+        publishedAt: 'DESC',
+      },
+      select: {
+        id: true,
+        contentId: true,
+        title: true,
+        publishedAt: true,
+      },
+      take: 20,
+    });
   }
 
   findById(id: number): Promise<Content> {
-    return this.contentRepository.findOne({ relations: { image: true, metaMedia: true, audio: true }, where: { id } });
+    return this.contentRepository.findOne({
+      relations: { image: true, metaMedia: true, audio: true },
+      where: { id },
+    });
   }
 
   findByContentId(id: string): Promise<Content> {
     this.logger.log('Find content by content id: ' + id);
-    return this.contentRepository.findOne({ relations: { image: true, metaMedia: true }, where: { contentId: id } });
+    return this.contentRepository.findOne({
+      relations: { image: true, metaMedia: true },
+      where: { contentId: id },
+    });
   }
 
   /**
@@ -247,8 +244,14 @@ export class ContentService {
    * Cette methode renvoi une liste de content pour un meta meia cible
    * @param key la clé du metamedia cible
    */
-  async findPageByMediaKey(key: string, pageNumber: number): Promise<Page<Content>> {
-    const requestPage = new RequestedPageValueType(pageNumber, ContentService.PAGER_SIZE)
+  async findPageByMediaKey(
+    key: string,
+    pageNumber: number,
+  ): Promise<Page<Content>> {
+    const requestPage = new RequestedPageValueType(
+      pageNumber,
+      ContentService.PAGER_SIZE,
+    );
     // On s'assure au préalable que cette requète a du sens
     // C-a-d que metamedia n'est pas null
     const metaMedia = await this.metaMediaService.findByKey(key);
@@ -281,22 +284,20 @@ export class ContentService {
     metaMedia: MetaMedia,
   ): Observable<{ content: Content; post: Post }[]> {
     // Récupération des post
-    const getAndSave$ = this.postService
-      .getPosts(metaMedia.url)
-      .pipe(
-        mergeMap((posts: Post[]) => {
-          // Transformation de l'ensemble des posts en tableau d'observable avec le metaMedia valorisé
-          const checkSavePosts$ = posts.map(p => {
-            p.metaMedia = metaMedia;
-            return this.checkAndSave(p);
-          });
-          // Résolution parallélisé du tableau
-          return forkJoin(checkSavePosts$);
-        }),
-        map((contents: { content: Content; post: Post }[] | null[]) =>
-          contents.filter(c => c != null),
-        ),
-      );
+    const getAndSave$ = this.postService.getPosts(metaMedia.url).pipe(
+      mergeMap((posts: Post[]) => {
+        // Transformation de l'ensemble des posts en tableau d'observable avec le metaMedia valorisé
+        const checkSavePosts$ = posts.map(p => {
+          p.metaMedia = metaMedia;
+          return this.checkAndSave(p);
+        });
+        // Résolution parallélisé du tableau
+        return forkJoin(checkSavePosts$);
+      }),
+      map((contents: { content: Content; post: Post }[] | null[]) =>
+        contents.filter(c => c != null),
+      ),
+    );
 
     return getAndSave$;
   }
@@ -322,6 +323,22 @@ export class ContentService {
           return of(null);
         }
       }),
+    );
+  }
+
+  private postCreationSideEffects(
+    postContents: { content: Content; post: Post }[],
+  ): void {
+    const max_notification_to_send = 5;
+    if (postContents.length < max_notification_to_send) {
+      postContents.forEach(pC => this.sendPostNotification(pC.post));
+    }
+
+    const ids = postContents.map(pC => pC.content.id);
+
+    this.eventEmitter.emit(
+      PostsCreatedEvent.eventName,
+      new PostsCreatedEvent(ids),
     );
   }
 }

@@ -2,13 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { from, of } from 'rxjs';
 
-/**
- * *~~~~~~~~~~~~~~~~~~~
- * Author: HugoBlanc |
- * *~~~~~~~~~~~~~~~~~~~
- * Ce service de notification à la responsabilité de l'envoi des notifications
- * *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
 @Injectable()
 export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
@@ -25,7 +18,7 @@ export class NotificationService {
     this.logger.log(messages[0]);
 
     if (process.env.SEND_NOTIFICATION === 'false') {
-      this.logger.log("Notification disabled");
+      this.logger.log('Notification disabled');
       return;
     }
 
