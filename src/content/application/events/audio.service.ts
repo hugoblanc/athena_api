@@ -10,7 +10,7 @@ export class AudioService {
   constructor(private readonly commandBuse: CommandBus) {}
 
   @OnEvent(PostsCreatedEvent.eventName)
-  async handleOrderCreatedEvent({ ids }: PostsCreatedEvent) {
+  async handlePostCreated({ ids }: PostsCreatedEvent) {
     if (ids.length === 0) {
       return;
     }

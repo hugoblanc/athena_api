@@ -21,6 +21,8 @@ export class SpeechWavGeneratorService extends SpeechGeneratorService {
 
   async createAudioFromContent(content: Content): Promise<Audio> {
     const plainTextDescription = this.extractSpeakableTextFromContent(content);
+    this.logger.log(plainTextDescription);
+
     this.logger.debug(
       'Content text extracted success with a length of ' +
         plainTextDescription.length,

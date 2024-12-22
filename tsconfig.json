@@ -8,6 +8,7 @@
     "target": "es6",
     "sourceMap": true,
     "outDir": "./dist",
+    "typeRoots": ["./node_modules/@types"],
     "baseUrl": "./",
     "incremental": true
   },
