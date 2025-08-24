@@ -8,8 +8,7 @@ import { Observable } from 'rxjs';
  *  https://developers.google.com/youtube/v3/guides/push_notifications
  */
 export class PubSub {
-
-  constructor() { }
+  constructor() {}
 
   private readonly logger = new Logger('PubSub');
   private static CALLBACK_URL = 'http://www.athena-app.fr:8081';
@@ -20,6 +19,7 @@ export class PubSub {
   // Les url cibles de notre abonnement
   private static URLS = [
     'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UCVeMw72tepFl1Zt5fvf9QKQ',
+    'https://www.youtube.com/xml/feeds/videos.xml?channel_id=UC__xRB5L4toU9yYawt_lIKg',
   ];
 
   private subscribers: any[] = [];
@@ -36,7 +36,8 @@ export class PubSub {
     // Création de l'observable qui se déclenchera a chaque notification
     const youtubeFeed$ = this.observeFeed(pubSubSubscriber);
     // Démarrage du serveur sur le port indiqué
-    const pubSubPort = parseInt(process.env.ATHENA_PUB_SUB_PORT, 10) || undefined;
+    const pubSubPort =
+      parseInt(process.env.ATHENA_PUB_SUB_PORT, 10) || undefined;
     this.logger.log('start listening on port ' + pubSubPort);
     pubSubSubscriber.listen(pubSubPort);
     this.subscribers.push(pubSubSubscriber);
@@ -45,8 +46,7 @@ export class PubSub {
   }
 
   public unsubscribeAll() {
-
-    this.subscribers.forEach(subscriber => {
+    this.subscribers.forEach((subscriber) => {
       subscriber.unsubscribe();
     });
   }
@@ -99,5 +99,4 @@ export class PubSub {
     // On s'abonne au lien en passant par le hub spécifié
     pubSubSubscriber.subscribe(url, PubSub.HUB, errCall);
   }
-
 }
