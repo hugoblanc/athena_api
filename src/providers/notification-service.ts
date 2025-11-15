@@ -14,20 +14,19 @@ export class NotificationService {
       return;
     }
 
-    // On ne peut pas envoyer tout les message car sinon on duplique les notification ... dommage
     this.logger.log(messages[0]);
 
     if (process.env.SEND_NOTIFICATION === 'false') {
-      this.logger.log('Notification disabled');
+      this.logger.log('Sending false notification' + JSON.stringify(messages));
       return;
     }
 
     from(admin.messaging().send(messages[0])).subscribe(
-      resultSend => {
+      (resultSend) => {
         this.logger.log('Successfully sent message');
         this.logger.log(messages[0]);
       },
-      error => {
+      (error) => {
         this.logger.error('Error sending message');
         this.logger.error(JSON.stringify(error));
       },

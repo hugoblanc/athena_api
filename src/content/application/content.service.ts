@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { empty, forkJoin, from, Observable, of } from 'rxjs';
-import { filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
+import { catchError, filter, flatMap, map, mergeMap, tap } from 'rxjs/operators';
 import { Repository } from 'typeorm';
 import { YoutubeFeed } from '../../core/configuration/pubsubhub/youtube-feed';
 import { Page } from '../../core/page';
@@ -130,6 +130,10 @@ export class ContentService {
         tap((postContents: { content: Content; post: Post }[]) =>
           this.postCreationSideEffects(postContents),
         ),
+        catchError((error) => {
+          this.logger.error('Polling - error occurred', error);
+          return of([]);
+        }),
       )
       .subscribe((postContents: Array<{ content: Content; post: Post }>) => {
         if (postContents.length > 0) {
@@ -297,6 +301,13 @@ export class ContentService {
       map((contents: { content: Content; post: Post }[] | null[]) =>
         contents.filter(c => c != null),
       ),
+      catchError((error) => {
+        this.logger.error(
+          `Failed to fetch posts for metaMedia: ${metaMedia.key}`,
+          error.message,
+        );
+        return of([]);
+      }),
     );
 
     return getAndSave$;

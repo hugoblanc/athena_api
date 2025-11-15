@@ -1,0 +1,13 @@
+# Dependencies
+node_modules
+
+# Compiled output
+dist
+coverage
+
+# Audio files
+*.wav
+
+# Other
+*.log
+.env

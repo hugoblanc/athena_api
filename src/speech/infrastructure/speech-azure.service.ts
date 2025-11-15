@@ -8,13 +8,28 @@ export class SpeechAzureService {
   private speechConfig: sdk.SpeechConfig;
   private readonly logger = new Logger(SpeechAzureService.name);
   constructor() {
-    this.speechConfig = sdk.SpeechConfig.fromSubscription(this.key, this.region);
-    this.speechConfig.speechSynthesisVoiceName = 'fr-FR-DeniseNeural';
+    this.speechConfig = sdk.SpeechConfig.fromSubscription(
+      this.key,
+      this.region,
+    );
+    // Set output format BEFORE voice name (order matters)
+    this.speechConfig.speechSynthesisOutputFormat =
+      sdk.SpeechSynthesisOutputFormat.Riff24Khz16BitMonoPcm;
+    this.speechConfig.speechSynthesisVoiceName =
+      'fr-FR-Vivienne:DragonHDLatestNeural';
   }
 
   async fromTextToSpeech(text: string, filename: string) {
     const audioConfig = sdk.AudioConfig.fromAudioFileOutput(filename);
-    const synthesizer = new sdk.SpeechSynthesizer(this.speechConfig, audioConfig);
+
+    // Ensure the speech config has the correct format before creating synthesizer
+    this.speechConfig.speechSynthesisOutputFormat =
+      sdk.SpeechSynthesisOutputFormat.Riff24Khz16BitMonoPcm;
+
+    const synthesizer = new sdk.SpeechSynthesizer(
+      this.speechConfig,
+      audioConfig,
+    );
 
     await this.synthesizeTextToSpeech(text, synthesizer);
   }
@@ -26,14 +41,14 @@ export class SpeechAzureService {
     return new Promise((resolve, reject) => {
       synthesizer.speakTextAsync(
         text,
-        result => {
+        (result) => {
           if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
             this.logger.log('synthesis finished.');
           } else {
             this.logger.error(
               'Speech synthesis canceled, ' +
-              result.errorDetails +
-              '\nDid you set the speech resource key and region values?',
+                result.errorDetails +
+                '\nDid you set the speech resource key and region values?',
             );
             reject(result.errorDetails);
           }
@@ -41,8 +56,9 @@ export class SpeechAzureService {
           synthesizer = null;
           resolve();
         },
-        err => {
+        (err) => {
           console.trace('err - ' + err);
+          console.error('err - ' + err);
           synthesizer.close();
           synthesizer = null;
           reject(err);
