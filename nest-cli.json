@@ -4,6 +4,6 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "watchAssets": true,
-    "assets": ["**/*.!(wav)"]
+    "assets": ["**/*.!(wav|mp3)"]
   }
 }

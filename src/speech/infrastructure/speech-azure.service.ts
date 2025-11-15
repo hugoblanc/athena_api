@@ -13,8 +13,9 @@ export class SpeechAzureService {
       this.region,
     );
     // Set output format BEFORE voice name (order matters)
+    // Using MP3 format: 5x smaller than WAV and easy to concatenate
     this.speechConfig.speechSynthesisOutputFormat =
-      sdk.SpeechSynthesisOutputFormat.Riff24Khz16BitMonoPcm;
+      sdk.SpeechSynthesisOutputFormat.Audio24Khz48KBitRateMonoMp3;
     this.speechConfig.speechSynthesisVoiceName =
       'fr-FR-Vivienne:DragonHDLatestNeural';
   }
@@ -24,7 +25,7 @@ export class SpeechAzureService {
 
     // Ensure the speech config has the correct format before creating synthesizer
     this.speechConfig.speechSynthesisOutputFormat =
-      sdk.SpeechSynthesisOutputFormat.Riff24Khz16BitMonoPcm;
+      sdk.SpeechSynthesisOutputFormat.Audio24Khz48KBitRateMonoMp3;
 
     const synthesizer = new sdk.SpeechSynthesizer(
       this.speechConfig,

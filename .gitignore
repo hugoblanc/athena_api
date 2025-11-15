@@ -35,5 +35,6 @@ lerna-debug.log*
 
 # Audio files
 *.wav
+*.mp3
 
 .env
