@@ -45,6 +45,7 @@ export class GetLastContentPaginatedHandler
           key: true,
           title: true,
           logo: true,
+          type: true,
         },
       },
       where,

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { Content } from '../content/domain/content.entity';
 import { TextFormatter } from '../content/application/providers/text-formatter.service';
+import { ContentEmbeddingService } from '../content/application/content-embedding.service';
 
 export interface MigrationResult {
   processed: number;
@@ -17,6 +18,7 @@ export class MaintenanceService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly textFormatter: TextFormatter,
+    private readonly contentEmbeddingService: ContentEmbeddingService,
   ) {}
 
   async populatePlainText(): Promise<MigrationResult> {
@@ -72,5 +74,32 @@ export class MaintenanceService {
     );
 
     return result;
+  }
+
+  async generateAllEmbeddings(): Promise<{
+    processed: number;
+    successful: number;
+    failed: number;
+    totalTokens: number;
+    estimatedCost: number;
+  }> {
+    this.logger.log('Starting embeddings generation for all content...');
+
+    const result = await this.contentEmbeddingService.generateAllMissingEmbeddings();
+
+    // Coût estimé : $0.02 / 1M tokens pour text-embedding-3-small
+    const estimatedCost = (result.totalTokens / 1000000) * 0.02;
+
+    this.logger.log(
+      `Embeddings generation completed! Processed: ${result.processed}, Successful: ${result.successful}, Failed: ${result.failed}, Tokens: ${result.totalTokens}, Estimated cost: $${estimatedCost.toFixed(4)}`,
+    );
+
+    return {
+      processed: result.processed,
+      successful: result.successful,
+      failed: result.failed,
+      totalTokens: result.totalTokens,
+      estimatedCost,
+    };
   }
 }

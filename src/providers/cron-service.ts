@@ -6,7 +6,6 @@ import { ContentService } from '../content/application/content.service';
 export class CronService {
   constructor(private contentService: ContentService) {
     //
-    this.contentService.pollingContent();
   }
 
   @Cron('0 */5 * * * *')

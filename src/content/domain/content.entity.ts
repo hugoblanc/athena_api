@@ -4,6 +4,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Index,
 } from 'typeorm';
@@ -11,6 +12,7 @@ import { MetaMedia } from '../../meta-media/meta-media.entity';
 import { Image } from './image.entity';
 import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
 import { Audio } from './audio.entity';
+import { ContentEmbedding } from './content-embedding.entity';
 
 @Entity()
 export class Content {
@@ -50,6 +52,11 @@ export class Content {
   @OneToOne(type => Audio, { cascade: true, nullable: true })
   @JoinColumn()
   audio: Audio;
+
+  @OneToMany(() => ContentEmbedding, embedding => embedding.content, {
+    cascade: true,
+  })
+  embeddings: ContentEmbedding[];
 
   get isVideo() {
     return this.contentType && this.contentType === MetaMediaType.YOUTUBE;
