@@ -30,6 +30,9 @@ export class Content {
   @Column({ type: 'longtext' })
   description: string;
 
+  @Column({ type: 'longtext', nullable: true })
+  plainText: string;
+
   @Column({ type: 'timestamp' })
   publishedAt: Date;
 
