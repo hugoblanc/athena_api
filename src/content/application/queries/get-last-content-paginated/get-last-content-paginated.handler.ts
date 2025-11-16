@@ -34,6 +34,18 @@ export class GetLastContentPaginatedHandler
         contentId: true,
         title: true,
         publishedAt: true,
+        image: {
+          id: true,
+          url: true,
+          width: true,
+          height: true,
+        },
+        metaMedia: {
+          id: true,
+          key: true,
+          title: true,
+          logo: true,
+        },
       },
       where,
       skip: requestedPage.elementToSkip,
