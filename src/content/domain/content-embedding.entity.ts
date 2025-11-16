@@ -31,13 +31,24 @@ export class ContentEmbedding {
   tokenCount: number; // Nombre de tokens (utile pour tracking coût)
 
   // Vecteur d'embedding (1536 dimensions pour text-embedding-3-small)
-  // MySQL 9.1+ supporte le type VECTOR
-  // On force TypeORM à utiliser le bon type SQL même s'il ne le connaît pas nativement
+  // MySQL 9.1+ type VECTOR(1536)
+  // TypeORM ne connaît pas nativement le type VECTOR, donc on utilise 'text' avec un transformer
   @Column({
-    type: 'simple-json',  // TypeORM type (pour la sérialisation)
+    type: 'text',
     nullable: true,
-    // Le vrai type SQL sera créé via synchronize:false + migration manuelle
-    // ou on le change après coup avec ALTER TABLE
+    transformer: {
+      to: (value: number[] | null): string | null => {
+        // Convertir number[] en format VECTOR MySQL: "[0.1, 0.2, 0.3]"
+        if (!value) return null;
+        return JSON.stringify(value);
+      },
+      from: (value: string | null): number[] | null => {
+        // Convertir le string VECTOR MySQL en number[]
+        if (!value) return null;
+        // MySQL VECTOR retourne déjà un string JSON-like
+        return JSON.parse(value);
+      },
+    },
   })
   embedding: number[];
 
