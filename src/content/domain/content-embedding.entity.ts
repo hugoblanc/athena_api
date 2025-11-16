@@ -31,22 +31,29 @@ export class ContentEmbedding {
   tokenCount: number; // Nombre de tokens (utile pour tracking coût)
 
   // Vecteur d'embedding (1536 dimensions pour text-embedding-3-small)
-  // MySQL 9.1+ type VECTOR(1536)
-  // TypeORM ne connaît pas nativement le type VECTOR, donc on utilise 'text' avec un transformer
+  // PostgreSQL pgvector: type vector(1536)
+  // TypeORM ne supporte pas nativement 'vector', on utilise un cast SQL
   @Column({
     type: 'text',
     nullable: true,
     transformer: {
       to: (value: number[] | null): string | null => {
-        // Convertir number[] en format VECTOR MySQL: "[0.1, 0.2, 0.3]"
+        // Convertir number[] en format pgvector: "[0.1,0.2,0.3]"
         if (!value) return null;
-        return JSON.stringify(value);
+        return `[${value.join(',')}]`;
       },
-      from: (value: string | null): number[] | null => {
-        // Convertir le string VECTOR MySQL en number[]
+      from: (value: any): number[] | null => {
+        // PostgreSQL pgvector retourne déjà un array
         if (!value) return null;
-        // MySQL VECTOR retourne déjà un string JSON-like
-        return JSON.parse(value);
+        if (Array.isArray(value)) return value;
+        // Si string, parser: "[0.1,0.2,0.3]" -> [0.1,0.2,0.3]
+        if (typeof value === 'string') {
+          return value
+            .replace(/[\[\]]/g, '')
+            .split(',')
+            .map(Number);
+        }
+        return null;
       },
     },
   })

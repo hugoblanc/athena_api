@@ -29,10 +29,10 @@ export class Content {
   @Column('enum', { enum: MetaMediaType })
   contentType: MetaMediaType;
 
-  @Column({ type: 'longtext' })
+  @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'longtext', nullable: true })
+  @Column({ type: 'text', nullable: true })
   plainText: string;
 
   @Column({ type: 'timestamp' })
