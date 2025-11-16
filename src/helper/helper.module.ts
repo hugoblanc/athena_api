@@ -8,6 +8,8 @@ import { MediaService } from '../providers/media/media.service';
 import { NotificationService } from '../providers/notification-service';
 import { PostService } from '../providers/post-service';
 import { FormatService } from './format/format.service';
+import { TextFormatter } from '../content/application/providers/text-formatter.service';
+import { TextCheeriosFormatter } from '../content/infrastructure/text-cheerios-formatter.service';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { FormatService } from './format/format.service';
     NotificationService,
     MediaService,
     FormatService,
+    { provide: TextFormatter, useClass: TextCheeriosFormatter },
   ],
   exports: [ExternalService, PostService, FormatService, NotificationService],
 })

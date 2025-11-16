@@ -8,6 +8,7 @@ import { ExternalService } from '../../../providers/external-service';
 import { Content } from '../../domain/content.entity';
 import { Image } from '../../domain/image.entity';
 import { Item, PlaylistItemDto } from '../dto/playlist-item.dto';
+import { TextFormatter } from '../providers/text-formatter.service';
 
 @Injectable()
 export class YoutubeService {
@@ -15,7 +16,10 @@ export class YoutubeService {
     'https://www.googleapis.com/youtube/v3/playlistItems';
   private readonly logger = new Logger(YoutubeService.name);
 
-  constructor(private http: ExternalService) { }
+  constructor(
+    private http: ExternalService,
+    private textFormatter: TextFormatter,
+  ) { }
 
   getItems(targetId: string, pageId: string = ''): Observable<PlaylistItemDto> {
     const config: any = {
@@ -123,12 +127,16 @@ export class YoutubeService {
       height: item.snippet.thumbnails.medium.height,
     };
 
+    const description = item.snippet.description;
+    const plainText = this.textFormatter.htmlToText(description);
+
     const content: Content = new Content({
       id: existingContent ? existingContent.id : null,
       contentId: item.snippet.resourceId.videoId,
       contentType: MetaMediaType.YOUTUBE,
       title: item.snippet.title,
-      description: item.snippet.description,
+      description,
+      plainText,
       publishedAt: new Date(item.snippet.publishedAt),
       image,
       metaMedia,

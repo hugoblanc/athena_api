@@ -6,6 +6,7 @@ import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { Post } from '../models/post';
 import { ExternalService } from './external-service';
+import { TextFormatter } from '../content/application/providers/text-formatter.service';
 
 /**
  * *~~~~~~~~~~~~~~~~~~~
@@ -25,7 +26,10 @@ export class PostService {
 
   private oldPosts: any = {};
 
-  constructor(private externalService: ExternalService) {
+  constructor(
+    private externalService: ExternalService,
+    private textFormatter: TextFormatter,
+  ) {
   }
 
   /**
@@ -61,12 +65,16 @@ export class PostService {
       throw new Error('Le post est null, on ne peut pas le convertir en content ');
     }
 
+    const description = post.content.rendered;
+    const plainText = this.textFormatter.htmlToText(description);
+
     const content: Content = new Content({
       id: (existingContent ? existingContent.id : null),
       contentId: post.id.toString(),
       contentType: MetaMediaType.WORDPRESS,
       title: post.title.rendered,
-      description: post.content.rendered,
+      description,
+      plainText,
       publishedAt: new Date(post.date),
       image: post.image,
       metaMedia: post.metaMedia,
