@@ -10,6 +10,7 @@ export type QaJobStatus = 'processing' | 'completed' | 'error';
 
 export interface QaSource {
   contentId: string;
+  mediaKey: string;
   title: string;
   url: string;
   relevanceScore: number;

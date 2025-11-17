@@ -36,6 +36,7 @@ export class RagService {
     // Formater les sources pour la réponse
     const sources: QaSource[] = searchResults.map((result) => ({
       contentId: result.contentId,
+      mediaKey: result.mediaKey,
       title: result.title,
       url: result.url,
       relevanceScore: result.similarity,

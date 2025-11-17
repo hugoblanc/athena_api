@@ -6,6 +6,7 @@ import { EmbeddingsService } from '../../content/application/providers/embedding
 
 export interface SearchResult {
   contentId: string;
+  mediaKey: string;
   title: string;
   url: string;
   chunkText: string;
@@ -45,6 +46,10 @@ export class VectorSearchService {
         content: {
           contentId: true,
           title: true,
+          metaMedia: {
+            key: true,
+            url: true,
+          },
         },
       },
     });
@@ -58,6 +63,7 @@ export class VectorSearchService {
 
       return {
         contentId: embedding.content.contentId,
+        mediaKey: embedding.content.metaMedia?.key || '',
         title: embedding.content.title,
         url: embedding.content.metaMedia?.url || '',
         chunkText: embedding.chunkText,
