@@ -1,0 +1,15 @@
+LOAD DATABASE
+    FROM mysql://root:10V7x7j6iQTWk9@10.0.0.235:3306/athena
+    INTO postgresql://root:10V7x7j6iQTWk9@10.0.0.175:5432/athena
+
+WITH include drop, create tables, create indexes, reset sequences
+
+EXCLUDING TABLE NAMES MATCHING 'content_embedding'
+
+CAST type datetime to timestamptz
+     drop default drop not null using zero-dates-to-null,
+     type date drop not null drop default using zero-dates-to-null
+
+ALTER SCHEMA 'athena' RENAME TO 'public'
+
+;

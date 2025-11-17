@@ -239,7 +239,7 @@ export class ContentService {
     }
     return this.contentRepository.find({
       relations: ['image', 'metaMedia'],
-      where: { metaMedia },
+      where: { metaMedia: { id: metaMedia.id } },
       order: { publishedAt: 'DESC' },
     });
   }
@@ -265,7 +265,7 @@ export class ContentService {
 
     // Recherche des "PAGER_SIZE" élements a partir de la page "pageNumber"
     const [contents, count] = await this.contentRepository.findAndCount({
-      where: { metaMedia },
+      where: { metaMedia: { id: metaMedia.id } },
       relations: ['image', 'metaMedia'],
       order: {
         publishedAt: 'DESC',
