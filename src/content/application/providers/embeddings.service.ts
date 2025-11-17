@@ -113,7 +113,7 @@ export class EmbeddingsService {
 
         const embeddings = response.data.data.map((item: any, index: number) => ({
           embedding: item.embedding,
-          tokenCount: response.data.usage.total_tokens / batch.length, // Approximation
+          tokenCount: Math.round(response.data.usage.total_tokens / batch.length), // Approximation arrondie
         }));
 
         results.push(...embeddings);
