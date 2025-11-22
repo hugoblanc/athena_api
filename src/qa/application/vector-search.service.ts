@@ -56,8 +56,7 @@ export class VectorSearchService {
         `1 - (embedding.embedding <=> '${vectorString}'::vector)`,
         'similarity',
       )
-      .orderBy('embedding.embedding <=> :vector', 'ASC')
-      .setParameter('vector', vectorString)
+      .orderBy(`embedding.embedding <=> '${vectorString}'::vector`, 'ASC')
       .limit(topK)
       .getRawAndEntities();
 
