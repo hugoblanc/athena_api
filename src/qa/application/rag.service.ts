@@ -55,8 +55,8 @@ export class RagService {
   private formatContextForLLM(results: SearchResult[]): string {
     let context = 'Contexte (articles pertinents) :\n\n';
 
-    results.forEach((result, index) => {
-      context += `--- Article ${index + 1}: ${result.title} ---\n`;
+    results.forEach((result) => {
+      context += `--- Article [contentId:${result.contentId},mediaKey:${result.mediaKey}]: ${result.title} ---\n`;
       context += `${result.chunkText}\n\n`;
     });
 
@@ -85,7 +85,9 @@ Règles :
 - Réponds en français de manière claire et concise
 - Base-toi UNIQUEMENT sur les informations fournies dans le contexte
 - Si le contexte ne contient pas assez d'informations pour répondre, dis-le clairement
-- Cite les articles pertinents dans ta réponse quand c'est approprié
+- Cite les articles pertinents en utilisant le format [contentId:X,mediaKey:Y] pour créer des liens cliquables
+- Par exemple: "selon les données ([contentId:86782,mediaKey:relevepeste])" ou "comme expliqué dans cet article ([contentId:12345,mediaKey:bonpote])"
+- Les identifiants des articles sont indiqués dans les titres au format [contentId:X,mediaKey:Y]
 - Ne invente pas d'informations qui ne sont pas dans le contexte`;
 
     const userPrompt = `${context.contextText}\n\nQuestion : ${question}\n\nRéponds en te basant uniquement sur le contexte ci-dessus.`;
