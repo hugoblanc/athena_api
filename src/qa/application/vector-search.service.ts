@@ -24,6 +24,7 @@ export class VectorSearchService {
 
   /**
    * Recherche sémantique par similarité cosine
+   * Utilise pgvector + index HNSW pour performance optimale
    * @param query Question de l'utilisateur
    * @param topK Nombre de résultats à retourner
    * @returns Liste des chunks les plus pertinents avec scores
@@ -33,77 +34,43 @@ export class VectorSearchService {
     const queryEmbeddingData = await this.embeddingsService.generateEmbedding(query);
     const queryEmbedding = queryEmbeddingData.embedding;
 
-    // 2. Récupérer tous les embeddings avec leurs contenus
-    // Note: En production avec VECTOR type + HNSW index, on utilisera une requête SQL optimisée
-    // Pour l'instant, on fait la similarité en mémoire (acceptable pour <20k chunks)
-    const allEmbeddings = await this.contentEmbeddingRepository.find({
-      relations: ['content', 'content.metaMedia'],
-      select: {
-        id: true,
-        chunkIndex: true,
-        chunkText: true,
-        embedding: true,
-        content: {
-          contentId: true,
-          title: true,
-          metaMedia: {
-            key: true,
-            url: true,
-          },
-        },
-      },
-    });
+    // 2. Formater le vecteur pour pgvector
+    const vectorString = `[${queryEmbedding.join(',')}]`;
 
-    // 3. Calculer la similarité cosine pour chaque chunk
-    const resultsWithSimilarity = allEmbeddings.map((embedding) => {
-      const similarity = this.cosineSimilarity(
-        queryEmbedding,
-        embedding.embedding,
-      );
+    // 3. Requête SQL avec pgvector pour recherche de similarité cosine
+    // Utilise l'index HNSW pour performance O(log n) au lieu de O(n)
+    const results = await this.contentEmbeddingRepository
+      .createQueryBuilder('embedding')
+      .leftJoinAndSelect('embedding.content', 'content')
+      .leftJoinAndSelect('content.metaMedia', 'metaMedia')
+      .select([
+        'embedding.id',
+        'embedding.chunkIndex',
+        'embedding.chunkText',
+        'content.contentId',
+        'content.title',
+        'metaMedia.key',
+        'metaMedia.url',
+      ])
+      .addSelect(
+        `1 - (embedding.embedding <=> '${vectorString}'::vector)`,
+        'similarity',
+      )
+      .orderBy('embedding.embedding <=> :vector', 'ASC')
+      .setParameter('vector', vectorString)
+      .limit(topK)
+      .getRawAndEntities();
 
-      return {
-        contentId: embedding.content.contentId,
-        mediaKey: embedding.content.metaMedia?.key || '',
-        title: embedding.content.title,
-        url: embedding.content.metaMedia?.url || '',
-        chunkText: embedding.chunkText,
-        similarity,
-        chunkIndex: embedding.chunkIndex,
-      };
-    });
-
-    // 4. Trier par similarité décroissante et prendre les top K
-    resultsWithSimilarity.sort((a, b) => b.similarity - a.similarity);
-
-    return resultsWithSimilarity.slice(0, topK);
+    // 4. Formater les résultats
+    return results.entities.map((embedding, index) => ({
+      contentId: embedding.content.contentId,
+      mediaKey: embedding.content.metaMedia?.key || '',
+      title: embedding.content.title,
+      url: embedding.content.metaMedia?.url || '',
+      chunkText: embedding.chunkText,
+      similarity: parseFloat(results.raw[index].similarity),
+      chunkIndex: embedding.chunkIndex,
+    }));
   }
 
-  /**
-   * Calcule la similarité cosine entre deux vecteurs
-   * cos(θ) = (A · B) / (||A|| * ||B||)
-   */
-  private cosineSimilarity(vecA: number[], vecB: number[]): number {
-    if (vecA.length !== vecB.length) {
-      throw new Error('Vectors must have the same length');
-    }
-
-    let dotProduct = 0;
-    let normA = 0;
-    let normB = 0;
-
-    for (let i = 0; i < vecA.length; i++) {
-      dotProduct += vecA[i] * vecB[i];
-      normA += vecA[i] * vecA[i];
-      normB += vecB[i] * vecB[i];
-    }
-
-    normA = Math.sqrt(normA);
-    normB = Math.sqrt(normB);
-
-    if (normA === 0 || normB === 0) {
-      return 0;
-    }
-
-    return dotProduct / (normA * normB);
-  }
 }
