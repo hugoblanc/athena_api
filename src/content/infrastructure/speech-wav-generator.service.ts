@@ -133,8 +133,8 @@ export class SpeechWavGeneratorService extends SpeechGeneratorService {
     }
 
     // Concatenate buffers and write final file
-    const finalBuffer = Buffer.concat(buffers);
-    await fsPromises.writeFile(outputFile, finalBuffer);
+    const finalBuffer = Buffer.concat(buffers as any);
+    await fsPromises.writeFile(outputFile, finalBuffer as any);
 
     this.logger.log(`Concatenation complete: ${outputFile}`);
   }

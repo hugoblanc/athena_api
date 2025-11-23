@@ -1,0 +1,208 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector(schema: "public")]
+}
+
+model Audio {
+  id      Int      @id(map: "PK_9562215b41192ae4ccdf314a789") @default(autoincrement())
+  url     String   @db.VarChar(250)
+  content Content?
+
+  @@map("audio")
+}
+
+model Content {
+  id                Int                      @id(map: "PK_6a2083913f3647b44f205204e36") @default(autoincrement())
+  contentId         String                   @unique(map: "UQ_d7bb829fd67079083772143c538") @db.VarChar(30)
+  title             String                   @db.VarChar(200)
+  contentType       content_contenttype_enum
+  description       String
+  plainText         String?
+  publishedAt       DateTime                 @db.Timestamp(6)
+  metaMediaId       Int?
+  imageId           Int?                     @unique(map: "REL_cd03caa6e34f3c76d9f1039353")
+  audioId           Int?                     @unique(map: "REL_b61086a972af81f27dae9cb889")
+  audio             Audio?                   @relation(fields: [audioId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_b61086a972af81f27dae9cb889e")
+  image             Image?                   @relation(fields: [imageId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_cd03caa6e34f3c76d9f1039353c")
+  meta_media        MetaMedia?               @relation(fields: [metaMediaId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_dab6b32533309beba9df825c9a4")
+  content_embedding ContentEmbedding[]
+
+  @@index([title], map: "content-title-idx")
+  @@map("content")
+}
+
+model ContentEmbedding {
+  id         Int                    @id(map: "PK_8751627137e4cf599e9540cf002") @default(autoincrement())
+  chunkIndex Int
+  chunkText  String
+  tokenCount Int
+  createdAt  DateTime               @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime               @default(now()) @db.Timestamp(6)
+  contentId  Int?
+  embedding  Unsupported("vector")?
+  content    Content?               @relation(fields: [contentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_63d470d74b8b1aa5027f00cdd43")
+
+  @@unique([contentId, chunkIndex], map: "idx_content_chunk")
+  @@index([chunkIndex], map: "idx_chunk_index")
+  @@index([embedding], map: "idx_embedding_hnsw")
+  @@map("content_embedding")
+}
+
+model Image {
+  id      Int      @id(map: "PK_d6db1ab4ee9ad9dbe86c64e4cc3") @default(autoincrement())
+  url     String   @db.VarChar(250)
+  width   Int
+  height  Int
+  content Content?
+
+  @@map("image")
+}
+
+model ListMetaMedia {
+  id         Int         @id(map: "PK_9241a45bd81f6164dc9900a060a") @default(autoincrement())
+  title      String      @db.VarChar(45)
+  meta_media MetaMedia[]
+
+  @@map("list_meta_media")
+}
+
+model MetaMedia {
+  id              Int                  @id(map: "PK_b50efa8772f8e47168bfe333009") @default(autoincrement())
+  key             String               @unique(map: "UQ_c9e1f4c700f5daa532a21f042bd") @db.VarChar(30)
+  url             String               @db.VarChar(45)
+  title           String               @db.VarChar(45)
+  logo            String               @db.VarChar(150)
+  donation        String?              @db.VarChar(100)
+  type            meta_media_type_enum
+  listMetaMediaId Int?
+  content         Content[]
+  list_meta_media ListMetaMedia?       @relation(fields: [listMetaMediaId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_fbaf618ec510913d002f58bf666")
+
+  @@map("meta_media")
+}
+
+model QaJob {
+  id           String    @id(map: "PK_1f6700d4c4d62b3b64811e20e1d") @db.VarChar(36)
+  question     String
+  answer       String?
+  sources      String?
+  status       String    @db.VarChar(20)
+  errorMessage String?
+  createdAt    DateTime  @default(now()) @db.Timestamp(6)
+  completedAt  DateTime? @db.Timestamp(6)
+
+  @@index([createdAt], map: "idx_created_at")
+  @@index([status], map: "idx_status")
+  @@map("qa_jobs")
+}
+
+enum content_contenttype_enum {
+  YOUTUBE
+  WORDPRESS
+}
+
+enum meta_media_type_enum {
+  YOUTUBE
+  WORDPRESS
+}
+
+// ============================================
+// LAW PROPOSAL MODULE - Nouvelles tables
+// ============================================
+
+model Depute {
+  id                   Int           @id @default(autoincrement())
+  nom                  String
+  groupePolitique      String
+  groupePolitiqueCode  String
+  photoUrl             String?
+  urlDepute            String?
+  acteurRef            String?       @unique
+  createdAt            DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt            DateTime      @default(now()) @updatedAt @db.Timestamp(6)
+
+  // Relations
+  law_proposals_auteur LawProposal[] @relation("auteur")
+  law_proposals_cosig  LawProposal[] @relation("coSignataires")
+
+  @@index([nom, groupePolitiqueCode])
+  @@index([groupePolitiqueCode])
+  @@map("depute")
+}
+
+model LawProposal {
+  id                     Int          @id @default(autoincrement())
+  numero                 String       @unique
+  titre                  String       @db.VarChar(500)
+  legislature            String
+  typeProposition        String
+  dateMiseEnLigne        DateTime     @db.Date
+  dateDepot              DateTime?    @db.Date
+  description            String?      @db.Text
+  urlDocument            String
+  urlDossierLegislatif   String?
+  dateScraping           DateTime     @default(now()) @db.Timestamp(6)
+  version                String       @default("1.0")
+  simplifiedData         Json?
+  simplificationStatus   String       @default("pending")
+  auteurId               Int
+
+  // Relations
+  auteur                 Depute       @relation("auteur", fields: [auteurId], references: [id])
+  coSignataires          Depute[]     @relation("coSignataires")
+  sections               Section[]
+  amendements            Amendement[]
+
+  @@index([dateMiseEnLigne(sort: Desc)])
+  @@index([typeProposition])
+  @@index([simplificationStatus])
+  @@index([auteurId, dateMiseEnLigne(sort: Desc)])
+  @@map("law_proposal")
+}
+
+model Section {
+  id             Int         @id @default(autoincrement())
+  type           String
+  titre          String
+  texte          String      @db.Text
+  lawProposalId  Int
+
+  // Relations
+  lawProposal    LawProposal @relation(fields: [lawProposalId], references: [id], onDelete: Cascade)
+  articles       Article[]
+
+  @@map("section")
+}
+
+model Article {
+  id        Int     @id @default(autoincrement())
+  numero    String
+  titre     String?
+  texte     String  @db.Text
+  sectionId Int
+
+  // Relations
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@map("article")
+}
+
+model Amendement {
+  id             Int         @id @default(autoincrement())
+  numero         String
+  date           DateTime    @db.Date
+  auteur         String?
+  statut         String?
+  url            String?
+  lawProposalId  Int
+
+  // Relations
+  lawProposal    LawProposal @relation(fields: [lawProposalId], references: [id], onDelete: Cascade)
+
+  @@map("amendement")
+}

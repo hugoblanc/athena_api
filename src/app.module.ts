@@ -10,6 +10,7 @@ import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
 import { MetaMediaModule } from './meta-media/meta-media.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { QaModule } from './qa/qa.module';
+import { LawProposalModule } from './law-proposal/infrastructure/law-proposal.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
@@ -27,6 +28,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ConfigurationModule,
     MaintenanceModule,
     QaModule,
+    LawProposalModule,
     EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],

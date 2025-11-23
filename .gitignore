@@ -38,3 +38,5 @@ lerna-debug.log*
 *.mp3
 
 .env
+
+/generated/prisma
