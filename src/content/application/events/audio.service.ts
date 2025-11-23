@@ -24,7 +24,14 @@ export class AudioService {
 
     this.logger.log(`Posts created. ${ids.length} posts created.`);
     for (const id of ids) {
-      await this.commandBuse.execute(new ExtractSpeechForContentCommand(id));
+      try {
+        await this.commandBuse.execute(new ExtractSpeechForContentCommand(id));
+      } catch (error) {
+        this.logger.error(
+          `Failed to extract speech for content ${id}: ${error.message}`,
+          error.stack,
+        );
+      }
     }
   }
 }

@@ -42,7 +42,7 @@
     "firebase-admin": "^11.3.0",
     "html-entities": "^1.2.1",
     "ioredis": "^5.2.1",
-    "microsoft-cognitiveservices-speech-sdk": "^1.24.1",
+    "microsoft-cognitiveservices-speech-sdk": "^1.47.0",
     "pg": "^8.11.3",
     "pubsubhubbub": "^1.0.1",
     "reflect-metadata": "^0.1.12",
