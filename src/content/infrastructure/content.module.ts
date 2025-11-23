@@ -6,6 +6,7 @@ import { MetaMediaModule } from '../../meta-media/meta-media.module';
 import { SpeechModule } from '../../speech/infrastructure/speech.module';
 import { StorageModule } from '../../storage/infrastructure/storage.module';
 import { ExtractSpeechForContentHandler } from '../application/commands/extract-speech-for-content.handler';
+import { GenerateMissingAudiosHandler } from '../application/commands/generate-missing-audios.handler';
 import { ContentController } from '../application/content.controller';
 import { ContentService } from '../application/content.service';
 import { AudioService } from '../application/events/audio.service';
@@ -42,6 +43,7 @@ import { TextCheeriosFormatter } from './text-cheerios-formatter.service';
     GetAudioContentUrlByIdHandler,
     GetIdFromContentIdAndKeyHandler,
     ExtractSpeechForContentHandler,
+    GenerateMissingAudiosHandler,
     AudioService,
     { provide: TextFormatter, useClass: TextCheeriosFormatter },
     { provide: SpeechGeneratorService, useClass: SpeechWavGeneratorService },

@@ -10,6 +10,7 @@ import {
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { RequestedPageValueType } from '../../core/page-number.value-type';
 import { ExtractSpeechForContentCommand } from './commands/extract-speech-for-content.command';
+import { GenerateMissingAudiosCommand } from './commands/generate-missing-audios.command';
 import { ContentService } from './content.service';
 import { ShareableContentResponse } from './dto/shareable-content.dto';
 import { GetAudioContentUrlByIdQuery } from './queries/get-audio-content-url-by-id/get-audio-content-url-by-id.query';
@@ -86,6 +87,15 @@ export class ContentController {
   @Post('extract-speech/:id')
   extractSpeech(@Param('id', ParseIntPipe) id: number) {
     return this.commandBus.execute(new ExtractSpeechForContentCommand(id))
+  }
+
+  @Post('generate-missing-audios')
+  async generateMissingAudios(
+    @Query('limit') limit?: string,
+  ) {
+    const limitNumber = limit ? parseInt(limit, 10) : 10;
+    this.logger.log(`Generating missing audios (limit: ${limitNumber})`);
+    return this.commandBus.execute(new GenerateMissingAudiosCommand(limitNumber));
   }
 
 
