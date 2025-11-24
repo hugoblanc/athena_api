@@ -1,0 +1,2 @@
+- Always use prisma migration system when it's possible
+- Ne fait jamais de --create-only, a la place demande a l'utilisatuer de générer la migration

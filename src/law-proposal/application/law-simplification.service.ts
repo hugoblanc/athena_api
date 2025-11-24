@@ -65,7 +65,7 @@ export class LawSimplificationService {
         await this.prisma.lawProposal.update({
           where: { id: proposal.id },
           data: {
-            simplifiedData: simplifiedData as Prisma.InputJsonValue,
+            simplifiedData: simplifiedData as unknown as Prisma.InputJsonValue,
             simplificationStatus: 'completed',
           },
         });

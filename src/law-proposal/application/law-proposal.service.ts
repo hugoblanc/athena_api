@@ -84,8 +84,8 @@ export class LawProposalService {
       },
       coSignatairesCount: p.coSignataires.length,
       simplified: p.simplifiedData ? {
-        status: (p.simplifiedData as SimplifiedData).status,
-        keyPoints: (p.simplifiedData as SimplifiedData).keyPoints,
+        status: (p.simplifiedData as unknown as SimplifiedData).status,
+        keyPoints: (p.simplifiedData as unknown as SimplifiedData).keyPoints,
       } : undefined,
     }));
 
@@ -108,8 +108,8 @@ export class LawProposalService {
   /**
    * Récupère une proposition par son numéro
    */
-  async findByNumero(numero: string) {
-    return this.prisma.lawProposal.findUnique({
+  async findByNumero(numero: string): Promise<LawProposalDetailDto | null> {
+    const proposal = await this.prisma.lawProposal.findUnique({
       where: { numero },
       include: {
         auteur: true,
@@ -122,13 +122,64 @@ export class LawProposalService {
         amendements: true,
       },
     });
+
+    if (!proposal) {
+      return null;
+    }
+
+    // Transformer en DTO avec structure unified
+    return {
+      numero: proposal.numero,
+      titre: proposal.titre,
+      legislature: proposal.legislature,
+      typeProposition: proposal.typeProposition,
+      dateMiseEnLigne: proposal.dateMiseEnLigne,
+      dateDepot: proposal.dateDepot,
+      description: proposal.description,
+      urlDocument: proposal.urlDocument,
+      urlDossierLegislatif: proposal.urlDossierLegislatif,
+      auteur: {
+        nom: proposal.auteur.nom,
+        groupePolitique: proposal.auteur.groupePolitique,
+        groupePolitiqueCode: proposal.auteur.groupePolitiqueCode,
+        photoUrl: proposal.auteur.photoUrl,
+        urlDepute: proposal.auteur.urlDepute,
+      },
+      coSignataires: proposal.coSignataires.map(cs => ({
+        nom: cs.nom,
+        groupePolitique: cs.groupePolitique,
+        groupePolitiqueCode: cs.groupePolitiqueCode,
+        photoUrl: cs.photoUrl,
+        urlDepute: cs.urlDepute,
+      })),
+      sections: proposal.sections.map(s => ({
+        type: s.type,
+        titre: s.titre,
+        texte: s.texte,
+        articles: s.articles.map(a => ({
+          numero: a.numero,
+          titre: a.titre,
+          texte: a.texte,
+        })),
+      })),
+      amendements: proposal.amendements.map(a => ({
+        numero: a.numero,
+        date: a.date,
+        auteur: a.auteur,
+        statut: a.statut,
+        url: a.url,
+      })),
+      simplified: proposal.simplifiedData
+        ? (proposal.simplifiedData as unknown as SimplifiedData)
+        : undefined,
+    };
   }
 
   /**
    * Récupère les propositions récentes
    */
-  async findRecent(limit: number = 10) {
-    return this.prisma.lawProposal.findMany({
+  async findRecent(limit: number = 10): Promise<LawProposalSummaryDto[]> {
+    const proposals = await this.prisma.lawProposal.findMany({
       take: limit,
       include: {
         auteur: true,
@@ -136,6 +187,27 @@ export class LawProposalService {
       },
       orderBy: { dateMiseEnLigne: 'desc' },
     });
+
+    // Transformer en DTO avec structure unified
+    return proposals.map(p => ({
+      numero: p.numero,
+      titre: p.titre,
+      typeProposition: p.typeProposition,
+      dateMiseEnLigne: p.dateMiseEnLigne,
+      dateDepot: p.dateDepot,
+      auteur: {
+        nom: p.auteur.nom,
+        groupePolitique: p.auteur.groupePolitique,
+        groupePolitiqueCode: p.auteur.groupePolitiqueCode,
+        photoUrl: p.auteur.photoUrl,
+        urlDepute: p.auteur.urlDepute,
+      },
+      coSignatairesCount: p.coSignataires.length,
+      simplified: p.simplifiedData ? {
+        status: (p.simplifiedData as unknown as SimplifiedData).status,
+        keyPoints: (p.simplifiedData as unknown as SimplifiedData).keyPoints,
+      } : undefined,
+    }));
   }
 
   /**
