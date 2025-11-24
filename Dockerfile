@@ -13,6 +13,7 @@ ENV NODE_ENV production
 ENV PORT 80
 EXPOSE 80 3001
 
+RUN npm run generate
 RUN npm run build
 
 CMD [ "npm","run", "start:prod" ]
