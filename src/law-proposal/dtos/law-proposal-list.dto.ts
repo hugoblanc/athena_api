@@ -44,23 +44,23 @@ export class ListLawProposalsQueryDto {
 
   @IsOptional()
   @IsString()
-  'filter[groupePolitique]'?: string; // Codes séparés par virgule (ex: "RN,LFI_NFP")
+  groupePolitique?: string; // Codes séparés par virgule (ex: "RN,LFI_NFP")
 
   @IsOptional()
-  @IsEnum(TypeProposition)
-  'filter[typeProposition]'?: TypeProposition;
-
-  @IsOptional()
-  @IsDateString()
-  'filter[dateDebut]'?: string;
+  @IsString()
+  typeProposition?: string; // "ordinaire" ou "constitutionnelle"
 
   @IsOptional()
   @IsDateString()
-  'filter[dateFin]'?: string;
+  dateDebut?: string;
 
   @IsOptional()
-  @IsEnum(SimplificationStatus)
-  'filter[simplificationStatus]'?: SimplificationStatus;
+  @IsDateString()
+  dateFin?: string;
+
+  @IsOptional()
+  @IsString()
+  simplificationStatus?: string;
 
   @IsOptional()
   @IsString()

@@ -19,32 +19,32 @@ export class LawProposalService {
     const where: Prisma.LawProposalWhereInput = {};
 
     // Filtre par groupe politique
-    if (queryDto['filter[groupePolitique]']) {
-      const codes = queryDto['filter[groupePolitique]'].split(',');
+    if (queryDto.groupePolitique) {
+      const codes = queryDto.groupePolitique.split(',');
       where.auteur = {
         groupePolitiqueCode: { in: codes },
       };
     }
 
     // Filtre par type de proposition
-    if (queryDto['filter[typeProposition]']) {
-      where.typeProposition = queryDto['filter[typeProposition]'];
+    if (queryDto.typeProposition) {
+      where.typeProposition = queryDto.typeProposition;
     }
 
     // Filtre par période
-    if (queryDto['filter[dateDebut]'] || queryDto['filter[dateFin]']) {
+    if (queryDto.dateDebut || queryDto.dateFin) {
       where.dateMiseEnLigne = {};
-      if (queryDto['filter[dateDebut]']) {
-        where.dateMiseEnLigne.gte = new Date(queryDto['filter[dateDebut]']);
+      if (queryDto.dateDebut) {
+        where.dateMiseEnLigne.gte = new Date(queryDto.dateDebut);
       }
-      if (queryDto['filter[dateFin]']) {
-        where.dateMiseEnLigne.lte = new Date(queryDto['filter[dateFin]']);
+      if (queryDto.dateFin) {
+        where.dateMiseEnLigne.lte = new Date(queryDto.dateFin);
       }
     }
 
     // Filtre par statut de simplification
-    if (queryDto['filter[simplificationStatus]']) {
-      where.simplificationStatus = queryDto['filter[simplificationStatus]'];
+    if (queryDto.simplificationStatus) {
+      where.simplificationStatus = queryDto.simplificationStatus;
     }
 
     // Construire l'orderBy
