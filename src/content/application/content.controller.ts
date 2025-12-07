@@ -15,6 +15,7 @@ import { ContentService } from './content.service';
 import { ShareableContentResponse } from './dto/shareable-content.dto';
 import { GetAudioContentUrlByIdQuery } from './queries/get-audio-content-url-by-id/get-audio-content-url-by-id.query';
 import { GetLastContentPaginatedQuery } from './queries/get-last-content-paginated/get-last-content-paginated.query';
+import { MediaKeysValueType } from './queries/get-last-content-paginated/media-keys.value-type';
 import { SearchedContentTermValueType } from './queries/get-last-content-paginated/searched-content-term.value-type';
 import { GetShareableContentQuery } from './queries/get-shareable-content/get-shareable-content.query';
 import { GetIdFromContentIdAndKeyQuery } from './queries/get-id-from-content-id-and-media-key/get-id-from-content-id-and-media-key.query';
@@ -34,11 +35,13 @@ export class ContentController {
     @Query('page', ParseIntPipe) page: number,
     @Query('size', ParseIntPipe) size: number,
     @Query('terms') terms?: string,
+    @Query('mediaKeys') mediaKeys?: string,
   ) {
     return this.queryBus.execute(
       new GetLastContentPaginatedQuery(
         new RequestedPageValueType(page, size),
         new SearchedContentTermValueType(terms),
+        new MediaKeysValueType(mediaKeys),
       ),
     );
   }

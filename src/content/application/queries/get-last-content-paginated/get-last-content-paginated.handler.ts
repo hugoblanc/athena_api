@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { FindOptionsWhere, ILike, In, Repository } from 'typeorm';
 import { Page } from '../../../../core/page';
 import { Content } from '../../../domain/content.entity';
 import { GetLastContentPaginatedQuery } from './get-last-content-paginated.query';
@@ -14,13 +14,22 @@ export class GetLastContentPaginatedHandler
   ) { }
 
   async execute(query: GetLastContentPaginatedQuery) {
-    const { requestedPage, terms } = query;
+    const { requestedPage, terms, mediaKeys } = query;
 
     let where: FindOptionsWhere<Content> | undefined;
 
     if (terms.isDefined) {
       where = {
         title: ILike(`%${terms.value}%`),
+      };
+    }
+
+    if (mediaKeys.isDefined) {
+      where = {
+        ...where,
+        metaMedia: {
+          key: In(mediaKeys.values),
+        },
       };
     }
 
