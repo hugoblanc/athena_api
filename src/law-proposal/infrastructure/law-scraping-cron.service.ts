@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-// import { Cron } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { LawScrapingService } from '../application/law-scraping.service';
 import { LawSimplificationService } from '../application/law-simplification.service';
 
@@ -15,10 +15,8 @@ export class LawScrapingCronService {
   /**
    * Scraping quotidien des nouvelles propositions de loi
    * Tous les jours à 2h du matin
-   *
-   * DÉSACTIVÉ PAR DÉFAUT - Décommenter le décorateur @Cron pour activer
    */
-  // @Cron('0 0 2 * * *')
+  @Cron('0 0 2 * * *')
   async dailyScraping() {
     this.logger.log('Starting daily law proposal scraping');
 

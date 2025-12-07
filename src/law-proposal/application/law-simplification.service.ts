@@ -27,36 +27,20 @@ export class LawSimplificationService {
 
   /**
    * Traite les propositions en attente de simplification
+   * Utilise un mécanisme de "claim" atomique pour éviter les doublons en cas d'appels concurrents
    */
   async processQueue(batchSize: number = 5): Promise<void> {
     this.logger.log(`Processing simplification queue (batch size: ${batchSize})`);
 
-    const pendingProposals = await this.prisma.lawProposal.findMany({
-      where: { simplificationStatus: 'pending' },
-      take: batchSize,
-      include: {
-        auteur: true,
-        sections: {
-          include: { articles: true },
-        },
-      },
-    }) as LawProposalWithRelations[];
+    for (let i = 0; i < batchSize; i++) {
+      const proposal = await this.claimNextProposal();
 
-    if (pendingProposals.length === 0) {
-      this.logger.log('No pending proposals to process');
-      return;
-    }
+      if (!proposal) {
+        this.logger.log('No more pending proposals to process');
+        break;
+      }
 
-    this.logger.log(`Found ${pendingProposals.length} proposals to simplify`);
-
-    for (const proposal of pendingProposals) {
       try {
-        // Marquer comme en cours
-        await this.prisma.lawProposal.update({
-          where: { id: proposal.id },
-          data: { simplificationStatus: 'processing' },
-        });
-
         // Générer la version simplifiée
         this.logger.log(`Generating simplified version for proposition ${proposal.numero}...`);
         const simplifiedData = await this.generateSimplifiedVersion(proposal);
@@ -87,6 +71,48 @@ export class LawSimplificationService {
     }
 
     this.logger.log('Simplification queue processing completed');
+  }
+
+  /**
+   * Réclame atomiquement une proposition à traiter
+   * Évite les race conditions en utilisant updateMany avec condition sur le statut
+   */
+  private async claimNextProposal(): Promise<LawProposalWithRelations | null> {
+    // Trouver une proposition pending
+    const pending = await this.prisma.lawProposal.findFirst({
+      where: { simplificationStatus: 'pending' },
+      select: { id: true },
+    });
+
+    if (!pending) {
+      return null;
+    }
+
+    // Tenter de la "claim" atomiquement (update seulement si toujours pending)
+    const updated = await this.prisma.lawProposal.updateMany({
+      where: {
+        id: pending.id,
+        simplificationStatus: 'pending', // Condition de concurrence
+      },
+      data: { simplificationStatus: 'processing' },
+    });
+
+    // Si aucune ligne mise à jour, quelqu'un d'autre l'a prise
+    if (updated.count === 0) {
+      this.logger.log(`Proposal ${pending.id} already claimed by another process, retrying...`);
+      return this.claimNextProposal(); // Réessayer avec une autre
+    }
+
+    // Récupérer la proposition complète avec ses relations
+    return this.prisma.lawProposal.findUnique({
+      where: { id: pending.id },
+      include: {
+        auteur: true,
+        sections: {
+          include: { articles: true },
+        },
+      },
+    }) as Promise<LawProposalWithRelations>;
   }
 
   /**
