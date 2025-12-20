@@ -1,10 +1,12 @@
 import { Controller, Post, Get, Query, Logger, ParseIntPipe, Param, HttpException, HttpStatus, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Public } from '../../auth/infrastructure/decorators';
 import { LawScrapingService } from '../application/law-scraping.service';
 import { LawSimplificationService } from '../application/law-simplification.service';
 import { LawProposalService } from '../application/law-proposal.service';
 import { ListLawProposalsQueryDto } from '../dtos/law-proposal-list.dto';
 
 @Controller('law-proposal')
+@Public()
 export class LawProposalController {
   private readonly logger = new Logger(LawProposalController.name);
 

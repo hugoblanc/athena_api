@@ -31,6 +31,7 @@ model Content {
   image             Image?                   @relation(fields: [imageId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_cd03caa6e34f3c76d9f1039353c")
   meta_media        MetaMedia?               @relation(fields: [metaMediaId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_dab6b32533309beba9df825c9a4")
   content_embedding ContentEmbedding[]
+  comments          Comment[]
 
   @@index([title], map: "content-title-idx")
   @@map("content")
@@ -93,11 +94,16 @@ model QaJob {
   sources      String?
   status       String    @db.VarChar(20)
   errorMessage String?
+  userId       Int?
   createdAt    DateTime  @default(now()) @db.Timestamp(6)
   completedAt  DateTime? @db.Timestamp(6)
 
+  // Relations
+  user         User?     @relation("UserQaJobs", fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([createdAt], map: "idx_created_at")
   @@index([status], map: "idx_status")
+  @@index([userId])
   @@map("qa_jobs")
 }
 
@@ -157,6 +163,7 @@ model LawProposal {
   coSignataires          Depute[]     @relation("coSignataires")
   sections               Section[]
   amendements            Amendement[]
+  comments               Comment[]
 
   @@index([dateMiseEnLigne(sort: Desc)])
   @@index([typeProposition])
@@ -205,4 +212,66 @@ model Amendement {
   lawProposal    LawProposal @relation(fields: [lawProposalId], references: [id], onDelete: Cascade)
 
   @@map("amendement")
+}
+
+// ============================================
+// AUTH MODULE - User authentication
+// ============================================
+
+model User {
+  id                Int       @id @default(autoincrement())
+  firebaseUid       String    @unique @db.VarChar(128)
+  email             String?   @unique @db.VarChar(255)
+  displayName       String?   @db.VarChar(255)
+  photoUrl          String?   @db.VarChar(500)
+  provider          String    @db.VarChar(50)  // "google.com", "password"
+  isAnonymous       Boolean   @default(false)
+  createdAt         DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+  lastLoginAt       DateTime  @default(now()) @db.Timestamp(6)
+
+  // Relations
+  comments          Comment[]
+  preferences       UserPreference?
+  qaJobs            QaJob[]   @relation("UserQaJobs")
+
+  @@index([email])
+  @@index([firebaseUid])
+  @@map("user")
+}
+
+model UserPreference {
+  id                    Int      @id @default(autoincrement())
+  userId                Int      @unique
+  notificationTopics    Json?
+  favoriteMedias        Json?
+  theme                 String?  @default("light") @db.VarChar(20)
+  createdAt             DateTime @default(now()) @db.Timestamp(6)
+  updatedAt             DateTime @default(now()) @updatedAt @db.Timestamp(6)
+
+  // Relations
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preference")
+}
+
+model Comment {
+  id                Int         @id @default(autoincrement())
+  userId            Int
+  lawProposalId     Int?
+  contentId         Int?
+  text              String      @db.Text
+  createdAt         DateTime    @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime    @default(now()) @updatedAt @db.Timestamp(6)
+
+  // Relations
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lawProposal       LawProposal? @relation(fields: [lawProposalId], references: [id], onDelete: Cascade)
+  content           Content?    @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([lawProposalId])
+  @@index([contentId])
+  @@index([createdAt(sort: Desc)])
+  @@map("comment")
 }

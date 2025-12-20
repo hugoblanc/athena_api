@@ -8,6 +8,7 @@ import {
   Query
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { Public } from '../../auth/infrastructure/decorators';
 import { RequestedPageValueType } from '../../core/page-number.value-type';
 import { ExtractSpeechForContentCommand } from './commands/extract-speech-for-content.command';
 import { GenerateMissingAudiosCommand } from './commands/generate-missing-audios.command';
@@ -22,6 +23,7 @@ import { GetIdFromContentIdAndKeyQuery } from './queries/get-id-from-content-id-
 import { Content } from '../domain/content.entity';
 
 @Controller('content')
+@Public() // Tous les endpoints de contenu sont publics (pas d'auth requise)
 export class ContentController {
   private readonly logger = new Logger(ContentController.name);
   constructor(

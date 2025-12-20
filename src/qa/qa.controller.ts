@@ -11,6 +11,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { Public } from '../auth/infrastructure/decorators';
 import { QaService } from './application/qa.service';
 
 class AskQuestionDto {
@@ -18,6 +19,7 @@ class AskQuestionDto {
 }
 
 @Controller('qa')
+@Public()
 export class QaController {
   constructor(private qaService: QaService) {}
 

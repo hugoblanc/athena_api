@@ -11,6 +11,7 @@ import { MetaMediaModule } from './meta-media/meta-media.module';
 import { MaintenanceModule } from './maintenance/maintenance.module';
 import { QaModule } from './qa/qa.module';
 import { LawProposalModule } from './law-proposal/infrastructure/law-proposal.module';
+import { AuthModule } from './auth/infrastructure/auth.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
@@ -20,6 +21,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       autoLoadEntities: true,
       keepConnectionAlive: true,
     }),
+    AuthModule, // Module d'authentification (doit être importé tôt pour le guard global)
     ListMetaMediaModule,
     MetaMediaModule,
     ContentModule,
