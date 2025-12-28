@@ -2,8 +2,10 @@ import { Controller, Post, Body, Logger, Get, Param } from '@nestjs/common';
 import { GithubService } from './github.service';
 import { Issue } from './issue';
 import { Observable } from 'rxjs';
+import { Public } from '../auth/infrastructure/decorators';
 
 @Controller()
+@Public()
 export class GithubController {
   private static BASE_URL = 'issues';
   private readonly logger = new Logger(GithubController.name);

@@ -6,8 +6,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { MaintenanceService, MigrationResult } from './maintenance.service';
+import { Public } from '../auth/infrastructure/decorators';
 
 @Controller('maintenance')
+@Public()
 export class MaintenanceController {
   private readonly logger = new Logger(MaintenanceController.name);
 
