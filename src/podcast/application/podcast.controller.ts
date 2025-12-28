@@ -36,14 +36,14 @@ export class PodcastController {
     return this.queryBus.execute(new GetPodcastByIdQuery(id));
   }
 
-  @Post(':id')
-  async generatePodcast(@Param('id', ParseIntPipe) id: number) {
-    return this.commandBus.execute(new GeneratePodcastForContentCommand(id));
-  }
-
   @Post('generate-missing')
   async generateMissingPodcasts(@Query('limit') limit?: string) {
     const limitNumber = limit ? parseInt(limit, 10) : 10;
     return this.commandBus.execute(new GenerateMissingPodcastsCommand(limitNumber));
+  }
+
+  @Post(':id')
+  async generatePodcast(@Param('id', ParseIntPipe) id: number) {
+    return this.commandBus.execute(new GeneratePodcastForContentCommand(id));
   }
 }
