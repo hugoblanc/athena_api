@@ -11,7 +11,7 @@ import { EmbeddingsService } from '../content/application/providers/embeddings.s
 import { ContentEmbeddingService } from '../content/application/content-embedding.service';
 import { MaintenanceController } from './maintenance.controller';
 import { MaintenanceService } from './maintenance.service';
-import { PrismaService } from '../infrastructure/prisma.service';
+import { PrismaService } from '../podcast/infrastructure/prisma.service';
 
 @Module({
   imports: [

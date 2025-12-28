@@ -4,7 +4,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { Content } from '../content/domain/content.entity';
 import { TextFormatter } from '../content/application/providers/text-formatter.service';
 import { ContentEmbeddingService } from '../content/application/content-embedding.service';
-import { PrismaService } from '../infrastructure/prisma.service';
+import { PrismaService } from '../podcast/infrastructure/prisma.service';
 import { GeneratePodcastForContentCommand } from '../podcast/application/commands/generate-podcast-for-content.command';
 
 export interface MigrationResult {
