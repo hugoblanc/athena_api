@@ -12,6 +12,7 @@ import { MaintenanceModule } from './maintenance/maintenance.module';
 import { QaModule } from './qa/qa.module';
 import { LawProposalModule } from './law-proposal/infrastructure/law-proposal.module';
 import { AuthModule } from './auth/infrastructure/auth.module';
+import { PodcastModule } from './podcast/infrastructure/podcast.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
@@ -31,6 +32,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     MaintenanceModule,
     QaModule,
     LawProposalModule,
+    PodcastModule,
     EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],

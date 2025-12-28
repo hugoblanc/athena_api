@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { CommandBus } from '@nestjs/cqrs';
 import { Content } from '../content/domain/content.entity';
 import { TextFormatter } from '../content/application/providers/text-formatter.service';
 import { ContentEmbeddingService } from '../content/application/content-embedding.service';
+import { PrismaService } from '../infrastructure/prisma.service';
+import { GeneratePodcastForContentCommand } from '../podcast/application/commands/generate-podcast-for-content.command';
 
 export interface MigrationResult {
   processed: number;
@@ -19,6 +22,8 @@ export class MaintenanceService {
     private readonly dataSource: DataSource,
     private readonly textFormatter: TextFormatter,
     private readonly contentEmbeddingService: ContentEmbeddingService,
+    private readonly prisma: PrismaService,
+    private readonly commandBus: CommandBus,
   ) {}
 
   async populatePlainText(): Promise<MigrationResult> {
@@ -101,5 +106,38 @@ export class MaintenanceService {
       totalTokens: result.totalTokens,
       estimatedCost,
     };
+  }
+
+  async regeneratePodcast(contentId: number): Promise<any> {
+    this.logger.log(`Starting podcast regeneration for content ${contentId}...`);
+
+    try {
+      // Delete existing podcast
+      const deleteResult = await this.prisma.podcast.deleteMany({
+        where: { contentId },
+      });
+
+      this.logger.log(`Deleted ${deleteResult.count} existing podcast(s)`);
+
+      // Generate new podcast
+      const podcast = await this.commandBus.execute(
+        new GeneratePodcastForContentCommand(contentId),
+      );
+
+      this.logger.log(`Podcast regenerated for content ${contentId}`);
+
+      return {
+        success: true,
+        message: `Podcast regenerated for content ${contentId}`,
+        podcast,
+      };
+    } catch (error) {
+      this.logger.error(`Error regenerating podcast for content ${contentId}`, error.message);
+      return {
+        success: false,
+        message: `Error regenerating podcast: ${error.message}`,
+        error: error.message,
+      };
+    }
   }
 }

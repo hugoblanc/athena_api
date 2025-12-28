@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CqrsModule } from '@nestjs/cqrs';
 import { Content } from '../content/domain/content.entity';
 import { ContentEmbedding } from '../content/domain/content-embedding.entity';
 import { TextFormatter } from '../content/application/providers/text-formatter.service';
@@ -10,11 +11,13 @@ import { EmbeddingsService } from '../content/application/providers/embeddings.s
 import { ContentEmbeddingService } from '../content/application/content-embedding.service';
 import { MaintenanceController } from './maintenance.controller';
 import { MaintenanceService } from './maintenance.service';
+import { PrismaService } from '../infrastructure/prisma.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Content, ContentEmbedding]),
     HttpModule,
+    CqrsModule,
   ],
   controllers: [MaintenanceController],
   providers: [
@@ -23,6 +26,7 @@ import { MaintenanceService } from './maintenance.service';
     ChunkingService,
     EmbeddingsService,
     { provide: TextFormatter, useClass: TextCheeriosFormatter },
+    PrismaService,
   ],
 })
 export class MaintenanceModule {}

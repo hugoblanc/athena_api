@@ -32,6 +32,7 @@ model Content {
   meta_media        MetaMedia?               @relation(fields: [metaMediaId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_dab6b32533309beba9df825c9a4")
   content_embedding ContentEmbedding[]
   comments          Comment[]
+  podcast           Podcast?
 
   @@index([title], map: "content-title-idx")
   @@map("content")
@@ -274,4 +275,22 @@ model Comment {
   @@index([contentId])
   @@index([createdAt(sort: Desc)])
   @@map("comment")
+}
+
+model Podcast {
+  id           Int      @id @default(autoincrement())
+  contentId    Int      @unique
+  dialogueText String   @db.Text
+  audioUrl     String   @db.VarChar(250)
+  duration     Int?
+  status       String   @default("completed") @db.VarChar(20)
+  errorMessage String?  @db.Text
+  createdAt    DateTime @default(now()) @db.Timestamp(6)
+
+  // Relations
+  content      Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("podcast")
 }

@@ -4,6 +4,8 @@ import {
   Headers,
   UnauthorizedException,
   Logger,
+  Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { MaintenanceService, MigrationResult } from './maintenance.service';
 import { Public } from '../auth/infrastructure/decorators';
@@ -54,6 +56,22 @@ export class MaintenanceController {
     this.logger.log(
       `Embeddings generation completed: ${result.successful} successful, ${result.failed} failed, ${result.totalTokens} tokens used`,
     );
+
+    return result;
+  }
+
+  @Post('regen-podcast/:contentId')
+  async regeneratePodcast(
+    @Headers('x-maintenance-key') maintenanceKey: string,
+    @Param('contentId', ParseIntPipe) contentId: number,
+  ): Promise<any> {
+    this.validateMaintenanceKey(maintenanceKey);
+
+    this.logger.log(`Starting podcast regeneration for content ${contentId}...`);
+
+    const result = await this.maintenanceService.regeneratePodcast(contentId);
+
+    this.logger.log(`Podcast regeneration completed for content ${contentId}`);
 
     return result;
   }
