@@ -32,7 +32,10 @@ export class GetNextPodcastHandler implements IQueryHandler<GetNextPodcastQuery>
       },
       include: {
         content: {
-          include: {
+          select: {
+            id: true,
+            contentId: true,
+            title: true,
             meta_media: {
               select: {
                 id: true,

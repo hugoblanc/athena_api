@@ -31,7 +31,10 @@ export class GetPreviousPodcastHandler implements IQueryHandler<GetPreviousPodca
       },
       include: {
         content: {
-          include: {
+          select: {
+            id: true,
+            contentId: true,
+            title: true,
             meta_media: {
               select: {
                 id: true,
