@@ -23,6 +23,14 @@ export class GetPodcastByIdHandler implements IQueryHandler<GetPodcastByIdQuery>
                 logo: true,
               },
             },
+            image: {
+              select: {
+                id: true,
+                url: true,
+                width: true,
+                height: true,
+              },
+            },
           },
         },
       },

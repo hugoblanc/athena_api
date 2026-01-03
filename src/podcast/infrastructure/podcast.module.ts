@@ -10,6 +10,7 @@ import { GetPodcastListHandler } from '../application/queries/get-podcast-list/g
 import { GetPodcastByContentIdHandler } from '../application/queries/get-podcast-by-content-id/get-podcast-by-content-id.handler';
 import { GetPodcastByIdHandler } from '../application/queries/get-podcast-by-id/get-podcast-by-id.handler';
 import { GetNextPodcastHandler } from '../application/queries/get-next-podcast/get-next-podcast.handler';
+import { GetPreviousPodcastHandler } from '../application/queries/get-previous-podcast/get-previous-podcast.handler';
 import { PodcastGeneratorService } from '../application/providers/podcast-generator.service';
 import { GeminiPodcastGeneratorService } from './gemini-podcast-generator.service';
 import { PrismaService } from './prisma.service';
@@ -30,6 +31,7 @@ import { PrismaService } from './prisma.service';
     GetPodcastByContentIdHandler,
     GetPodcastByIdHandler,
     GetNextPodcastHandler,
+    GetPreviousPodcastHandler,
     { provide: PodcastGeneratorService, useClass: GeminiPodcastGeneratorService },
   ],
   exports: [PodcastService],

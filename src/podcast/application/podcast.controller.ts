@@ -6,6 +6,7 @@ import { GetPodcastListQuery } from './queries/get-podcast-list/get-podcast-list
 import { GetPodcastByContentIdQuery } from './queries/get-podcast-by-content-id/get-podcast-by-content-id.query';
 import { GetPodcastByIdQuery } from './queries/get-podcast-by-id/get-podcast-by-id.query';
 import { GetNextPodcastQuery } from './queries/get-next-podcast/get-next-podcast.query';
+import { GetPreviousPodcastQuery } from './queries/get-previous-podcast/get-previous-podcast.query';
 import { Public } from '../../auth/infrastructure/decorators';
 
 @Controller('podcast')
@@ -35,6 +36,11 @@ export class PodcastController {
   @Get(':id/next')
   async getNextPodcast(@Param('id', ParseIntPipe) id: number) {
     return this.queryBus.execute(new GetNextPodcastQuery(id));
+  }
+
+  @Get(':id/previous')
+  async getPreviousPodcast(@Param('id', ParseIntPipe) id: number) {
+    return this.queryBus.execute(new GetPreviousPodcastQuery(id));
   }
 
   @Get(':id')
