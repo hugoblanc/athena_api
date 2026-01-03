@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { empty, Observable } from 'rxjs';
 import { concatMap, expand, map } from 'rxjs/operators';
+import { AllHtmlEntities } from 'html-entities';
 import { YoutubeFeed } from '../../../core/configuration/pubsubhub/youtube-feed';
 import { MetaMediaType } from '../../../meta-media/meta-media-type.enum';
 import { MetaMedia } from '../../../meta-media/meta-media.entity';
@@ -15,6 +16,7 @@ export class YoutubeService {
   private static BASE_URL =
     'https://www.googleapis.com/youtube/v3/playlistItems';
   private readonly logger = new Logger(YoutubeService.name);
+  private htmlEntities = new AllHtmlEntities();
 
   constructor(
     private http: ExternalService,
@@ -134,7 +136,7 @@ export class YoutubeService {
       id: existingContent ? existingContent.id : null,
       contentId: item.snippet.resourceId.videoId,
       contentType: MetaMediaType.YOUTUBE,
-      title: item.snippet.title,
+      title: this.htmlEntities.decode(item.snippet.title),
       description,
       plainText,
       publishedAt: new Date(item.snippet.publishedAt),

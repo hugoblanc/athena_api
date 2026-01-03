@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { AllHtmlEntities } from 'html-entities';
 import { Content } from '../content/domain/content.entity';
 import { MetaMediaType } from '../meta-media/meta-media-type.enum';
 import { MetaMedia } from '../meta-media/meta-media.entity';
@@ -25,6 +26,7 @@ export class PostService {
   private static EMBED = '?_embed';
 
   private oldPosts: any = {};
+  private htmlEntities = new AllHtmlEntities();
 
   constructor(
     private externalService: ExternalService,
@@ -72,7 +74,7 @@ export class PostService {
       id: (existingContent ? existingContent.id : null),
       contentId: post.id.toString(),
       contentType: MetaMediaType.WORDPRESS,
-      title: post.title.rendered,
+      title: this.htmlEntities.decode(post.title.rendered),
       description,
       plainText,
       publishedAt: new Date(post.date),
