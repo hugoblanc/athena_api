@@ -37,6 +37,14 @@ export class GetPodcastListHandler implements IQueryHandler<GetPodcastListQuery>
                   logo: true,
                 },
               },
+              image: {
+                select: {
+                  id: true,
+                  url: true,
+                  width: true,
+                  height: true,
+                },
+              },
             },
           },
         },

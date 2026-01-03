@@ -5,6 +5,7 @@ import { GenerateMissingPodcastsCommand } from './commands/generate-missing-podc
 import { GetPodcastListQuery } from './queries/get-podcast-list/get-podcast-list.query';
 import { GetPodcastByContentIdQuery } from './queries/get-podcast-by-content-id/get-podcast-by-content-id.query';
 import { GetPodcastByIdQuery } from './queries/get-podcast-by-id/get-podcast-by-id.query';
+import { GetNextPodcastQuery } from './queries/get-next-podcast/get-next-podcast.query';
 import { Public } from '../../auth/infrastructure/decorators';
 
 @Controller('podcast')
@@ -29,6 +30,11 @@ export class PodcastController {
   @Get('content/:contentId')
   async getPodcastByContentId(@Param('contentId', ParseIntPipe) contentId: number) {
     return this.queryBus.execute(new GetPodcastByContentIdQuery(contentId));
+  }
+
+  @Get(':id/next')
+  async getNextPodcast(@Param('id', ParseIntPipe) id: number) {
+    return this.queryBus.execute(new GetNextPodcastQuery(id));
   }
 
   @Get(':id')
