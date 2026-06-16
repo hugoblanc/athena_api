@@ -1,7 +1,20 @@
 import { AxiosRequestConfig } from 'axios';
 import { Injectable, Logger } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ExternalService } from '../providers/external-service';
 import { Issue } from './issue';
+
+/** Forme allégée d'une issue renvoyée au front (roadmap). */
+export interface IssueSummary {
+  id: number;
+  title: string;
+  body: string;
+  claps: number;
+  url: string;
+  state: string;
+  labels: string[];
+}
 
 @Injectable()
 export class GithubService {
@@ -15,6 +28,28 @@ export class GithubService {
   private static FULL_ISSUE = GithubService.BASE_URL + GithubService.REPO + GithubService.ISSUE;
 
   constructor(private http: ExternalService) { }
+
+  /** Liste les issues ouvertes du repo (roadmap). claps = réactions 👍. */
+  listIssues(): Observable<IssueSummary[]> {
+    const url =
+      GithubService.FULL_ISSUE +
+      '?state=open&sort=created&direction=desc&per_page=50';
+    return this.http.get(url, this.createConfig()).pipe(
+      map((issues: any[]) =>
+        (issues ?? [])
+          .filter((i) => !i.pull_request) // exclut les PR
+          .map((i) => ({
+            id: i.number,
+            title: i.title,
+            body: i.body ?? '',
+            claps: i.reactions?.['+1'] ?? i.comments ?? 0,
+            url: i.html_url,
+            state: i.state,
+            labels: (i.labels ?? []).map((l: any) => l.name),
+          })),
+      ),
+    );
+  }
 
   postIssue(issue: Issue) {
 

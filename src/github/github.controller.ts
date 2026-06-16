@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Logger, Get, Param } from '@nestjs/common';
-import { GithubService } from './github.service';
+import { GithubService, IssueSummary } from './github.service';
 import { Issue } from './issue';
 import { Observable } from 'rxjs';
 import { Public } from '../auth/infrastructure/decorators';
@@ -39,9 +39,9 @@ export class GithubController {
   }
 
   @Get(GithubController.BASE_URL)
-  getIssue(@Body() issue: Issue): Observable<Issue> {
-    this.logger.log('Post Issue');
-    return this.githubService.postIssue(issue);
+  getIssues(): Observable<IssueSummary[]> {
+    this.logger.log('List issues');
+    return this.githubService.listIssues();
   }
 
   @Post(GithubController.BASE_URL)

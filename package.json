@@ -28,6 +28,7 @@
     "schema:sync": "ts-node ./node_modules/typeorm/cli.js schema:sync",
     "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate -d ./ormconfig.ts",
     "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run -d ./ormconfig.ts",
+    "script:calculate-durations": "ts-node -r tsconfig-paths/register src/podcast/scripts/calculate-missing-durations.ts",
     "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert -d ./ormconfig.ts"
   },
   "dependencies": {
@@ -60,6 +61,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "typeorm": "^0.3.7",
+    "web-push": "^3.6.7",
     "xml2js": "^0.4.19"
   },
   "devDependencies": {
@@ -74,6 +76,7 @@
     "@types/node": "^16.0.0",
     "@types/pg": "^8.15.6",
     "@types/supertest": "^2.0.10",
+    "@types/web-push": "^3.6.4",
     "@types/xml2js": "^0.4.7",
     "concurrently": "^5.3.0",
     "copyfiles": "^2.4.1",

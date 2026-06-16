@@ -235,6 +235,7 @@ model User {
   comments          Comment[]
   preferences       UserPreference?
   qaJobs            QaJob[]   @relation("UserQaJobs")
+  pushSubscriptions PushSubscription[]
 
   @@index([email])
   @@index([firebaseUid])
@@ -254,6 +255,25 @@ model UserPreference {
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_preference")
+}
+
+/**
+ * Abonnement Web Push (VAPID) d'un appareil, lié à un utilisateur.
+ * Remplace le modèle FCM-topics du natif (non transposable au web).
+ */
+model PushSubscription {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  endpoint  String   @unique @db.VarChar(500)
+  p256dh    String   @db.VarChar(255)
+  auth      String   @db.VarChar(255)
+  userAgent String?  @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscription")
 }
 
 model Comment {
