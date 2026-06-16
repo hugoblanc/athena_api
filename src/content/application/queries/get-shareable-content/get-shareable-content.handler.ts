@@ -24,6 +24,12 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
           id: true,
           url: true,
         },
+        metaMedia: {
+          id: true,
+          title: true,
+          type: true,
+          logo: true,
+        },
         title: true,
         id: true,
         contentType: true,
@@ -47,7 +53,10 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
     return {
       image: content.image,
       title: content.title,
-      originalUrl: originalUrl
+      originalUrl: originalUrl,
+      mediaTitle: content.metaMedia?.title,
+      mediaType: content.metaMedia?.type,
+      mediaLogoUrl: content.metaMedia?.logo ?? null,
     };
   }
 

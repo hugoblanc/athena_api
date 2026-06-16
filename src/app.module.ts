@@ -14,6 +14,7 @@ import { LawProposalModule } from './law-proposal/infrastructure/law-proposal.mo
 import { AuthModule } from './auth/infrastructure/auth.module';
 import { PodcastModule } from './podcast/infrastructure/podcast.module';
 import { PushModule } from './push/push.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
@@ -35,6 +36,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     LawProposalModule,
     PodcastModule,
     PushModule,
+    AnalyticsModule,
     EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],

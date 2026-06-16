@@ -314,3 +314,19 @@ model Podcast {
   @@index([createdAt(sort: Desc)])
   @@map("podcast")
 }
+
+/// Compteurs agrégés de la growth loop (aucune donnée personnelle, aucune ligne par visiteur).
+model AnalyticsCounter {
+  id        Int      @id @default(autoincrement())
+  event     String   // preview_view | value_reached | reshare
+  refType   String   // content | law | podcast | qa
+  refId     String
+  ref       String?  // canal d'origine: app | landing | whatsapp | telegram | x | mailto | copy | null
+  day       DateTime @db.Date
+  count     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([event, refType, refId, ref, day])
+  @@index([event, day])
+  @@map("analytics_counter")
+}
