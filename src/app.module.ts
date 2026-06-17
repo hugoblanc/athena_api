@@ -15,6 +15,7 @@ import { AuthModule } from './auth/infrastructure/auth.module';
 import { PodcastModule } from './podcast/infrastructure/podcast.module';
 import { PushModule } from './push/push.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { AppConfigModule } from './config/app-config.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
@@ -37,6 +38,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     PodcastModule,
     PushModule,
     AnalyticsModule,
+    AppConfigModule,
     EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],
