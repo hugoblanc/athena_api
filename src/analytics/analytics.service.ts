@@ -80,6 +80,7 @@ export class AnalyticsService {
     'preview_view',
     'value_reached',
     'reshare',
+    'install',
   ] as const;
 
   /**
@@ -99,7 +100,12 @@ export class AnalyticsService {
       },
     });
 
-    const zero = () => ({ preview_view: 0, value_reached: 0, reshare: 0 });
+    const zero = () => ({
+      preview_view: 0,
+      value_reached: 0,
+      reshare: 0,
+      install: 0,
+    });
     const totals = zero();
     const reshareByRef: Record<string, number> = {};
     const byDay = new Map<string, ReturnType<typeof zero>>();
@@ -150,6 +156,10 @@ export class AnalyticsService {
         valueRate: round(
           totals.preview_view ? totals.value_reached / totals.preview_view : 0,
         ),
+        installRate: round(
+          totals.preview_view ? totals.install / totals.preview_view : 0,
+        ),
+        installRateDef: 'installs PWA depuis une landing / arrivées (preview_view)',
       },
       reshare: { total: totals.reshare, fromApp, fromLanding, byRef: reshareByRef },
       byDay: [...byDay.entries()]

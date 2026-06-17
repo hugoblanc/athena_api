@@ -10,6 +10,7 @@ export const ANALYTICS_EVENTS = [
   'preview_view',
   'value_reached',
   'reshare',
+  'install',
 ] as const;
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[number];
 
