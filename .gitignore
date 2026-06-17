@@ -40,3 +40,6 @@ lerna-debug.log*
 .env
 
 /generated/prisma
+
+# Images OG des lois (générées, volume persistant)
+/data/og/

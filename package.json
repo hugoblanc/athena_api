@@ -46,6 +46,7 @@
     "@nestjs/typeorm": "^10.0.2",
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
+    "@resvg/resvg-js": "^2.6.2",
     "chance": "^1.1.9",
     "cheerio": "^1.0.0-rc.12",
     "class-transformer": "^0.5.1",
@@ -61,6 +62,7 @@
     "pubsubhubbub": "^1.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
+    "satori": "^0.12.2",
     "typeorm": "^0.3.7",
     "web-push": "^3.6.7",
     "xml2js": "^0.4.19"

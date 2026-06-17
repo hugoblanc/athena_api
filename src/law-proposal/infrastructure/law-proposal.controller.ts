@@ -1,8 +1,10 @@
-import { Controller, Post, Get, Query, Logger, ParseIntPipe, Param, HttpException, HttpStatus, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Post, Get, Query, Logger, ParseIntPipe, Param, HttpException, HttpStatus, UsePipes, ValidationPipe, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { Public } from '../../auth/infrastructure/decorators';
 import { LawScrapingService } from '../application/law-scraping.service';
 import { LawSimplificationService } from '../application/law-simplification.service';
 import { LawProposalService } from '../application/law-proposal.service';
+import { LawOgService } from '../og/law-og.service';
 import { ListLawProposalsQueryDto } from '../dtos/law-proposal-list.dto';
 
 @Controller('law-proposal')
@@ -14,6 +16,7 @@ export class LawProposalController {
     private lawScrapingService: LawScrapingService,
     private lawSimplificationService: LawSimplificationService,
     private lawProposalService: LawProposalService,
+    private lawOgService: LawOgService,
   ) {}
 
   /**
@@ -96,6 +99,29 @@ export class LawProposalController {
       data: proposals,
       count: proposals.length,
     };
+  }
+
+  /**
+   * GET /law-proposal/:numero/og.png
+   * Image Open Graph (1200x630) de la loi. Servie depuis le cache (volume) ou
+   * générée à la volée au premier accès. Cache HTTP long côté CDN/navigateur.
+   */
+  @Get(':numero/og.png')
+  async getOgImage(
+    @Param('numero') numero: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const png = await this.lawOgService.getOrGenerate(numero);
+    if (!png) {
+      res.status(HttpStatus.NOT_FOUND).send('OG image not available');
+      return;
+    }
+    res.set({
+      'Content-Type': 'image/png',
+      // Immutable côté clients/CDN ; régénérée seulement si on supprime le fichier.
+      'Cache-Control': 'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400',
+    });
+    res.send(png);
   }
 
   /**

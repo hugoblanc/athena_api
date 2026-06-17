@@ -4,6 +4,7 @@ import { AssembleeNationaleScraper } from '../scrapers/assemblee-nationale-scrap
 import { PropositionScraper } from '../scrapers/proposition-scraper';
 import type { PropositionLoi, Depute as DeputeData } from '../scrapers/types';
 import { Depute, LawProposal } from '@prisma/client';
+import { LawOgService } from '../og/law-og.service';
 
 @Injectable()
 export class LawScrapingService {
@@ -13,6 +14,7 @@ export class LawScrapingService {
     private prisma: PrismaService,
     private assembleeNationaleScraper: AssembleeNationaleScraper,
     private propositionScraper: PropositionScraper,
+    private lawOgService: LawOgService,
   ) {}
 
   /**
@@ -69,6 +71,9 @@ export class LawScrapingService {
           await this.saveProposition(propositionData);
           created++;
           this.logger.log(`✅ Proposition ${resume.numero} saved successfully`);
+
+          // Pré-générer son image OG (file de fond, ne bloque pas le scraping)
+          this.lawOgService.enqueue(resume.numero);
 
           // Rate limiting
           await this.delay(2000);
