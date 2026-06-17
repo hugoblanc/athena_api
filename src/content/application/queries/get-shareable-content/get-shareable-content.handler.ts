@@ -18,17 +18,14 @@ export class GetShareableContentHandler implements IQueryHandler<GetShareableCon
     const { contentId, key } = query;
 
     const content = await this.repository.findOne({
+      // metaMedia chargé EN ENTIER (pas de select restreint) : le factory d'URL
+      // d'origine WordPress a besoin de `metaMedia.url` (post-service). En le
+      // restreignant, on cassait tout le partage des articles WordPress (500).
       relations: { image: true, metaMedia: true },
       select: {
         image: {
           id: true,
           url: true,
-        },
-        metaMedia: {
-          id: true,
-          title: true,
-          type: true,
-          logo: true,
         },
         title: true,
         id: true,
