@@ -1,15 +1,18 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { Public } from '../auth/infrastructure/decorators';
 import { AnalyticsService } from './analytics.service';
+import { AnalyticsAdminGuard } from './analytics-admin.guard';
 import { CreateAnalyticsEventDto } from './dto/create-analytics-event.dto';
 import { IpRateLimitGuard } from './ip-rate-limit.guard';
 
@@ -34,5 +37,23 @@ export class AnalyticsController {
   )
   async event(@Body() dto: CreateAnalyticsEventDto): Promise<void> {
     await this.analyticsService.record(dto);
+  }
+
+  /**
+   * GET /analytics/funnel?days=14&refType=content  (clé admin requise)
+   * Lecture agrégée de la growth loop : totaux, k-factor, funnel par jour,
+   * top contenus repartagés. Aucune donnée personnelle.
+   */
+  @Get('funnel')
+  @UseGuards(AnalyticsAdminGuard)
+  funnel(
+    @Query('days') days?: string,
+    @Query('refType') refType?: string,
+  ): Promise<unknown> {
+    const parsed = days ? Number.parseInt(days, 10) : undefined;
+    return this.analyticsService.funnel({
+      days: Number.isNaN(parsed as number) ? undefined : parsed,
+      refType,
+    });
   }
 }

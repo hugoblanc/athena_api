@@ -69,6 +69,98 @@ export class AnalyticsService {
     );
   }
 
+  /** Minuit UTC il y a `days` jours. */
+  private daysAgoUtc(days: number): Date {
+    const t = this.todayUtc();
+    t.setUTCDate(t.getUTCDate() - days);
+    return t;
+  }
+
+  private static readonly EVENTS = [
+    'preview_view',
+    'value_reached',
+    'reshare',
+  ] as const;
+
+  /**
+   * Lecture agrégée de la growth loop sur une fenêtre.
+   * k-factor viral = re-partages DEPUIS une landing (ShareIntents, ref ≠ app)
+   * rapportés aux arrivées sur landing (preview_view). Les `reshare` ref=app
+   * sont les partages initiaux depuis l'app (la « graine »), pas la boucle.
+   */
+  async funnel(opts: { days?: number; refType?: string }): Promise<unknown> {
+    const days = Math.min(Math.max(1, Math.floor(opts.days ?? 30)), 365);
+    const from = this.daysAgoUtc(days);
+
+    const rows = await this.prisma.analyticsCounter.findMany({
+      where: {
+        day: { gte: from },
+        ...(opts.refType ? { refType: opts.refType } : {}),
+      },
+    });
+
+    const zero = () => ({ preview_view: 0, value_reached: 0, reshare: 0 });
+    const totals = zero();
+    const reshareByRef: Record<string, number> = {};
+    const byDay = new Map<string, ReturnType<typeof zero>>();
+    const byContent = new Map<
+      string,
+      { refType: string; refId: string } & ReturnType<typeof zero>
+    >();
+
+    const isEvent = (e: string): e is (typeof AnalyticsService.EVENTS)[number] =>
+      (AnalyticsService.EVENTS as readonly string[]).includes(e);
+
+    for (const r of rows) {
+      if (!isEvent(r.event)) continue;
+      totals[r.event] += r.count;
+
+      const dayKey = r.day.toISOString().slice(0, 10);
+      const d = byDay.get(dayKey) ?? zero();
+      d[r.event] += r.count;
+      byDay.set(dayKey, d);
+
+      const ck = `${r.refType}:${r.refId}`;
+      const c = byContent.get(ck) ?? { refType: r.refType, refId: r.refId, ...zero() };
+      c[r.event] += r.count;
+      byContent.set(ck, c);
+
+      if (r.event === 'reshare') {
+        const ref = r.ref ?? 'unknown';
+        reshareByRef[ref] = (reshareByRef[ref] ?? 0) + r.count;
+      }
+    }
+
+    const fromLanding = Object.entries(reshareByRef)
+      .filter(([ref]) => ref !== 'app')
+      .reduce((s, [, n]) => s + n, 0);
+    const fromApp = reshareByRef['app'] ?? 0;
+    const round = (n: number) => Math.round(n * 1000) / 1000;
+
+    return {
+      window: {
+        days,
+        from: from.toISOString().slice(0, 10),
+        to: this.todayUtc().toISOString().slice(0, 10),
+      },
+      totals,
+      rates: {
+        kFactor: round(totals.preview_view ? fromLanding / totals.preview_view : 0),
+        kFactorDef: 're-partages depuis une landing / arrivées sur landing (preview_view)',
+        valueRate: round(
+          totals.preview_view ? totals.value_reached / totals.preview_view : 0,
+        ),
+      },
+      reshare: { total: totals.reshare, fromApp, fromLanding, byRef: reshareByRef },
+      byDay: [...byDay.entries()]
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .map(([day, v]) => ({ day, ...v })),
+      topContent: [...byContent.values()]
+        .sort((a, b) => b.reshare - a.reshare)
+        .slice(0, 20),
+    };
+  }
+
   /**
    * Vrai si ce (dayHash, event, refType, refId) a déjà été vu il y a moins de 6h.
    * Best-effort anti-rafale, pas une garantie d'unicité. Sans dayHash : jamais dédupliqué.
