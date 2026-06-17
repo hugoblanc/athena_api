@@ -19,7 +19,9 @@ const DEFAULTS = {
   title: 'Athena évolue',
   message:
     'Retrouvez Athena en version web, installable sur votre écran d’accueil. Vos identifiants restent les mêmes.',
-  ctaLabel: 'Découvrir',
+  ctaLabel: 'En savoir plus',
+  // Destination web finale (ouverte depuis la page native /evolution, après la
+  // lettre). La bannière, elle, mène d'abord à la page native interne.
   ctaUrl: 'https://athena-app.xyz',
   learnMoreUrl: 'https://athena-app.xyz',
 };
