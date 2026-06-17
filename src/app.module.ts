@@ -1,6 +1,13 @@
-import { Logger, Module, OnModuleDestroy } from '@nestjs/common';
+import {
+  Logger,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
+import { RequestLoggerMiddleware } from './core/middleware/request-logger.middleware';
 import { ContentModule } from './content/infrastructure/content.module';
 import { ConfigurationModule } from './core/configuration/configuration.module';
 import { typeormConfig } from './core/configuration/typeorm.config';
@@ -43,4 +50,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
   ],
   controllers: [AppController],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(RequestLoggerMiddleware).forRoutes('*');
+  }
+}
