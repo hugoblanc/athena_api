@@ -330,3 +330,18 @@ model AnalyticsCounter {
   @@index([event, day])
   @@map("analytics_counter")
 }
+
+/// Réponses à un sondage in-app ciblé par géolocalisation (ex. sondage Iran).
+/// Une ligne par soumission. `country`/`locale` au moment de l'envoi ; pas d'IP stockée.
+model SurveyResponse {
+  id        Int      @id @default(autoincrement())
+  survey    String   @default("iran") // clé du sondage (réutilisable pour d'autres campagnes)
+  message   String                    // texte libre : ce qu'ils cherchent / comment les aider
+  contact   String?  @db.VarChar(255) // optionnel : email/Telegram pour un éventuel suivi
+  country   String?  @db.VarChar(2)   // code pays geoip au moment de l'envoi (IR attendu)
+  locale    String?  @db.VarChar(8)   // langue de l'IHM au moment de l'envoi
+  createdAt DateTime @default(now())
+
+  @@index([survey, createdAt])
+  @@map("survey_response")
+}

@@ -22,6 +22,7 @@ import { AuthModule } from './auth/infrastructure/auth.module';
 import { PodcastModule } from './podcast/infrastructure/podcast.module';
 import { PushModule } from './push/push.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { SurveyModule } from './survey/survey.module';
 import { AppConfigModule } from './config/app-config.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
@@ -45,6 +46,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     PodcastModule,
     PushModule,
     AnalyticsModule,
+    SurveyModule,
     AppConfigModule,
     EventEmitterModule.forRoot(),
   ],
