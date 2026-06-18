@@ -236,10 +236,62 @@ model User {
   preferences       UserPreference?
   qaJobs            QaJob[]   @relation("UserQaJobs")
   pushSubscriptions PushSubscription[]
+  ideas             Idea[]
+  ideaVotes         IdeaVote[]
 
   @@index([email])
   @@index([firebaseUid])
   @@map("user")
+}
+
+/// Idée / demande d'amélioration (remplace les GitHub issues).
+/// Source de vérité de la roadmap, votée via IdeaVote.
+model Idea {
+  id                Int        @id @default(autoincrement())
+  title             String     @db.VarChar(200)
+  body              String     @db.Text
+  /// "feature" | "bug" (ex-label GitHub)
+  type              String     @default("feature") @db.VarChar(20)
+  /// "open" | "planned" | "in_progress" | "done" | "rejected"
+  status            String     @default("open") @db.VarChar(20)
+  /// Compteur dénormalisé = COUNT(IdeaVote). Maintenu à l'écriture.
+  voteCount         Int        @default(0)
+  authorId          Int?
+  /// Numéro de l'issue GitHub d'origine (import / traçabilité). null = idée native BDD.
+  githubIssueNumber Int?       @unique
+  createdAt         DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime   @default(now()) @updatedAt @db.Timestamp(6)
+
+  // Relations
+  author            User?      @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  votes             IdeaVote[]
+  comments          Comment[]
+
+  @@index([status])
+  @@index([type])
+  @@index([voteCount(sort: Desc)])
+  @@map("idea")
+}
+
+/// Un vote ("clap") sur une idée. Dédup serveur :
+/// - utilisateur connecté → unique (ideaId, userId)
+/// - invité → unique (ideaId, anonKey) (clé anonyme générée côté client)
+/// (Postgres autorise plusieurs NULL dans un index unique : les deux modes cohabitent.)
+model IdeaVote {
+  id        Int      @id @default(autoincrement())
+  ideaId    Int
+  userId    Int?
+  anonKey   String?  @db.VarChar(64)
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  // Relations
+  idea      Idea     @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([ideaId, userId])
+  @@unique([ideaId, anonKey])
+  @@index([ideaId])
+  @@map("idea_vote")
 }
 
 model UserPreference {
@@ -281,6 +333,7 @@ model Comment {
   userId            Int
   lawProposalId     Int?
   contentId         Int?
+  ideaId            Int?
   text              String      @db.Text
   createdAt         DateTime    @default(now()) @db.Timestamp(6)
   updatedAt         DateTime    @default(now()) @updatedAt @db.Timestamp(6)
@@ -289,10 +342,12 @@ model Comment {
   user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   lawProposal       LawProposal? @relation(fields: [lawProposalId], references: [id], onDelete: Cascade)
   content           Content?    @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  idea              Idea?       @relation(fields: [ideaId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([lawProposalId])
   @@index([contentId])
+  @@index([ideaId])
   @@index([createdAt(sort: Desc)])
   @@map("comment")
 }

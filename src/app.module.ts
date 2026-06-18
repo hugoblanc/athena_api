@@ -11,7 +11,7 @@ import { RequestLoggerMiddleware } from './core/middleware/request-logger.middle
 import { ContentModule } from './content/infrastructure/content.module';
 import { ConfigurationModule } from './core/configuration/configuration.module';
 import { typeormConfig } from './core/configuration/typeorm.config';
-import { GithubModule } from './github/github.module';
+import { IdeaModule } from './idea/idea.module';
 import { HelperModule } from './helper/helper.module';
 import { ListMetaMediaModule } from './list-meta-media/list-meta-media.module';
 import { MetaMediaModule } from './meta-media/meta-media.module';
@@ -38,7 +38,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     MetaMediaModule,
     ContentModule,
     HelperModule,
-    GithubModule,
+    IdeaModule,
     ConfigurationModule,
     MaintenanceModule,
     QaModule,
