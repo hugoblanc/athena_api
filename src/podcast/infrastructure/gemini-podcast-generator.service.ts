@@ -38,9 +38,9 @@ export class GeminiPodcastGeneratorService extends PodcastGeneratorService {
     const dialogueText = await this.generateDialogue(content);
     this.logger.log(`Dialogue generated for content ${content.id} (${dialogueText.length} chars)`);
 
-    // Étape 2 : Générer l'audio TTS multi-speaker
-    const audioFilename = await this.generateAudio(dialogueText, content);
-    this.logger.log(`Audio generated: ${audioFilename}`);
+    // Étape 2 : Générer l'audio TTS multi-speaker avec calcul de la durée
+    const { filename: audioFilename, duration } = await this.generateAudio(dialogueText, content);
+    this.logger.log(`Audio generated: ${audioFilename} (${duration}s)`);
 
     // Étape 3 : Upload vers Google Cloud Storage
     const localFilePath = `./${audioFilename}`;
@@ -53,7 +53,7 @@ export class GeminiPodcastGeneratorService extends PodcastGeneratorService {
     return {
       dialogueText,
       audioUrl,
-      duration: undefined, // TODO: calculer la durée si besoin
+      duration,
     };
   }
 
@@ -102,7 +102,7 @@ export class GeminiPodcastGeneratorService extends PodcastGeneratorService {
     return trimmedDialogue;
   }
 
-  private async generateAudio(dialogueText: string, content: Content): Promise<string> {
+  private async generateAudio(dialogueText: string, content: Content): Promise<{ filename: string; duration: number }> {
     const config = {
       temperature: 1,
       responseModalities: ['audio'],
@@ -135,6 +135,7 @@ export class GeminiPodcastGeneratorService extends PodcastGeneratorService {
 
     const audioFilename = `podcast_${content.contentId}.wav`;
     const audioChunks: Buffer[] = [];
+    let lastMimeType = '';
 
     for await (const chunk of response) {
       if (chunk.candidates?.[0]?.content?.parts?.[0]?.inlineData) {
@@ -147,6 +148,7 @@ export class GeminiPodcastGeneratorService extends PodcastGeneratorService {
           buffer = this.convertToWav(inlineData.data || '', inlineData.mimeType || '') as Buffer;
         }
 
+        lastMimeType = inlineData.mimeType || '';
         audioChunks.push(buffer);
       }
     }
@@ -155,7 +157,10 @@ export class GeminiPodcastGeneratorService extends PodcastGeneratorService {
     const finalBuffer = Buffer.concat(audioChunks);
     await writeFile(audioFilename, finalBuffer);
 
-    return audioFilename;
+    // Calculer la durée du fichier WAV
+    const duration = this.calculateWavDuration(finalBuffer, lastMimeType);
+
+    return { filename: audioFilename, duration };
   }
 
   // Méthode de conversion WAV
@@ -213,5 +218,36 @@ export class GeminiPodcastGeneratorService extends PodcastGeneratorService {
     header.writeUInt32LE(dataLength, 40);
 
     return header;
+  }
+
+  /**
+   * Calculate WAV file duration in seconds
+   * Duration = dataLength / byteRate
+   */
+  private calculateWavDuration(wavBuffer: Buffer, mimeType: string): number {
+    try {
+      // Parse WAV header to get audio parameters
+      const options = this.parseMimeType(mimeType);
+      const { sampleRate, bitsPerSample, channels } = options;
+
+      // Calculate byte rate: sampleRate * blockAlign
+      const blockAlign = (channels * bitsPerSample) / 8;
+      const byteRate = sampleRate * blockAlign;
+
+      // Get data length from WAV buffer
+      // WAV header is 44 bytes, rest is audio data
+      const dataLength = wavBuffer.length - 44;
+
+      // Calculate duration in seconds
+      const durationInSeconds = dataLength / byteRate;
+
+      this.logger.log(`Calculated duration: ${durationInSeconds.toFixed(2)}s (dataLength: ${dataLength}, byteRate: ${byteRate})`);
+
+      // Return duration rounded to nearest second
+      return Math.round(durationInSeconds);
+    } catch (error) {
+      this.logger.warn(`Failed to calculate WAV duration: ${error.message}`);
+      return 0;
+    }
   }
 }
