@@ -56,4 +56,19 @@ export class AnalyticsController {
       refType,
     });
   }
+
+  /**
+   * GET /analytics/usage?days=30  (clé admin requise)
+   * Lecture agrégée de l'usage produit : écrans vus, features utilisées, top
+   * contenus joués, sessions (navigateur vs PWA installée), série par jour.
+   * Aucune donnée personnelle.
+   */
+  @Get('usage')
+  @UseGuards(AnalyticsAdminGuard)
+  usage(@Query('days') days?: string): Promise<unknown> {
+    const parsed = days ? Number.parseInt(days, 10) : undefined;
+    return this.analyticsService.usage({
+      days: Number.isNaN(parsed as number) ? undefined : parsed,
+    });
+  }
 }

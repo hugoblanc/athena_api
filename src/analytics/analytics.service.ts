@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../law-proposal/infrastructure/prisma.service';
-import { CreateAnalyticsEventDto } from './dto/create-analytics-event.dto';
+import {
+  CreateAnalyticsEventDto,
+  isAllowedRef,
+} from './dto/create-analytics-event.dto';
 
 @Injectable()
 export class AnalyticsService {
@@ -22,6 +25,12 @@ export class AnalyticsService {
    */
   async record(dto: CreateAnalyticsEventDto): Promise<void> {
     const ref = dto.ref ?? null;
+
+    // Garde-fou cardinalité : pour les dimensions d'usage (screen/feature/session),
+    // on n'enregistre que les refId connus. Drop silencieux sinon.
+    if (!isAllowedRef(dto.refType, dto.refId)) {
+      return;
+    }
 
     if (this.isDuplicate(dto)) {
       return;
@@ -168,6 +177,102 @@ export class AnalyticsService {
       topContent: [...byContent.values()]
         .sort((a, b) => b.reshare - a.reshare)
         .slice(0, 20),
+    };
+  }
+
+  /**
+   * Lecture agrégée de l'USAGE produit sur une fenêtre : écrans vus, features
+   * utilisées, contenus joués, sessions (navigateur vs PWA installée), et série
+   * temporelle. Aucune donnée personnelle. Réservé admin (guard sur le contrôleur).
+   */
+  async usage(opts: { days?: number }): Promise<unknown> {
+    const days = Math.min(Math.max(1, Math.floor(opts.days ?? 30)), 365);
+    const from = this.daysAgoUtc(days);
+
+    const rows = await this.prisma.analyticsCounter.findMany({
+      where: {
+        day: { gte: from },
+        event: {
+          in: ['screen_view', 'feature_use', 'play', 'session_start'],
+        },
+      },
+    });
+
+    const screens: Record<string, number> = {};
+    const features: Record<string, number> = {};
+    const sessions: Record<string, number> = {};
+    const played = new Map<string, { refType: string; refId: string; count: number }>();
+    const byDay = new Map<
+      string,
+      { screen_view: number; feature_use: number; play: number; session_start: number }
+    >();
+
+    for (const r of rows) {
+      switch (r.event) {
+        case 'screen_view':
+          screens[r.refId] = (screens[r.refId] ?? 0) + r.count;
+          break;
+        case 'feature_use':
+          features[r.refId] = (features[r.refId] ?? 0) + r.count;
+          break;
+        case 'session_start':
+          sessions[r.refId] = (sessions[r.refId] ?? 0) + r.count;
+          break;
+        case 'play': {
+          const k = `${r.refType}:${r.refId}`;
+          const p =
+            played.get(k) ?? { refType: r.refType, refId: r.refId, count: 0 };
+          p.count += r.count;
+          played.set(k, p);
+          break;
+        }
+        default:
+          continue;
+      }
+
+      const dayKey = r.day.toISOString().slice(0, 10);
+      const d =
+        byDay.get(dayKey) ??
+        { screen_view: 0, feature_use: 0, play: 0, session_start: 0 };
+      if (
+        r.event === 'screen_view' ||
+        r.event === 'feature_use' ||
+        r.event === 'play' ||
+        r.event === 'session_start'
+      ) {
+        d[r.event] += r.count;
+      }
+      byDay.set(dayKey, d);
+    }
+
+    const sortDesc = (rec: Record<string, number>) =>
+      Object.entries(rec)
+        .map(([key, count]) => ({ key, count }))
+        .sort((a, b) => b.count - a.count);
+
+    const sessionsTotal = Object.values(sessions).reduce((s, n) => s + n, 0);
+
+    return {
+      window: {
+        days,
+        from: from.toISOString().slice(0, 10),
+        to: this.todayUtc().toISOString().slice(0, 10),
+      },
+      screens: sortDesc(screens),
+      features: sortDesc(features),
+      topPlayed: [...played.values()].sort((a, b) => b.count - a.count).slice(0, 20),
+      sessions: {
+        total: sessionsTotal,
+        browser: sessions['browser'] ?? 0,
+        installed: sessions['installed'] ?? 0,
+        installedRate:
+          sessionsTotal
+            ? Math.round(((sessions['installed'] ?? 0) / sessionsTotal) * 1000) / 1000
+            : 0,
+      },
+      byDay: [...byDay.entries()]
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .map(([day, v]) => ({ day, ...v })),
     };
   }
 
