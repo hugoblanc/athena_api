@@ -40,6 +40,17 @@ export class IdeaController {
     return this.ideaService.list(labels);
   }
 
+  /**
+   * Synthèse de priorisation produit : ce qu'il faut développer ensuite, d'après
+   * les votes des utilisateurs. ⚠️ Déclaré AVANT `:id` (sinon capté par la route
+   * paramétrée). `?limit=` borne les listes top (défaut 15).
+   */
+  @Get('priorities')
+  priorities(@Query('limit') limit?: string) {
+    const n = Math.min(Math.max(Number(limit) || 15, 1), 50);
+    return this.ideaService.getPriorities(n);
+  }
+
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
     return this.ideaService.getOne(id);

@@ -49,6 +49,45 @@ export interface CommentDto {
   };
 }
 
+/** Idée résumée pour la synthèse de priorisation. */
+export interface PriorityItem {
+  id: number;
+  title: string;
+  votes: number;
+  type: string;
+  url: string;
+}
+
+/** Réponse de `GET /issues/priorities` : que développer ensuite. */
+export interface PrioritiesDto {
+  totals: Record<string, number>;
+  /** Demandes ouvertes les plus votées (à arbitrer), par type. */
+  topFeatures: PriorityItem[];
+  topBugs: PriorityItem[];
+  /** Idées déjà validées (à planifier) et en cours (en chantier). */
+  planned: PriorityItem[];
+  inProgress: PriorityItem[];
+}
+
+/** Base URL publique de la PWA (liens vers le détail d'une idée). */
+const ROADMAP_BASE_URL =
+  process.env.PWA_BASE_URL?.replace(/\/$/, '') ?? 'https://www.athena-app.fr';
+
+export function toPriorityItem(idea: {
+  id: number;
+  title: string;
+  voteCount: number;
+  type: string;
+}): PriorityItem {
+  return {
+    id: idea.id,
+    title: idea.title,
+    votes: idea.voteCount,
+    type: idea.type,
+    url: `${ROADMAP_BASE_URL}/roadmap/${idea.id}`,
+  };
+}
+
 /** Statuts considérés comme « fermés » (issue close). */
 const CLOSED_STATUSES = new Set(['done', 'rejected']);
 

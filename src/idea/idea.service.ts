@@ -1,7 +1,14 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../law-proposal/infrastructure/prisma.service';
-import { CommentDto, CreateIdeaDto, IssueDto, toIssueDto } from './idea.dto';
+import {
+  CommentDto,
+  CreateIdeaDto,
+  IssueDto,
+  PrioritiesDto,
+  toIssueDto,
+  toPriorityItem,
+} from './idea.dto';
 
 /** Identité d'un votant pour la dédup serveur (cf. IdeaVote). */
 export interface VoterIdentity {
@@ -27,6 +34,64 @@ export class IdeaService {
       take: 1000,
     });
     return ideas.map(toIssueDto);
+  }
+
+  /**
+   * Synthèse de priorisation : que développer ensuite d'après les votes.
+   * - topFeatures / topBugs : demandes OUVERTES les plus votées (à arbitrer).
+   * - planned / inProgress : déjà validées / en chantier.
+   */
+  async getPriorities(limit: number): Promise<PrioritiesDto> {
+    const select = {
+      id: true,
+      title: true,
+      voteCount: true,
+      type: true,
+    } as const;
+    const byVotes = [
+      { voteCount: 'desc' as const },
+      { createdAt: 'desc' as const },
+    ];
+
+    const [grouped, topFeatures, topBugs, planned, inProgress] =
+      await Promise.all([
+        this.prisma.idea.groupBy({ by: ['status'], _count: { _all: true } }),
+        this.prisma.idea.findMany({
+          where: { status: 'open', type: 'feature' },
+          orderBy: byVotes,
+          take: limit,
+          select,
+        }),
+        this.prisma.idea.findMany({
+          where: { status: 'open', type: 'bug' },
+          orderBy: byVotes,
+          take: Math.ceil(limit / 2),
+          select,
+        }),
+        this.prisma.idea.findMany({
+          where: { status: 'planned' },
+          orderBy: byVotes,
+          take: limit,
+          select,
+        }),
+        this.prisma.idea.findMany({
+          where: { status: 'in_progress' },
+          orderBy: byVotes,
+          take: limit,
+          select,
+        }),
+      ]);
+
+    const totals: Record<string, number> = {};
+    for (const g of grouped) totals[g.status] = g._count._all;
+
+    return {
+      totals,
+      topFeatures: topFeatures.map(toPriorityItem),
+      topBugs: topBugs.map(toPriorityItem),
+      planned: planned.map(toPriorityItem),
+      inProgress: inProgress.map(toPriorityItem),
+    };
   }
 
   async getOne(id: number): Promise<IssueDto> {
