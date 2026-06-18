@@ -42,9 +42,12 @@ export class PushService implements OnModuleInit {
     return process.env.VAPID_PUBLIC_KEY ?? null;
   }
 
-  /** Enregistre (ou met à jour) l'abonnement d'un appareil pour un user. */
+  /**
+   * Enregistre (ou met à jour) l'abonnement d'un appareil.
+   * `userId` peut être null : abonnement anonyme (visiteur non connecté).
+   */
   async saveSubscription(
-    userId: number,
+    userId: number | null,
     sub: WebPushSubscriptionJson,
     userAgent?: string,
   ) {

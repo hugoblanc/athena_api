@@ -315,14 +315,16 @@ model UserPreference {
  */
 model PushSubscription {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  // Nullable : un visiteur non connecté peut s'abonner (opt-in notif depuis un
+  // lien partagé). Lié à l'user si présent (Bearer Firebase).
+  userId    Int?
   endpoint  String   @unique @db.VarChar(500)
   p256dh    String   @db.VarChar(255)
   auth      String   @db.VarChar(255)
   userAgent String?  @db.VarChar(255)
   createdAt DateTime @default(now()) @db.Timestamp(6)
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("push_subscription")

@@ -46,11 +46,29 @@ export class ContentService {
     );
 
     this.notificationService.sendMessage(messages);
+
+    // Web push (PWA) en plus de FCM : diffusion globale aux abonnés navigateur.
+    // Découplé via event (listener dans PushModule) pour éviter un couplage dur.
+    this.eventEmitter.emit('webpush.broadcast', {
+      title: 'Nouvelle vidéo de ' + content.metaMedia.title,
+      body: content.title,
+      key: content.metaMedia.key,
+      id: content.id,
+    });
   }
 
   sendPostNotification(post: Post) {
     const message = post.toNotification();
     this.notificationService.sendMessage(message);
+
+    if (post.metaMedia) {
+      this.eventEmitter.emit('webpush.broadcast', {
+        title: 'Nouvel article par ' + post.metaMedia.title,
+        body: post.getTitle(),
+        key: post.metaMedia.key,
+        id: post.id,
+      });
+    }
   }
 
   /**
