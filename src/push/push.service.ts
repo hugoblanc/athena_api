@@ -71,6 +71,57 @@ export class PushService implements OnModuleInit {
     return { success: true };
   }
 
+  /** Suivre un média pour cet appareil (ciblage des notifs). No-op si déjà suivi. */
+  async follow(endpoint: string, mediaKey: string) {
+    const sub = await this.prisma.pushSubscription.findUnique({
+      where: { endpoint },
+      select: { id: true },
+    });
+    if (!sub) return { success: false };
+    await this.prisma.pushFollow.upsert({
+      where: { subscriptionId_mediaKey: { subscriptionId: sub.id, mediaKey } },
+      create: { subscriptionId: sub.id, mediaKey },
+      update: {},
+    });
+    return { success: true };
+  }
+
+  /** Ne plus suivre un média pour cet appareil. */
+  async unfollow(endpoint: string, mediaKey: string) {
+    const sub = await this.prisma.pushSubscription.findUnique({
+      where: { endpoint },
+      select: { id: true },
+    });
+    if (sub) {
+      await this.prisma.pushFollow
+        .delete({
+          where: {
+            subscriptionId_mediaKey: { subscriptionId: sub.id, mediaKey },
+          },
+        })
+        .catch(() => undefined);
+    }
+    return { success: true };
+  }
+
+  /** Médias suivis par cet appareil (clés). */
+  async followedMedias(endpoint: string): Promise<string[]> {
+    const sub = await this.prisma.pushSubscription.findUnique({
+      where: { endpoint },
+      select: { follows: { select: { mediaKey: true } } },
+    });
+    return sub?.follows.map((f) => f.mediaKey) ?? [];
+  }
+
+  /** Diffuse aux appareils qui SUIVENT ce média (ciblage tranche 2). */
+  async sendToMediaFollowers(mediaKey: string, payload: PushPayload) {
+    const subs = await this.prisma.pushSubscription.findMany({
+      where: { follows: { some: { mediaKey } } },
+    });
+    if (subs.length === 0) return;
+    await this.send(subs, payload);
+  }
+
   /**
    * Envoie une notif à une liste de subscriptions (fan-out).
    * Supprime automatiquement les abonnements expirés (404/410).

@@ -7,8 +7,8 @@ import { PushPayload, PushService } from './push.service';
  * vers le Web Push PWA. Découplé du module content via l'EventEmitter global,
  * pour ne pas créer de dépendance ContentModule → PushModule.
  *
- * Tranche 1 : diffusion GLOBALE (tous les abonnés). Le ciblage par média
- * (suivre un média) viendra en tranche 2.
+ * Ciblage par média (tranche 2) : si l'event porte une `key` (clé média), on
+ * n'envoie qu'aux appareils qui SUIVENT ce média. Sans clé : diffusion globale.
  */
 @Injectable()
 export class PushBroadcastListener {
@@ -19,9 +19,13 @@ export class PushBroadcastListener {
   @OnEvent('webpush.broadcast')
   async handle(payload: PushPayload) {
     try {
-      await this.pushService.broadcast(payload);
+      if (payload.key) {
+        await this.pushService.sendToMediaFollowers(payload.key, payload);
+      } else {
+        await this.pushService.broadcast(payload);
+      }
     } catch (e: any) {
-      this.logger.error(`Web push broadcast échoué: ${e?.message}`);
+      this.logger.error(`Web push échoué: ${e?.message}`);
     }
   }
 }

@@ -40,4 +40,25 @@ export class PushController {
   unsubscribe(@Body() body: { endpoint: string }) {
     return this.pushService.removeSubscription(body.endpoint);
   }
+
+  /** Suivre un média (ciblage des notifs). Device-level, pas d'auth requise. */
+  @Public()
+  @Post('follow')
+  follow(@Body() body: { endpoint: string; mediaKey: string }) {
+    return this.pushService.follow(body.endpoint, body.mediaKey);
+  }
+
+  /** Ne plus suivre un média. */
+  @Public()
+  @Post('unfollow')
+  unfollow(@Body() body: { endpoint: string; mediaKey: string }) {
+    return this.pushService.unfollow(body.endpoint, body.mediaKey);
+  }
+
+  /** Liste des médias suivis par cet appareil (endpoint dans le body, pas en query). */
+  @Public()
+  @Post('follows')
+  follows(@Body() body: { endpoint: string }) {
+    return this.pushService.followedMedias(body.endpoint);
+  }
 }

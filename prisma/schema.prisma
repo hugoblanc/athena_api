@@ -325,9 +325,25 @@ model PushSubscription {
   createdAt DateTime @default(now()) @db.Timestamp(6)
 
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  follows   PushFollow[]
 
   @@index([userId])
   @@map("push_subscription")
+}
+
+/// Suivi d'un média par un appareil abonné au Web Push : ciblage des notifs
+/// (« prévenez-moi quand ce média publie »). Indépendant de l'auth.
+model PushFollow {
+  id             Int      @id @default(autoincrement())
+  subscriptionId Int
+  mediaKey       String   @db.VarChar(100)
+  createdAt      DateTime @default(now()) @db.Timestamp(6)
+
+  subscription   PushSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@unique([subscriptionId, mediaKey])
+  @@index([mediaKey])
+  @@map("push_follow")
 }
 
 model Comment {
