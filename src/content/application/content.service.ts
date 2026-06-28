@@ -8,6 +8,7 @@ import { Page } from '../../core/page';
 import { RequestedPageValueType } from '../../core/page-number.value-type';
 import { arrayMap } from '../../core/rxjs/array-map';
 import { MetaMediaType } from '../../meta-media/meta-media-type.enum';
+import { FormatService } from '../../helper/format/format.service';
 import { MetaMedia } from '../../meta-media/meta-media.entity';
 import { MetaMediaService } from '../../meta-media/meta-media.service';
 import { Post } from '../../models/post';
@@ -43,6 +44,8 @@ export class ContentService {
       content.title,
       content.metaMedia.key,
       content.id.toString(),
+      undefined,
+      content.image?.url,
     );
 
     this.notificationService.sendMessage(messages);
@@ -51,9 +54,10 @@ export class ContentService {
     // Découplé via event (listener dans PushModule) pour éviter un couplage dur.
     this.eventEmitter.emit('webpush.broadcast', {
       title: 'Nouvelle vidéo de ' + content.metaMedia.title,
-      body: content.title,
+      body: FormatService.stripTags(content.title),
       key: content.metaMedia.key,
       id: content.id,
+      image: content.image?.url,
     });
   }
 
@@ -64,9 +68,10 @@ export class ContentService {
     if (post.metaMedia) {
       this.eventEmitter.emit('webpush.broadcast', {
         title: 'Nouvel article par ' + post.metaMedia.title,
-        body: post.getTitle(),
+        body: FormatService.stripTags(post.getTitle()),
         key: post.metaMedia.key,
         id: post.id,
+        image: post.image?.url,
       });
     }
   }

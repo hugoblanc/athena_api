@@ -102,6 +102,7 @@ export class Post implements INotifiedObject {
       this.metaMedia.key,
       this.id.toString(),
       conditions,
+      this.image?.url,
     );
 
     return messages;

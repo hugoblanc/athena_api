@@ -11,6 +11,8 @@ export interface PushPayload {
   title: string;
   body: string;
   icon?: string;
+  /** vignette du contenu : grande image de la notification web (showNotification image) */
+  image?: string;
   /** routage du SW : /content/:key/:id ou /medias/:key */
   key?: string;
   id?: string | number;

@@ -21,6 +21,18 @@ export class FormatService {
   }
 
   /**
+   * Retire d'éventuelles balises HTML d'un texte (titres WordPress qui
+   * contiennent parfois <em>/<i>…). Préserve les espaces (dont l'insécable
+   * U+00A0 issu de &nbsp;), n'altère que les balises.
+   */
+  static stripTags(text: string): string {
+    if (!text) {
+      return '';
+    }
+    return text.replace(/<\/?[a-z][^>]*>/gi, '').trim();
+  }
+
+  /**
    * Cette methode se charge de transformer les données au format XML en JSON
    * @param xmlString Une chaine de charactère au format xml
    */

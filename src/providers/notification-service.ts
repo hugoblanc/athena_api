@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { from, of } from 'rxjs';
+import { FormatService } from '../helper/format/format.service';
 
 @Injectable()
 export class NotificationService {
@@ -49,8 +50,13 @@ export class NotificationService {
     key: string,
     id: string,
     conditions?: string[],
+    image?: string,
   ) {
     const messages = [];
+
+    // Le body peut contenir des balises HTML résiduelles (titres WordPress) :
+    // on les retire pour un rendu propre dans la notification.
+    const cleanBody = FormatService.stripTags(body);
 
     // En cas de condition null on ajoute quand même a condition initial d'abonnement au média
     if (conditions == null) {
@@ -61,13 +67,15 @@ export class NotificationService {
       const message = {
         notification: {
           title,
-          body,
+          body: cleanBody,
+          ...(image ? { imageUrl: image } : {}),
         },
         data: {
           title,
-          body,
+          body: cleanBody,
           key,
           id,
+          ...(image ? { image } : {}),
         },
         condition,
         android: {
