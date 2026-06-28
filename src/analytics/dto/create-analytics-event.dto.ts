@@ -35,6 +35,10 @@ export const ANALYTICS_REF_TYPES = [
   'screen',
   'feature',
   'session',
+  // Dimension dérivée CÔTÉ SERVEUR (classification du client à partir de
+  // referer + user-agent) : permet de mesurer l'app native sans instrumenter
+  // le mobile. Émis par ServerAnalyticsMiddleware uniquement.
+  'platform',
 ] as const;
 export type AnalyticsRefType = (typeof ANALYTICS_REF_TYPES)[number];
 
@@ -77,11 +81,26 @@ export const ANALYTICS_FEATURES = [
 
 export const ANALYTICS_SESSIONS = ['browser', 'installed'] as const;
 
-/** refId valides par dimension (refType ∈ {screen, feature, session}). */
+/**
+ * Plateformes déduites côté serveur (refType = `platform`). Vue unifiée
+ * cross-client : app native iOS/Android vs PWA Next.js vs ancienne webapp
+ * Angular vs reste (accès direct / inconnu).
+ */
+export const ANALYTICS_PLATFORMS = [
+  'android_app',
+  'ios_app',
+  'pwa',
+  'webapp',
+  'other',
+] as const;
+export type AnalyticsPlatform = (typeof ANALYTICS_PLATFORMS)[number];
+
+/** refId valides par dimension (refType ∈ {screen, feature, session, platform}). */
 export const ANALYTICS_DIMENSION_VALUES: Record<string, readonly string[]> = {
   screen: ANALYTICS_SCREENS,
   feature: ANALYTICS_FEATURES,
   session: ANALYTICS_SESSIONS,
+  platform: ANALYTICS_PLATFORMS,
 };
 
 /**

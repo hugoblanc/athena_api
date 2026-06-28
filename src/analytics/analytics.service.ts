@@ -21,10 +21,16 @@ export class AnalyticsService {
 
   /**
    * Incrémente le compteur agrégé du jour (UTC) pour la clé unique
-   * (event, refType, refId, ref ?? null, day). Aucune donnée personnelle stockée.
+   * (event, refType, refId, ref, day). Aucune donnée personnelle stockée.
+   *
+   * ⚠️ `ref` est normalisé à `''` (jamais `null`) : Prisma rejette un upsert dont
+   * une composante de clé unique composite vaut `null`, et côté Postgres les `NULL`
+   * sont traités comme distincts dans un index unique (donc le dédup ne marcherait
+   * pas). Les events sans canal d'origine (usage : screen/feature/session/play)
+   * utilisent donc `''` comme « pas de canal ».
    */
   async record(dto: CreateAnalyticsEventDto): Promise<void> {
-    const ref = dto.ref ?? null;
+    const ref = dto.ref ?? '';
 
     // Garde-fou cardinalité : pour les dimensions d'usage (screen/feature/session),
     // on n'enregistre que les refId connus. Drop silencieux sinon.
@@ -201,6 +207,9 @@ export class AnalyticsService {
     const screens: Record<string, number> = {};
     const features: Record<string, number> = {};
     const sessions: Record<string, number> = {};
+    // Dimension dérivée côté serveur (app native / PWA / webapp / other).
+    const platforms: Record<string, number> = {};
+    const platformsByDay = new Map<string, Record<string, number>>();
     const played = new Map<string, { refType: string; refId: string; count: number }>();
     const byDay = new Map<
       string,
@@ -208,6 +217,18 @@ export class AnalyticsService {
     >();
 
     for (const r of rows) {
+      // Les `session_start` serveur-side (refType=platform) sont comptés à part :
+      // ils ne doivent ni gonfler le bloc `sessions` (browser/installed) ni la
+      // série `byDay` (signal d'usage client de la PWA).
+      if (r.event === 'session_start' && r.refType === 'platform') {
+        const dayKey = r.day.toISOString().slice(0, 10);
+        platforms[r.refId] = (platforms[r.refId] ?? 0) + r.count;
+        const pd = platformsByDay.get(dayKey) ?? {};
+        pd[r.refId] = (pd[r.refId] ?? 0) + r.count;
+        platformsByDay.set(dayKey, pd);
+        continue;
+      }
+
       switch (r.event) {
         case 'screen_view':
           screens[r.refId] = (screens[r.refId] ?? 0) + r.count;
@@ -270,6 +291,12 @@ export class AnalyticsService {
             ? Math.round(((sessions['installed'] ?? 0) / sessionsTotal) * 1000) / 1000
             : 0,
       },
+      // Actifs/jour par plateforme (mesure serveur-side, somme sur la fenêtre).
+      // Comparaison app native vs PWA vs webapp au même endroit.
+      platforms: sortDesc(platforms),
+      platformsByDay: [...platformsByDay.entries()]
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .map(([day, v]) => ({ day, ...v })),
       byDay: [...byDay.entries()]
         .sort(([a], [b]) => (a < b ? -1 : 1))
         .map(([day, v]) => ({ day, ...v })),
