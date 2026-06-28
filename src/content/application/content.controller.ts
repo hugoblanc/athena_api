@@ -1,14 +1,18 @@
 import {
   Controller,
   Get,
+  HttpStatus,
   Logger,
   Param,
   ParseIntPipe,
   Post,
-  Query
+  Query,
+  Res
 } from '@nestjs/common';
+import { Response } from 'express';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Public } from '../../auth/infrastructure/decorators';
+import { ContentOgService } from '../og/content-og.service';
 import { RequestedPageValueType } from '../../core/page-number.value-type';
 import { ExtractSpeechForContentCommand } from './commands/extract-speech-for-content.command';
 import { GenerateMissingAudiosCommand } from './commands/generate-missing-audios.command';
@@ -29,7 +33,8 @@ export class ContentController {
   constructor(
     private contentService: ContentService,
     private readonly queryBus: QueryBus,
-    private readonly commandBus: CommandBus
+    private readonly commandBus: CommandBus,
+    private readonly contentOgService: ContentOgService
   ) { }
 
   @Get('/last')
@@ -52,6 +57,31 @@ export class ContentController {
   @Get('get-shareable-content/:key/:contentId')
   getShareableContent(@Param('key') key: string, @Param('contentId') contentId: string): Promise<ShareableContentResponse> {
     return this.queryBus.execute(new GetShareableContentQuery(key, contentId));
+  }
+
+  /**
+   * GET /content/:key/:contentId/og.png
+   * Image Open Graph (1200x630) brandée du contenu. Servie depuis le cache
+   * (volume) ou générée à la volée au premier accès (premier partage/crawl).
+   * Cache HTTP long côté CDN/navigateur.
+   */
+  @Get(':key/:contentId/og.png')
+  async getOgImage(
+    @Param('key') key: string,
+    @Param('contentId') contentId: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const png = await this.contentOgService.getOrGenerate(key, contentId);
+    if (!png) {
+      res.status(HttpStatus.NOT_FOUND).send('OG image not available');
+      return;
+    }
+    res.set({
+      'Content-Type': 'image/png',
+      'Cache-Control':
+        'public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400',
+    });
+    res.send(png);
   }
 
   @Get('get-audio-content-url-by-id/:id')

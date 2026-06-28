@@ -23,6 +23,12 @@ import { Image } from '../domain/image.entity';
 import { ContentFactoryBuilder } from './content-factory.builder';
 import { SpeechWavGeneratorService } from './speech-wav-generator.service';
 import { TextCheeriosFormatter } from './text-cheerios-formatter.service';
+import { ContentOgImageService } from '../og/content-og-image.service';
+import { ContentOgService } from '../og/content-og.service';
+import {
+  CONTENT_OG_STORAGE,
+  VolumeContentOgStorage,
+} from '../og/content-og-storage';
 
 @Module({
   imports: [
@@ -45,6 +51,9 @@ import { TextCheeriosFormatter } from './text-cheerios-formatter.service';
     ExtractSpeechForContentHandler,
     GenerateMissingAudiosHandler,
     AudioService,
+    ContentOgImageService,
+    ContentOgService,
+    { provide: CONTENT_OG_STORAGE, useClass: VolumeContentOgStorage },
     { provide: TextFormatter, useClass: TextCheeriosFormatter },
     { provide: SpeechGeneratorService, useClass: SpeechWavGeneratorService },
   ],
