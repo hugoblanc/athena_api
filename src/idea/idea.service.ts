@@ -155,6 +155,122 @@ export class IdeaService {
   }
 
   /**
+   * Rejoue une transaction de vote en cas de conflit attendu sous concurrence :
+   * - P2034 : write conflict / deadlock (sérialisation Postgres) ;
+   * - P2002 : deux créations concurrentes de la même ligne (course sur l'unique).
+   * Au retry, la transaction relit l'état réel et converge (no-op ou bascule).
+   */
+  private async runVoteTx(fn: () => Promise<void>, attempts = 3): Promise<void> {
+    for (let i = 0; ; i++) {
+      try {
+        await fn();
+        return;
+      } catch (e) {
+        const retryable =
+          e instanceof Prisma.PrismaClientKnownRequestError &&
+          (e.code === 'P2034' || e.code === 'P2002');
+        if (retryable && i < attempts - 1) {
+          this.logger.debug(`Conflit de vote (${e.code}), retry ${i + 1}`);
+          continue;
+        }
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Pose le vote d'un votant IDENTIFIÉ à `value` (+1 ou -1) de façon atomique.
+   * Lecture + écriture dans UNE transaction sérialisée : le delta du compteur
+   * est calculé sur l'état réellement lu DANS la transaction (pas de divergence
+   * sous double-clic / requêtes concurrentes).
+   */
+  private async applyVote(
+    ideaId: number,
+    voter: VoterIdentity,
+    where:
+      | { ideaId: number; userId: number }
+      | { ideaId: number; anonKey: string },
+    value: 1 | -1,
+  ): Promise<void> {
+    await this.runVoteTx(() =>
+      this.prisma.$transaction(
+        async (tx) => {
+          const existing = await tx.ideaVote.findFirst({
+            where,
+            select: { id: true, value: true },
+          });
+
+          if (!existing) {
+            await tx.ideaVote.create({
+              data: {
+                ideaId,
+                userId: voter.userId ?? null,
+                anonKey: voter.userId != null ? null : voter.anonKey,
+                value,
+              },
+            });
+            await tx.idea.update({
+              where: { id: ideaId },
+              data: { voteCount: { increment: value } },
+            });
+            return;
+          }
+
+          if (existing.value === value) {
+            // Déjà dans la bonne direction → no-op.
+            return;
+          }
+
+          // Bascule : delta = nouvelle valeur - ancienne (ex. +1-(-1)=+2, -1-1=-2).
+          const delta = value - existing.value;
+          await tx.ideaVote.update({
+            where: { id: existing.id },
+            data: { value },
+          });
+          await tx.idea.update({
+            where: { id: ideaId },
+            data: { voteCount: { increment: delta } },
+          });
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      ),
+    );
+  }
+
+  /**
+   * Retire le vote d'un votant identifié S'IL est dans la direction `value`.
+   * Lecture + suppression + maj compteur dans une transaction sérialisée ;
+   * le compteur est rétabli du montant réellement supprimé (delta = -value).
+   */
+  private async removeVote(
+    ideaId: number,
+    where:
+      | { ideaId: number; userId: number }
+      | { ideaId: number; anonKey: string },
+    value: 1 | -1,
+  ): Promise<void> {
+    await this.runVoteTx(() =>
+      this.prisma.$transaction(
+        async (tx) => {
+          const existing = await tx.ideaVote.findFirst({
+            where: { ...where, value },
+            select: { id: true },
+          });
+          if (!existing) {
+            return;
+          }
+          await tx.ideaVote.delete({ where: { id: existing.id } });
+          await tx.idea.update({
+            where: { id: ideaId },
+            data: { voteCount: { increment: -value } },
+          });
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      ),
+    );
+  }
+
+  /**
    * Enregistre un vote POUR (clap, +1) avec dédup serveur.
    * - pas de vote existant → crée value=+1, voteCount += 1.
    * - vote CONTRE existant (value=-1) → bascule en +1, voteCount += 2.
@@ -167,6 +283,7 @@ export class IdeaService {
 
     // Sans identité (ancien client mobile, invité sans clé) : comportement legacy
     // — on incrémente sans dédup serveur, l'anti-double-vote reste côté client.
+    // Pas de lecture préalable ici → pas de risque de divergence du compteur.
     if (!where) {
       await this.prisma.$transaction([
         this.prisma.ideaVote.create({
@@ -180,42 +297,7 @@ export class IdeaService {
       return this.getOne(ideaId);
     }
 
-    const existing = await this.prisma.ideaVote.findFirst({
-      where,
-      select: { id: true, value: true },
-    });
-
-    if (!existing) {
-      await this.prisma.$transaction([
-        this.prisma.ideaVote.create({
-          data: {
-            ideaId,
-            userId: voter.userId ?? null,
-            anonKey: voter.userId != null ? null : voter.anonKey,
-            value: 1,
-          },
-        }),
-        this.prisma.idea.update({
-          where: { id: ideaId },
-          data: { voteCount: { increment: 1 } },
-        }),
-      ]);
-    } else if (existing.value === -1) {
-      // Bascule contre → pour : +1 (retrait du -1) +1 (ajout du +1) = +2.
-      await this.prisma.$transaction([
-        this.prisma.ideaVote.update({
-          where: { id: existing.id },
-          data: { value: 1 },
-        }),
-        this.prisma.idea.update({
-          where: { id: ideaId },
-          data: { voteCount: { increment: 2 } },
-        }),
-      ]);
-    } else {
-      this.logger.debug(`Vote POUR déjà enregistré pour l'idée ${ideaId}`);
-    }
-
+    await this.applyVote(ideaId, voter, where, 1);
     return this.getOne(ideaId);
   }
 
@@ -230,18 +312,7 @@ export class IdeaService {
       throw new BadRequestException('Identité de votant manquante');
     }
 
-    const deleted = await this.prisma.ideaVote.deleteMany({
-      where: { ...where, value: 1 },
-    });
-    if (deleted.count > 0) {
-      await this.prisma.idea.update({
-        where: { id: ideaId },
-        data: { voteCount: { decrement: 1 } },
-      });
-    } else {
-      this.logger.debug(`Aucun vote POUR à retirer pour l'idée ${ideaId}`);
-    }
-
+    await this.removeVote(ideaId, where, 1);
     return this.getOne(ideaId);
   }
 
@@ -258,37 +329,12 @@ export class IdeaService {
     }
     await this.assertIdeaExists(ideaId);
 
-    const existing = await this.prisma.ideaVote.findFirst({
-      where: { ideaId, userId: voter.userId },
-      select: { id: true, value: true },
-    });
-
-    if (!existing) {
-      await this.prisma.$transaction([
-        this.prisma.ideaVote.create({
-          data: { ideaId, userId: voter.userId, anonKey: null, value: -1 },
-        }),
-        this.prisma.idea.update({
-          where: { id: ideaId },
-          data: { voteCount: { decrement: 1 } },
-        }),
-      ]);
-    } else if (existing.value === 1) {
-      // Bascule pour → contre : -1 (retrait du +1) -1 (ajout du -1) = -2.
-      await this.prisma.$transaction([
-        this.prisma.ideaVote.update({
-          where: { id: existing.id },
-          data: { value: -1 },
-        }),
-        this.prisma.idea.update({
-          where: { id: ideaId },
-          data: { voteCount: { decrement: 2 } },
-        }),
-      ]);
-    } else {
-      this.logger.debug(`Vote CONTRE déjà enregistré pour l'idée ${ideaId}`);
-    }
-
+    await this.applyVote(
+      ideaId,
+      voter,
+      { ideaId, userId: voter.userId },
+      -1,
+    );
     return this.getOne(ideaId);
   }
 
@@ -301,18 +347,7 @@ export class IdeaService {
       throw new UnauthorizedException('Connexion requise pour voter contre');
     }
 
-    const deleted = await this.prisma.ideaVote.deleteMany({
-      where: { ideaId, userId: voter.userId, value: -1 },
-    });
-    if (deleted.count > 0) {
-      await this.prisma.idea.update({
-        where: { id: ideaId },
-        data: { voteCount: { increment: 1 } },
-      });
-    } else {
-      this.logger.debug(`Aucun vote CONTRE à retirer pour l'idée ${ideaId}`);
-    }
-
+    await this.removeVote(ideaId, { ideaId, userId: voter.userId }, -1);
     return this.getOne(ideaId);
   }
 
