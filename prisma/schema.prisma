@@ -250,7 +250,7 @@ model Idea {
   id                Int        @id @default(autoincrement())
   title             String     @db.VarChar(200)
   body              String     @db.Text
-  /// "feature" | "bug" (ex-label GitHub)
+  /// "feature" | "media" | "bug" (ex-label GitHub)
   type              String     @default("feature") @db.VarChar(20)
   /// "open" | "planned" | "in_progress" | "done" | "rejected"
   status            String     @default("open") @db.VarChar(20)

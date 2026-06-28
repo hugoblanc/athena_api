@@ -11,7 +11,7 @@ import { Pool } from 'pg';
  * - Idempotent : upsert sur `githubIssueNumber`, relançable sans doublon.
  * - voteCount initial = réactions 👍 (ou nb de commentaires en fallback, qui
  *   correspond à l'ancien compteur « clap = commentaire +1 »).
- * - type = label `bug` si présent, sinon `feature`.
+ * - type = label `bug` > `media` > `feature` (cf. typeOf).
  * - status = `done` si l'issue est close, sinon `open`.
  *
  * Lancer : npx ts-node -r tsconfig-paths/register scripts/import-github-issues.ts
@@ -24,7 +24,7 @@ const TOKEN = process.env.ATHENA_GITHUB_TOKEN;
 interface GhLabel {
   name: string;
 }
-interface GhIssue {
+export interface GhIssue {
   number: number;
   title: string;
   body: string | null;
@@ -62,7 +62,7 @@ function statusOf(issue: GhIssue): string {
   return refused ? 'rejected' : 'done';
 }
 
-async function fetchAllIssues(): Promise<GhIssue[]> {
+export async function fetchAllIssues(): Promise<GhIssue[]> {
   const all: GhIssue[] = [];
   for (let page = 1; page <= 20; page++) {
     const url = `https://api.github.com/repos/${REPO}/issues?state=all&per_page=100&page=${page}`;
@@ -84,9 +84,17 @@ async function fetchAllIssues(): Promise<GhIssue[]> {
   return all.filter((i) => !i.pull_request);
 }
 
-function typeOf(issue: GhIssue): string {
+/**
+ * Mappe les labels GitHub → type d'idée (un seul `type` en BDD).
+ * Priorité : `bug` > `media` > `feature` (défaut). Les demandes d'ajout de
+ * média (label `media`, ~moitié des issues) doivent être distinguées des
+ * idées de fonctionnalité, sinon l'onglet « Média » des clients reste vide.
+ */
+export function typeOf(issue: GhIssue): string {
   const names = issue.labels.map((l) => l.name.toLowerCase());
-  return names.includes('bug') ? 'bug' : 'feature';
+  if (names.includes('bug')) return 'bug';
+  if (names.includes('media')) return 'media';
+  return 'feature';
 }
 
 async function main() {
@@ -140,4 +148,8 @@ async function main() {
   }
 }
 
-main();
+// Auto-exécution uniquement en lancement direct (pas si importé par un autre
+// script, ex. recategorize-idea-types.ts qui réutilise typeOf/fetchAllIssues).
+if (require.main === module) {
+  main();
+}

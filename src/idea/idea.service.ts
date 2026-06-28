@@ -23,7 +23,7 @@ export class IdeaService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Liste les idées, optionnellement filtrées par type (feature|bug).
+   * Liste les idées, optionnellement filtrées par type (feature|media|bug).
    * Cap large (la roadmap est une liste finie ~quelques centaines d'items) :
    * on renvoie tout, le regroupement/tri se fait côté front.
    */

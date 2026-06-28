@@ -36,7 +36,7 @@ export class IdeaController {
 
   @Get()
   list(@Query('labels') labels?: string) {
-    // `labels` (compat GitHub) = type unique en pratique (feature|bug).
+    // `labels` (compat GitHub) = type unique en pratique (feature|media|bug).
     return this.ideaService.list(labels);
   }
 
