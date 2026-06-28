@@ -1,4 +1,4 @@
-import { XmlEntities } from 'html-entities';
+import { AllHtmlEntities } from 'html-entities';
 import { INotifiedObject } from './inotified-object';
 import { MetaMedia } from '../meta-media/meta-media.entity';
 import { NotificationService } from '../providers/notification-service';
@@ -49,11 +49,12 @@ export class Post implements INotifiedObject {
     this.title = new Content(input.title);
     this.embedded = new Embedded(input._embedded);
 
-    // On converties les titre l'article en format text classique plutot que HTML
-    const entities = new XmlEntities();
+    // On convertit le titre de l'article en texte classique plutôt qu'en HTML.
+    // AllHtmlEntities décode TOUTES les entités HTML (&nbsp;, &rsquo;, &#8217;…),
+    // contrairement à XmlEntities qui ne gérait que les 5 entités XML et laissait
+    // passer &nbsp;/&rsquo; bruts dans les notifications et l'affichage.
+    const entities = new AllHtmlEntities();
     this.title.rendered = entities.decode(this.getTitle());
-    // Pour une raison qui m'échappe l'apostrophe ne fonctionne toujours pas
-    this.title.rendered = this.title.rendered.replace('&rsquo;', "'");
 
     // Image part
     if (

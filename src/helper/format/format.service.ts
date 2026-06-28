@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { XmlEntities } from 'html-entities';
+import { AllHtmlEntities } from 'html-entities';
 import { bindNodeCallback, Observable } from 'rxjs';
 import { parseString } from 'xml2js';
 
@@ -14,13 +14,10 @@ export class FormatService {
       return '';
     }
 
-    const entities = new XmlEntities();
-    // On converties le text  en format text classique plutot que HTML
-    let htmlDecoded = entities.decode(htmlEncoded);
-    // Pour une raison qui m'échappe l'apostrophe ne fonctionne toujours pas
-    htmlDecoded = htmlDecoded.replace('&rsquo;', "'");
-
-    return htmlDecoded;
+    // AllHtmlEntities décode toutes les entités HTML (&nbsp;, &rsquo;, &#8217;…),
+    // pas seulement les 5 entités XML comme XmlEntities.
+    const entities = new AllHtmlEntities();
+    return entities.decode(htmlEncoded);
   }
 
   /**
