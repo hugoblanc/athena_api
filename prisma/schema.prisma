@@ -254,7 +254,8 @@ model Idea {
   type              String     @default("feature") @db.VarChar(20)
   /// "open" | "planned" | "in_progress" | "done" | "rejected"
   status            String     @default("open") @db.VarChar(20)
-  /// Compteur dénormalisé = COUNT(IdeaVote). Maintenu à l'écriture.
+  /// Compteur dénormalisé = SOMME NETTE des IdeaVote.value (+1 pour, -1 contre).
+  /// Maintenu à l'écriture.
   voteCount         Int        @default(0)
   authorId          Int?
   /// Numéro de l'issue GitHub d'origine (import / traçabilité). null = idée native BDD.
@@ -273,15 +274,19 @@ model Idea {
   @@map("idea")
 }
 
-/// Un vote ("clap") sur une idée. Dédup serveur :
+/// Un vote sur une idée. Dédup serveur (1 seule ligne par votant) :
 /// - utilisateur connecté → unique (ideaId, userId)
 /// - invité → unique (ideaId, anonKey) (clé anonyme générée côté client)
 /// (Postgres autorise plusieurs NULL dans un index unique : les deux modes cohabitent.)
+/// La direction du vote est portée par `value` : +1 = pour (clap, anonyme possible),
+/// -1 = contre (réservé aux comptes connectés, garde-fou anti-sabotage).
 model IdeaVote {
   id        Int      @id @default(autoincrement())
   ideaId    Int
   userId    Int?
   anonKey   String?  @db.VarChar(64)
+  /// +1 = pour, -1 = contre.
+  value     Int      @default(1)
   createdAt DateTime @default(now()) @db.Timestamp(6)
 
   // Relations

@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../law-proposal/infrastructure/prisma.service';
 import {
@@ -121,10 +127,24 @@ export class IdeaService {
   }
 
   /**
-   * Enregistre un vote (clap) avec dédup serveur. Si le votant a déjà voté
-   * (contrainte unique), on ignore silencieusement et on renvoie l'état courant.
+   * Where "plat" identifiant la ligne de vote d'un votant (user OU clé anonyme).
+   * null si aucune identité (ancien client mobile, invité sans clé).
    */
-  async vote(ideaId: number, voter: VoterIdentity): Promise<IssueDto> {
+  private voterWhere(
+    ideaId: number,
+    voter: VoterIdentity,
+  ): { ideaId: number; userId: number } | { ideaId: number; anonKey: string } | null {
+    if (voter.userId != null) {
+      return { ideaId, userId: voter.userId };
+    }
+    if (voter.anonKey) {
+      return { ideaId, anonKey: voter.anonKey };
+    }
+    return null;
+  }
+
+  /** Vérifie l'existence de l'idée (404 sinon). */
+  private async assertIdeaExists(ideaId: number): Promise<void> {
     const exists = await this.prisma.idea.findUnique({
       where: { id: ideaId },
       select: { id: true },
@@ -132,17 +152,47 @@ export class IdeaService {
     if (!exists) {
       throw new NotFoundException(`Idée ${ideaId} introuvable`);
     }
+  }
 
-    // Dédup serveur seulement si le votant est identifié (user OU clé anonyme).
+  /**
+   * Enregistre un vote POUR (clap, +1) avec dédup serveur.
+   * - pas de vote existant → crée value=+1, voteCount += 1.
+   * - vote CONTRE existant (value=-1) → bascule en +1, voteCount += 2.
+   * - vote POUR déjà présent → no-op.
+   */
+  async vote(ideaId: number, voter: VoterIdentity): Promise<IssueDto> {
+    await this.assertIdeaExists(ideaId);
+
+    const where = this.voterWhere(ideaId, voter);
+
     // Sans identité (ancien client mobile, invité sans clé) : comportement legacy
-    // — on incrémente quand même, l'anti-double-vote reste côté client (localStorage).
-    try {
+    // — on incrémente sans dédup serveur, l'anti-double-vote reste côté client.
+    if (!where) {
+      await this.prisma.$transaction([
+        this.prisma.ideaVote.create({
+          data: { ideaId, userId: null, anonKey: null, value: 1 },
+        }),
+        this.prisma.idea.update({
+          where: { id: ideaId },
+          data: { voteCount: { increment: 1 } },
+        }),
+      ]);
+      return this.getOne(ideaId);
+    }
+
+    const existing = await this.prisma.ideaVote.findFirst({
+      where,
+      select: { id: true, value: true },
+    });
+
+    if (!existing) {
       await this.prisma.$transaction([
         this.prisma.ideaVote.create({
           data: {
             ideaId,
             userId: voter.userId ?? null,
             anonKey: voter.userId != null ? null : voter.anonKey,
+            value: 1,
           },
         }),
         this.prisma.idea.update({
@@ -150,55 +200,117 @@ export class IdeaService {
           data: { voteCount: { increment: 1 } },
         }),
       ]);
-    } catch (e) {
-      // P2002 = violation de contrainte unique → déjà voté, on ne fait rien.
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2002'
-      ) {
-        this.logger.debug(`Vote déjà enregistré pour l'idée ${ideaId}`);
-      } else {
-        throw e;
-      }
+    } else if (existing.value === -1) {
+      // Bascule contre → pour : +1 (retrait du -1) +1 (ajout du +1) = +2.
+      await this.prisma.$transaction([
+        this.prisma.ideaVote.update({
+          where: { id: existing.id },
+          data: { value: 1 },
+        }),
+        this.prisma.idea.update({
+          where: { id: ideaId },
+          data: { voteCount: { increment: 2 } },
+        }),
+      ]);
+    } else {
+      this.logger.debug(`Vote POUR déjà enregistré pour l'idée ${ideaId}`);
     }
 
     return this.getOne(ideaId);
   }
 
   /**
-   * Retire le vote d'un votant identifié (toggle "unlike"). Supprime sa ligne
-   * IdeaVote et décrémente le compteur. No-op si aucun vote correspondant.
+   * Retire le vote POUR d'un votant identifié (toggle "unlike"). Ne touche
+   * qu'aux lignes value=+1 (un vote CONTRE se retire via undownvote).
+   * No-op si aucun vote POUR correspondant.
    */
   async unvote(ideaId: number, voter: VoterIdentity): Promise<IssueDto> {
-    const where =
-      voter.userId != null
-        ? { ideaId_userId: { ideaId, userId: voter.userId } }
-        : voter.anonKey
-          ? { ideaId_anonKey: { ideaId, anonKey: voter.anonKey } }
-          : null;
-
+    const where = this.voterWhere(ideaId, voter);
     if (!where) {
       throw new BadRequestException('Identité de votant manquante');
     }
 
-    try {
+    const deleted = await this.prisma.ideaVote.deleteMany({
+      where: { ...where, value: 1 },
+    });
+    if (deleted.count > 0) {
+      await this.prisma.idea.update({
+        where: { id: ideaId },
+        data: { voteCount: { decrement: 1 } },
+      });
+    } else {
+      this.logger.debug(`Aucun vote POUR à retirer pour l'idée ${ideaId}`);
+    }
+
+    return this.getOne(ideaId);
+  }
+
+  /**
+   * Enregistre un vote CONTRE (-1). RÉSERVÉ aux comptes connectés (garde-fou
+   * anti-sabotage, le clap étant anonyme).
+   * - pas de vote existant → crée value=-1, voteCount -= 1.
+   * - vote POUR existant (value=+1) → bascule en -1, voteCount -= 2.
+   * - vote CONTRE déjà présent → no-op.
+   */
+  async downvote(ideaId: number, voter: VoterIdentity): Promise<IssueDto> {
+    if (voter.userId == null) {
+      throw new UnauthorizedException('Connexion requise pour voter contre');
+    }
+    await this.assertIdeaExists(ideaId);
+
+    const existing = await this.prisma.ideaVote.findFirst({
+      where: { ideaId, userId: voter.userId },
+      select: { id: true, value: true },
+    });
+
+    if (!existing) {
       await this.prisma.$transaction([
-        this.prisma.ideaVote.delete({ where }),
+        this.prisma.ideaVote.create({
+          data: { ideaId, userId: voter.userId, anonKey: null, value: -1 },
+        }),
         this.prisma.idea.update({
           where: { id: ideaId },
           data: { voteCount: { decrement: 1 } },
         }),
       ]);
-    } catch (e) {
-      // P2025 = ligne absente → pas de vote à retirer, on ignore.
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2025'
-      ) {
-        this.logger.debug(`Aucun vote à retirer pour l'idée ${ideaId}`);
-      } else {
-        throw e;
-      }
+    } else if (existing.value === 1) {
+      // Bascule pour → contre : -1 (retrait du +1) -1 (ajout du -1) = -2.
+      await this.prisma.$transaction([
+        this.prisma.ideaVote.update({
+          where: { id: existing.id },
+          data: { value: -1 },
+        }),
+        this.prisma.idea.update({
+          where: { id: ideaId },
+          data: { voteCount: { decrement: 2 } },
+        }),
+      ]);
+    } else {
+      this.logger.debug(`Vote CONTRE déjà enregistré pour l'idée ${ideaId}`);
+    }
+
+    return this.getOne(ideaId);
+  }
+
+  /**
+   * Retire le vote CONTRE d'un votant connecté (toggle). Ne touche qu'aux
+   * lignes value=-1. No-op si aucun vote CONTRE correspondant.
+   */
+  async undownvote(ideaId: number, voter: VoterIdentity): Promise<IssueDto> {
+    if (voter.userId == null) {
+      throw new UnauthorizedException('Connexion requise pour voter contre');
+    }
+
+    const deleted = await this.prisma.ideaVote.deleteMany({
+      where: { ideaId, userId: voter.userId, value: -1 },
+    });
+    if (deleted.count > 0) {
+      await this.prisma.idea.update({
+        where: { id: ideaId },
+        data: { voteCount: { increment: 1 } },
+      });
+    } else {
+      this.logger.debug(`Aucun vote CONTRE à retirer pour l'idée ${ideaId}`);
     }
 
     return this.getOne(ideaId);

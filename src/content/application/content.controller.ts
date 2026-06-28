@@ -17,6 +17,7 @@ import { RequestedPageValueType } from '../../core/page-number.value-type';
 import { ExtractSpeechForContentCommand } from './commands/extract-speech-for-content.command';
 import { GenerateMissingAudiosCommand } from './commands/generate-missing-audios.command';
 import { ContentService } from './content.service';
+import { RssService } from './rss.service';
 import { ShareableContentResponse } from './dto/shareable-content.dto';
 import { GetAudioContentUrlByIdQuery } from './queries/get-audio-content-url-by-id/get-audio-content-url-by-id.query';
 import { GetLastContentPaginatedQuery } from './queries/get-last-content-paginated/get-last-content-paginated.query';
@@ -34,7 +35,8 @@ export class ContentController {
     private contentService: ContentService,
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
-    private readonly contentOgService: ContentOgService
+    private readonly contentOgService: ContentOgService,
+    private readonly rssService: RssService
   ) { }
 
   @Get('/last')
@@ -53,6 +55,25 @@ export class ContentController {
     );
   }
 
+
+  /**
+   * GET /content/rss?medias=key1,key2
+   * Flux RSS 2.0 des ~30 derniers contenus (tous médias si `medias` absent,
+   * sinon filtrés par metaMediaKeys). À brancher dans un lecteur RSS tiers.
+   * ⚠️ Déclaré AVANT `/:id` (sinon capté par la route paramétrée).
+   */
+  @Get('/rss')
+  async getRss(
+    @Res() res: Response,
+    @Query('medias') medias?: string,
+  ): Promise<void> {
+    const xml = await this.rssService.getFeed(medias);
+    res.set({
+      'Content-Type': 'application/rss+xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=600, s-maxage=600',
+    });
+    res.send(xml);
+  }
 
   @Get('get-shareable-content/:key/:contentId')
   getShareableContent(@Param('key') key: string, @Param('contentId') contentId: string): Promise<ShareableContentResponse> {

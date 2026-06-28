@@ -9,6 +9,7 @@ import { ExtractSpeechForContentHandler } from '../application/commands/extract-
 import { GenerateMissingAudiosHandler } from '../application/commands/generate-missing-audios.handler';
 import { ContentController } from '../application/content.controller';
 import { ContentService } from '../application/content.service';
+import { RssService } from '../application/rss.service';
 import { AudioService } from '../application/events/audio.service';
 import { SpeechGeneratorService } from '../application/providers/speech-generator.service';
 import { TextFormatter } from '../application/providers/text-formatter.service';
@@ -42,6 +43,7 @@ import {
   controllers: [ContentController],
   providers: [
     ContentService,
+    RssService,
     YoutubeService,
     ContentFactoryBuilder,
     GetLastContentPaginatedHandler,

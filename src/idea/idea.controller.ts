@@ -79,6 +79,23 @@ export class IdeaController {
     return this.ideaService.unvote(id, { userId: user?.id, anonKey });
   }
 
+  /**
+   * Vote CONTRE une idée. Réservé aux comptes connectés (garde-fou anti-sabotage,
+   * le clap étant anonyme) : le service lève 401 sans utilisateur identifié.
+   */
+  @Post(':id/downvote')
+  downvote(@Param('id', ParseIntPipe) id: number, @CurrentUser() user?: User) {
+    return this.ideaService.downvote(id, { userId: user?.id });
+  }
+
+  @Delete(':id/downvote')
+  undownvote(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user?: User,
+  ) {
+    return this.ideaService.undownvote(id, { userId: user?.id });
+  }
+
   @Get(':id/comments')
   listComments(@Param('id', ParseIntPipe) id: number) {
     return this.ideaService.getComments(id);
