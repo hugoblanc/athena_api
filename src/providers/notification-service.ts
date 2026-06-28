@@ -85,6 +85,16 @@ export class NotificationService {
           headers: {
             'apns-priority': '10',
           },
+          // iOS rich notification : `mutableContent` (→ "mutable-content": 1)
+          // réveille la Notification Service Extension de l'app, et
+          // `fcmOptions.imageUrl` fournit l'image à attacher. Sans ces deux
+          // champs + une NSE côté app, iOS n'affiche que le texte.
+          ...(image
+            ? {
+                payload: { aps: { mutableContent: true } },
+                fcmOptions: { imageUrl: image },
+              }
+            : {}),
         },
       };
       messages.push(message);
