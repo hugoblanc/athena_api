@@ -30,8 +30,13 @@ export class RequestLoggerMiddleware implements NestMiddleware {
       const ms = Date.now() - start;
       const ua =
         (req.headers['user-agent'] as string | undefined)?.slice(0, 90) ?? '-';
+      // origin + referer : indispensables pour comprendre la classification
+      // plateforme (l'iOS natif s'identifie par `Origin: capacitor://localhost`).
+      const origin = (req.headers['origin'] as string | undefined) ?? '-';
+      const referer =
+        (req.headers['referer'] as string | undefined)?.slice(0, 60) ?? '-';
       this.logger.log(
-        `${country} ${req.method} ${req.originalUrl} ${res.statusCode} ${ms}ms ip=${ip} ua="${ua}"`,
+        `${country} ${req.method} ${req.originalUrl} ${res.statusCode} ${ms}ms ip=${ip} org="${origin}" ref="${referer}" ua="${ua}"`,
       );
     });
 

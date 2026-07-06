@@ -5,21 +5,44 @@ import { AnalyticsPlatform } from './dto/create-analytics-event.dto';
 const BOT_UA =
   /bot\b|crawler|spider|facebookexternalhit|whatsapp|telegram|slackbot|discordbot|linkedinbot|bingbot|googlebot|duckduckbot|yandexbot|applebot|preview|headlesschrome|python|curl|axios|go-http|okhttp|scrapy|wget|\bnode\b/i;
 
+/** UA d'un terminal mobile (natif ou navigateur). */
+const MOBILE_UA =
+  /android|iphone|ipad|ipod|iemobile|blackberry|opera mini|windows phone|mobile safari/i;
+
+/** Une origine (scheme://host) sert-elle l'app native Capacitor/Ionic ? */
+function isNativeOrigin(value: string): boolean {
+  return (
+    value.startsWith('capacitor://') ||
+    value.startsWith('ionic://') ||
+    value.startsWith('https://localhost') ||
+    value.startsWith('http://localhost')
+  );
+}
+
 /**
- * Déduit la plateforme cliente d'une requête API à partir du `referer` et du
- * `user-agent` — SANS aucune instrumentation côté client.
+ * Déduit la plateforme cliente d'une requête API à partir des en-têtes `origin`
+ * et `referer` et du `user-agent` — SANS aucune instrumentation côté client.
  *
- * - App native Capacitor/Ionic : sert son origine en `https://localhost`
- *   (Android) ou `capacitor://localhost` / `ionic://localhost` (iOS). Fallback :
- *   UA WebView `; wv)` quand le referer est absent.
- * - PWA Next.js : referer sur `athena-app.xyz`.
- * - Ancienne webapp Angular : referer sur `webapp.athena-app.fr`.
+ * Pourquoi `origin` ET `referer` : le WebView iOS (WKWebView) envoie souvent
+ * `Origin: capacitor://localhost` mais AUCUN `Referer` (contrairement à Android
+ * `https://localhost`). Ne lire que le referer faisait tomber tout l'iOS natif
+ * dans « other ». On regarde donc les deux.
  *
- * Retourne `null` pour les bots / SSR / outils (à ne pas compter comme usage).
+ * - App native Capacitor/Ionic : origine `https://localhost` (Android),
+ *   `capacitor://localhost` (iOS), ou UA WebView `; wv)` (Android). iOS vs
+ *   Android tranché par l'UA (iphone/ipad/ipod).
+ * - `pwa` : origine/referer sur `athena-app.xyz`. `webapp` : `webapp.athena-app.fr`.
+ * - Sinon (vrai navigateur sur une origine non connue, ou accès direct) :
+ *   `mobile_web` vs `desktop_web` selon l'UA.
+ *
+ * Retourne `null` pour les bots / SSR / outils (à ne pas compter comme usage),
+ * et `other` seulement pour un résiduel non classable (UA présente mais ni
+ * mobile ni desktop identifiable).
  */
 export function classifyPlatform(
   referer: string,
   userAgent: string,
+  origin = '',
 ): AnalyticsPlatform | null {
   const ua = userAgent.toLowerCase();
   if (!ua || BOT_UA.test(ua)) {
@@ -27,23 +50,32 @@ export function classifyPlatform(
   }
 
   const ref = referer.toLowerCase();
-  const isNativeOrigin =
-    ref.startsWith('https://localhost') ||
-    ref.startsWith('capacitor://') ||
-    ref.startsWith('ionic://');
+  const org = origin.toLowerCase();
 
-  if (isNativeOrigin || ua.includes('; wv)')) {
+  if (isNativeOrigin(org) || isNativeOrigin(ref) || ua.includes('; wv)')) {
     const isIos =
-      ua.includes('iphone') || ua.includes('ipad') || ua.includes('ios');
-    // Une WebView `; wv)` est Android ; iOS n'expose pas `wv`.
-    return isIos && !ua.includes('; wv)') ? 'ios_app' : 'android_app';
+      ua.includes('iphone') || ua.includes('ipad') || ua.includes('ipod');
+    return isIos ? 'ios_app' : 'android_app';
   }
 
-  if (ref.includes('athena-app.xyz')) {
+  if (org.includes('athena-app.xyz') || ref.includes('athena-app.xyz')) {
     return 'pwa';
   }
-  if (ref.includes('webapp.athena-app.fr')) {
+  if (
+    org.includes('webapp.athena-app.fr') ||
+    ref.includes('webapp.athena-app.fr')
+  ) {
     return 'webapp';
+  }
+
+  // Vrai navigateur sur une origine non rattachée (accès direct à l'API, lien
+  // partagé ouvert hors app, moteur de recherche...). On garde au moins l'axe
+  // mobile/desktop plutôt qu'un fourre-tout « other ».
+  if (MOBILE_UA.test(ua)) {
+    return 'mobile_web';
+  }
+  if (ua.includes('mozilla') || ua.includes('webkit') || ua.includes('gecko')) {
+    return 'desktop_web';
   }
   return 'other';
 }
