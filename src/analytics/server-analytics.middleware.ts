@@ -40,12 +40,13 @@ export class ServerAnalyticsMiddleware implements NestMiddleware {
     // Capturer les en-têtes maintenant ; comptabiliser après la réponse pour ne
     // jamais ajouter de latence au parcours utilisateur.
     const referer = (req.headers['referer'] as string | undefined) ?? '';
+    const origin = (req.headers['origin'] as string | undefined) ?? '';
     const ua = (req.headers['user-agent'] as string | undefined) ?? '';
     const ip = resolveClientIp(req);
 
     res.on('finish', () => {
       try {
-        const platform = classifyPlatform(referer, ua);
+        const platform = classifyPlatform(referer, ua, origin);
         if (!platform) {
           return;
         }

@@ -83,14 +83,21 @@ export const ANALYTICS_SESSIONS = ['browser', 'installed'] as const;
 
 /**
  * Plateformes déduites côté serveur (refType = `platform`). Vue unifiée
- * cross-client : app native iOS/Android vs PWA Next.js vs ancienne webapp
- * Angular vs reste (accès direct / inconnu).
+ * cross-client. On distingue :
+ * - app native `android_app` / `ios_app` (Capacitor : origine `https://localhost`
+ *   ou `capacitor://localhost`, UA WebView) ;
+ * - `pwa` (Next.js, athena-app.xyz) / `webapp` (ancienne Angular) ;
+ * - navigateur non rattaché à une de nos origines connues : `mobile_web` vs
+ *   `desktop_web` (accès direct à l'API, lien partagé ouvert hors app, etc.) ;
+ * - `other` : résiduel non classable (ni origine, ni UA exploitable).
  */
 export const ANALYTICS_PLATFORMS = [
   'android_app',
   'ios_app',
   'pwa',
   'webapp',
+  'mobile_web',
+  'desktop_web',
   'other',
 ] as const;
 export type AnalyticsPlatform = (typeof ANALYTICS_PLATFORMS)[number];
