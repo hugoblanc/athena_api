@@ -35,6 +35,10 @@ export class Content {
   @Column({ type: 'text', nullable: true })
   plainText: string;
 
+  /** Nombre de mots du corps (calculé à l'ingestion) → temps de lecture (#158). */
+  @Column({ type: 'int', nullable: true })
+  wordCount: number | null;
+
   @Column({ type: 'timestamp' })
   publishedAt: Date;
 

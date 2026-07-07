@@ -23,6 +23,9 @@ model Content {
   contentType       content_contenttype_enum
   description       String
   plainText         String?
+  /// Nombre de mots du corps (calculé à l'ingestion) → temps de lecture (#158).
+  /// null pour les vidéos ou les contenus sans texte.
+  wordCount         Int?
   publishedAt       DateTime                 @db.Timestamp(6)
   metaMediaId       Int?
   imageId           Int?                     @unique(map: "REL_cd03caa6e34f3c76d9f1039353")

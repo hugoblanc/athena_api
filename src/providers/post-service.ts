@@ -77,11 +77,24 @@ export class PostService {
       title: this.htmlEntities.decode(post.title.rendered),
       description,
       plainText,
+      wordCount: PostService.countWords(plainText),
       publishedAt: new Date(post.date),
       image: post.image,
       metaMedia: post.metaMedia,
     });
     return content;
+  }
+
+  /**
+   * Nombre de mots d'un texte brut (pour le temps de lecture #158).
+   * `null` si le texte est vide/absent (ex. contenu sans corps).
+   */
+  private static countWords(text: string | null | undefined): number | null {
+    const trimmed = text?.trim();
+    if (!trimmed) {
+      return null;
+    }
+    return trimmed.split(/\s+/).length;
   }
 
 }

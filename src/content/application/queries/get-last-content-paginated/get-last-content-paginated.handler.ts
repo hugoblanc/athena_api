@@ -43,6 +43,7 @@ export class GetLastContentPaginatedHandler
         contentId: true,
         title: true,
         publishedAt: true,
+        wordCount: true,
         image: {
           id: true,
           url: true,
