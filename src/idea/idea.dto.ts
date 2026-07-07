@@ -47,6 +47,9 @@ export interface CommentDto {
     displayName: string | null;
     photoUrl: string | null;
   };
+  /** true si le commentaire appartient à l'utilisateur courant (requête authentifiée).
+   *  Absent en lecture anonyme → pilote l'affichage du bouton « supprimer ». */
+  isMine?: boolean;
 }
 
 /** Idée résumée pour la synthèse de priorisation. */

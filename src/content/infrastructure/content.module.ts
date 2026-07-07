@@ -8,7 +8,10 @@ import { StorageModule } from '../../storage/infrastructure/storage.module';
 import { ExtractSpeechForContentHandler } from '../application/commands/extract-speech-for-content.handler';
 import { GenerateMissingAudiosHandler } from '../application/commands/generate-missing-audios.handler';
 import { ContentController } from '../application/content.controller';
+import { ContentCommentController } from '../application/content-comment.controller';
 import { ContentService } from '../application/content.service';
+import { ContentCommentService } from '../application/content-comment.service';
+import { PrismaService } from '../../law-proposal/infrastructure/prisma.service';
 import { RssService } from '../application/rss.service';
 import { AudioService } from '../application/events/audio.service';
 import { SpeechGeneratorService } from '../application/providers/speech-generator.service';
@@ -40,9 +43,11 @@ import {
     SpeechModule,
     StorageModule,
   ],
-  controllers: [ContentController],
+  controllers: [ContentController, ContentCommentController],
   providers: [
     ContentService,
+    ContentCommentService,
+    PrismaService,
     RssService,
     YoutubeService,
     ContentFactoryBuilder,
