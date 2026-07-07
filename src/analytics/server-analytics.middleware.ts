@@ -2,7 +2,11 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { createHash } from 'crypto';
 import { NextFunction, Request, Response } from 'express';
 import { AnalyticsService } from './analytics.service';
-import { classifyPlatform, resolveClientIp } from './client-platform';
+import {
+  classifyPlatform,
+  isProbePath,
+  resolveClientIp,
+} from './client-platform';
 
 /**
  * Mesure l'usage AGRÉGÉ par plateforme (app native / PWA / webapp) directement
@@ -32,7 +36,7 @@ export class ServerAnalyticsMiddleware implements NestMiddleware {
   constructor(private readonly analytics: AnalyticsService) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
-    if (!this.enabled || req.headers['dnt'] === '1') {
+    if (!this.enabled || req.headers['dnt'] === '1' || isProbePath(req.path)) {
       next();
       return;
     }

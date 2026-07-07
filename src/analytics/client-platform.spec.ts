@@ -1,4 +1,4 @@
-import { classifyPlatform } from './client-platform';
+import { classifyPlatform, isProbePath } from './client-platform';
 
 /**
  * UA réels observés en prod (tronqués). Le WebView iOS est indistinguable de
@@ -87,8 +87,32 @@ describe('classifyPlatform', () => {
       ['node interne', UA.node],
       ['axios', UA.axios],
       ['UA vide', ''],
+      ['TLM-Audit-Scanner (observé en prod)', 'TLM-Audit-Scanner/1.0'],
+      ['l9scan', 'Mozilla/5.0 (l9scan/2.0; +http://leakix.net)'],
+      ['AhrefsBot', 'Mozilla/5.0 (compatible; AhrefsBot/7.0; +http://ahrefs.com)'],
+      ['nuclei', 'Nuclei - Open-source project (github.com/projectdiscovery/nuclei)'],
     ])('%s → null', (_label, ua) => {
       expect(classifyPlatform('', ua, '')).toBeNull();
     });
+  });
+
+  describe('isProbePath : chemins de scanner (même avec UA de navigateur)', () => {
+    it.each([
+      '/.env',
+      '/.env.production',
+      '/app/.env',
+      '/.git/HEAD',
+      '/wp-login.php',
+      '/phpmyadmin',
+    ])('%s → probe (non compté)', (path) => {
+      expect(isProbePath(path)).toBe(true);
+    });
+
+    it.each(['/feed', '/content/last', '/podcast/list', '/analytics/usage'])(
+      '%s → trafic légitime',
+      (path) => {
+        expect(isProbePath(path)).toBe(false);
+      },
+    );
   });
 });
