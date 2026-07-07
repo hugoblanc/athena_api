@@ -1,9 +1,27 @@
 import { Request } from 'express';
 import { AnalyticsPlatform } from './dto/create-analytics-event.dto';
 
-/** Vrai pour les UA d'outils, crawlers et générateurs d'aperçus de liens. */
+/**
+ * Vrai pour les UA d'outils, crawlers, scanners et générateurs d'aperçus.
+ * Inclut les scanners de vulnérabilités observés en prod (`TLM-Audit-Scanner`,
+ * `l9scan`...) qui ne portent aucun mot-clé bot classique et polluaient sinon
+ * les buckets `desktop_web` / `mobile_web`.
+ */
 const BOT_UA =
-  /bot\b|crawler|spider|facebookexternalhit|whatsapp|telegram|slackbot|discordbot|linkedinbot|bingbot|googlebot|duckduckbot|yandexbot|applebot|preview|headlesschrome|python|curl|axios|go-http|okhttp|scrapy|wget|\bnode\b/i;
+  /bot\b|crawler|spider|facebookexternalhit|whatsapp|telegram|slackbot|discordbot|linkedinbot|bingbot|googlebot|duckduckbot|yandexbot|applebot|preview|headlesschrome|python|curl|axios|go-http|okhttp|scrapy|wget|\bnode\b|scan(ner)?|audit|l9scan|masscan|nuclei|zgrab|nmap|httpx|libwww|java\/|dataforseo|semrush|dotbot|mj12|petalbot|censys|expanse|palo ?alto/i;
+
+/**
+ * Chemins jamais légitimes côté app (probes de secrets/failles). Les scanners
+ * qui spoofent un vrai UA de navigateur se trahissent en les demandant : on ne
+ * compte pas ces requêtes comme de l'usage.
+ */
+const PROBE_PATH =
+  /(^|\/)\.(env|git|aws|ssh)|\/wp-(login|admin|content)|\/phpmyadmin|\/\.well-known\/(?!.*acme)|\/(vendor|app)\/\.env|\/config\.(php|json|ya?ml)$|\/actuator|\/\.DS_Store/i;
+
+/** Vrai si le chemin demandé est un probe de scanner (à ne pas compter). */
+export function isProbePath(path: string): boolean {
+  return PROBE_PATH.test(path);
+}
 
 /** UA d'un terminal mobile (natif ou navigateur). */
 const MOBILE_UA =
