@@ -1,6 +1,7 @@
-import { Controller, Post, Get, Query, Logger, ParseIntPipe, Param, HttpException, HttpStatus, UsePipes, ValidationPipe, Res } from '@nestjs/common';
+import { Controller, Post, Get, Query, Logger, ParseIntPipe, Param, HttpException, HttpStatus, UsePipes, ValidationPipe, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { Public } from '../../auth/infrastructure/decorators';
+import { MaintenanceKeyGuard } from '../../auth/infrastructure/maintenance-key.guard';
 import { LawScrapingService } from '../application/law-scraping.service';
 import { LawSimplificationService } from '../application/law-simplification.service';
 import { LawProposalService } from '../application/law-proposal.service';
@@ -34,6 +35,7 @@ export class LawProposalController {
    * Initialise le scraping des X dernières propositions de loi
    */
   @Post('initialize')
+  @UseGuards(MaintenanceKeyGuard)
   async initialize(@Query('limit') limit: string = '50') {
     const limitNum = parseInt(limit, 10);
 
@@ -64,6 +66,7 @@ export class LawProposalController {
    * Force le traitement de la queue de simplification
    */
   @Post('process-simplification-queue')
+  @UseGuards(MaintenanceKeyGuard)
   async processQueue(@Query('batchSize') batchSize: string = '5') {
     const batchSizeNum = parseInt(batchSize, 10);
 

@@ -7,11 +7,13 @@ import {
   ParseIntPipe,
   Post,
   Query,
-  Res
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Public } from '../../auth/infrastructure/decorators';
+import { MaintenanceKeyGuard } from '../../auth/infrastructure/maintenance-key.guard';
 import { ContentOgService } from '../og/content-og.service';
 import { RequestedPageValueType } from '../../core/page-number.value-type';
 import { ExtractSpeechForContentCommand } from './commands/extract-speech-for-content.command';
@@ -134,18 +136,21 @@ export class ContentController {
     return this.contentService.findPageByMediaKey(mediaKey, page);
   }
 
-  @Get('init/:mediaKey')
+  @Post('init/:mediaKey')
+  @UseGuards(MaintenanceKeyGuard)
   initializeMedia(@Param('mediaKey') mediaKey: string) {
     this.logger.log('Initialisation du media : ' + mediaKey);
     this.contentService.initMediaContent(mediaKey).subscribe();
   }
 
   @Post('extract-speech/:id')
+  @UseGuards(MaintenanceKeyGuard)
   extractSpeech(@Param('id', ParseIntPipe) id: number) {
     return this.commandBus.execute(new ExtractSpeechForContentCommand(id))
   }
 
   @Post('generate-missing-audios')
+  @UseGuards(MaintenanceKeyGuard)
   async generateMissingAudios(
     @Query('limit') limit?: string,
   ) {

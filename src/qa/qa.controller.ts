@@ -9,9 +9,13 @@ import {
   Res,
   HttpStatus,
   HttpException,
+  UseGuards,
+  Headers,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { Public } from '../auth/infrastructure/decorators';
+import { MaintenanceKeyGuard } from '../auth/infrastructure/maintenance-key.guard';
 import { QaService } from './application/qa.service';
 
 class AskQuestionDto {
@@ -28,6 +32,7 @@ export class QaController {
    * Soumet une question et retourne immédiatement un job ID
    */
   @Post('ask')
+  @UseGuards(MaintenanceKeyGuard)
   async ask(@Body() dto: AskQuestionDto) {
     if (!dto.question || dto.question.trim().length === 0) {
       throw new HttpException('Question is required', HttpStatus.BAD_REQUEST);
@@ -103,6 +108,7 @@ export class QaController {
    * Récupère l'historique des questions (paginé)
    */
   @Get('history')
+  @UseGuards(MaintenanceKeyGuard)
   async getHistory(
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '20',
@@ -147,6 +153,7 @@ export class QaController {
    * Supprime un élément de l'historique
    */
   @Delete('history/:id')
+  @UseGuards(MaintenanceKeyGuard)
   async deleteHistory(@Param('id') id: string) {
     const deleted = await this.qaService.deleteJob(id);
 

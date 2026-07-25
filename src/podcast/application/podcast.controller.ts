@@ -1,4 +1,4 @@
-import { Controller, Post, Param, ParseIntPipe, Query, Get } from '@nestjs/common';
+import { Controller, Post, Param, ParseIntPipe, Query, Get, UseGuards } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GeneratePodcastForContentCommand } from './commands/generate-podcast-for-content.command';
 import { GenerateMissingPodcastsCommand } from './commands/generate-missing-podcasts.command';
@@ -8,6 +8,7 @@ import { GetPodcastByIdQuery } from './queries/get-podcast-by-id/get-podcast-by-
 import { GetNextPodcastQuery } from './queries/get-next-podcast/get-next-podcast.query';
 import { GetPreviousPodcastQuery } from './queries/get-previous-podcast/get-previous-podcast.query';
 import { Public } from '../../auth/infrastructure/decorators';
+import { MaintenanceKeyGuard } from '../../auth/infrastructure/maintenance-key.guard';
 
 @Controller('podcast')
 @Public()
@@ -49,12 +50,14 @@ export class PodcastController {
   }
 
   @Post('generate-missing')
+  @UseGuards(MaintenanceKeyGuard)
   async generateMissingPodcasts(@Query('limit') limit?: string) {
     const limitNumber = limit ? parseInt(limit, 10) : 10;
     return this.commandBus.execute(new GenerateMissingPodcastsCommand(limitNumber));
   }
 
   @Post(':id')
+  @UseGuards(MaintenanceKeyGuard)
   async generatePodcast(@Param('id', ParseIntPipe) id: number) {
     return this.commandBus.execute(new GeneratePodcastForContentCommand(id));
   }
