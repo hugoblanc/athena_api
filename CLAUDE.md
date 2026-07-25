@@ -1,6 +1,6 @@
 - Always use prisma migration system when it's possible
 - Ne fait jamais de --create-only, a la place demande a l'utilisatuer de générer la migration
-- **Push sur `master` = déploiement auto en prod (CapRover).** Ne jamais push sans OK explicite.
+- Push sur `master` = déploiement auto en prod (CapRover).
 
 ## Consommé par la PWA Next.js (`../athena-pwa`)
 
