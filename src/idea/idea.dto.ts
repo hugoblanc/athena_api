@@ -1,11 +1,34 @@
 import { Idea } from '@prisma/client';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 /** Corps de création d'une idée (POST /issues). */
 export class CreateIdeaDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
   title: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(5000)
   body: string;
+
   /** ex-label GitHub. Tableau accepté pour compat mobile (`labels: ['feature']`). */
+  @IsOptional()
+  @IsString()
+  @MaxLength(32)
   type?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  @MaxLength(32, { each: true })
   labels?: string[];
 }
 
@@ -35,6 +58,9 @@ export interface IssueDto {
 
 /** Corps de création d'un commentaire (POST /issues/:id/comments). */
 export class CreateCommentDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(5000)
   text: string;
 }
 

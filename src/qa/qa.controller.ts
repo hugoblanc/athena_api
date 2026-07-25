@@ -13,12 +13,16 @@ import {
   Headers,
   UnauthorizedException,
 } from '@nestjs/common';
+import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { Response } from 'express';
 import { Public } from '../auth/infrastructure/decorators';
 import { MaintenanceKeyGuard } from '../auth/infrastructure/maintenance-key.guard';
 import { QaService } from './application/qa.service';
 
 class AskQuestionDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
   question: string;
 }
 

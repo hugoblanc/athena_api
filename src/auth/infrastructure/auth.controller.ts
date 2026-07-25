@@ -3,6 +3,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import { AuthService } from '../application/auth.service';
 import { UserService } from '../application/user.service';
 import { User } from '@prisma/client';
+import { UpdatePreferencesDto } from '../dto/update-preferences.dto';
 
 /**
  * Controller pour gérer l'authentification et le profil utilisateur
@@ -48,7 +49,7 @@ export class AuthController {
   @Put('preferences')
   async updatePreferences(
     @CurrentUser() user: User,
-    @Body() data: any,
+    @Body() data: UpdatePreferencesDto,
   ) {
     return this.userService.updatePreferences(user.id, data);
   }

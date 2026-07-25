@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../law-proposal/infrastructure/prisma.service';
-import { UserPreference } from '@prisma/client';
+import { Prisma, UserPreference } from '@prisma/client';
+import { UpdatePreferencesDto } from '../dto/update-preferences.dto';
 
 /**
  * Service pour gérer les préférences utilisateur
@@ -40,14 +41,22 @@ export class UserService {
    */
   async updatePreferences(
     userId: number,
-    data: Partial<Omit<UserPreference, 'id' | 'userId' | 'createdAt' | 'updatedAt'>>,
+    data: UpdatePreferencesDto,
   ): Promise<UserPreference> {
+    const fields = {
+      theme: data.theme,
+      notificationTopics: data.notificationTopics as
+        | Prisma.InputJsonValue
+        | undefined,
+      favoriteMedias: data.favoriteMedias as Prisma.InputJsonValue | undefined,
+    };
+
     return this.prisma.userPreference.upsert({
       where: { userId },
-      update: data,
+      update: fields,
       create: {
         userId,
-        ...data,
+        ...fields,
       },
     });
   }
